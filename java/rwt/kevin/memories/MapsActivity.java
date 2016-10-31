@@ -155,7 +155,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.d(null, "addmarkertolist" + s);
         resultList = new ArrayList<>();
         List<String> result = new ArrayList<>();
-        result.add(location.toString());
+        result.add(location);
         result.add(s);
         resultList.add(result);
     }
@@ -170,12 +170,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         Log.d(null, "addmarkertomap");
         String id = null;
-        String locationString = null;
+        LatLng location = null;
         if(resultList != null) {
             id = String.valueOf(resultList.get(0));
             Log.d(null, "id:" + id);
-            locationString = String.valueOf(resultList.get(1));
-            Log.d(null, "location:" + locationString);
+            location = String.valueOf(resultList.get(1));
+            Log.d(null, "location:" + location);
         }
 
         if (markersList == null){
@@ -196,13 +196,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 latlngFinal= new LatLng(latitude, longitude);
             */
                 //this might be the wrong map to be calling
-                TextScanner t = new TextScanner();
-                LatLng latlng = t.locationStringtoLatLng(locationString);
-
-                Marker marker = mMap.addMarker(new MarkerOptions().position(latlng).title(id));
+                Marker marker = mMap.addMarker(new MarkerOptions().position(location).title(id));
                 Log.d(null, "adding marker");
                 markersList.add(marker);
-
+            }
         }else{Log.d(null, "mMap null");}
     }
     public void revealMarkers(GoogleMap mMap) {
