@@ -87,6 +87,14 @@
                 android:layout_marginTop="16dp"
                 android:text="Sign Up"
                 android:textStyle="bold" />
+            <Button
+                android:id="@+id/quicktour_button"
+                style="?android:textAppearanceSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="25dp"
+                android:text="Quick Tour"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/disclaimer_text"
