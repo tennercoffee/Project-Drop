@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        tools:context="rwt.kevin.memories.ViewMemoryActivity">
+
+        <android.support.design.widget.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/AppTheme.AppBarOverlay"
+            android:id="@+id/view2">
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/add_memory_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="?attr/colorPrimary"
+                android:elevation="4dp"
+                android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+            </android.support.design.widget.AppBarLayout>
+
+        <include layout="@layout/content_add_memory_layout" />
+
+        <android.support.v7.widget.AppCompatButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/submitMemoryButton"
+            android:layout_gravity="left|bottom"
+            android:text="Submit"
+            android:onClick="MapsActivity"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="15dp" />
+        <android.support.v7.widget.AppCompatButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/addPhotoButton"
+            android:text="Add Photo"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_margin="15dp"
+            android:layout_below="@+id/privacyTextView"/>
+        <android.support.v7.widget.AppCompatButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/cancelMemoryButton"
+            android:layout_gravity="left|bottom"
+            android:text="Cancel"
+            android:onClick="MapsActivity"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_margin="15dp" />
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:id="@+id/editInp"
+            android:hint=" Input your moment here, then Submit. "
+            android:singleLine="false"
+            android:inputType="text"
+            android:gravity="top|left"
+            android:background="@drawable/edittextstyle"
+            android:layout_below="@+id/charCountTextView"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="10dp"
+            android:focusable="true"
+            android:padding="10dp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/charCountTextView"
+            android:gravity="right"
+            android:layout_below="@+id/view2"
+            android:layout_margin="5dp"
+            android:text="" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/locationTextView"
+            android:gravity="center"
+            android:layout_below="@+id/editInp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_margin="15dp"
+            android:text="" />
+        <Spinner
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/colorList"
+            android:spinnerMode="dropdown"
+            android:background="#AEA79F"
+            android:layout_alignTop="@+id/privacyTextView"
+            android:layout_alignRight="@+id/locationTextView"
+            android:layout_alignEnd="@+id/locationTextView"
+            android:padding="15dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Choose Privacy:"
+            android:id="@+id/privacyTextView"
+            android:layout_below="@+id/locationTextView"
+            android:layout_alignLeft="@+id/locationTextView"
+            android:layout_alignStart="@+id/locationTextView" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/snapshotImageView"
+            android:layout_below="@+id/privacyTextView"
+            android:background="@color/light_grey"/>
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:gravity="center"
+            android:layout_below="@+id/snapshotImageView" />
+        <Spinner
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/scopeList"
+            android:spinnerMode="dropdown"
+            android:background="#AEA79F"
+            android:layout_alignTop="@+id/privacyTextView"
+            android:layout_alignRight="@+id/locationTextView"
+            android:layout_alignEnd="@+id/locationTextView"
+            android:padding="10dp"
+            android:layout_below="@+id/colorList"/>
+    </RelativeLayout>
+</android.support.design.widget.CoordinatorLayout>
