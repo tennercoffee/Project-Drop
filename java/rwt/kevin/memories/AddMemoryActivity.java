@@ -177,7 +177,8 @@ class AddMemory extends AsyncTask<String, String, Void> {
         String location = params[0];
         String scope = params[1];
         String memoryString = params[2];
-        String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";//a76c33b2-4c76-11e6-8c59-e0cb4ea6dd17
+        String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
+        //old key--a76c33b2-4c76-11e6-8c59-e0cb4ea6dd17
         String s;
 
         Scanner scanner = new Scanner(location);
@@ -205,13 +206,39 @@ class AddMemory extends AsyncTask<String, String, Void> {
         String desc = timestampString + " 0001 " + coordinates;
         Log.d(null, desc);
 
+        //////////////////////////////////////////////////////////////////////
+                            //rebuild this//
+        //http://web.webapps.centennialarts.com/page.php?command=addPage
+            //&title=hello&pageTypeId=21&pageValues={
+                //"0":{%22pageTypeStringAttributesId%22:%2233%22,%22value%22:%22locationValue%22},
+                //"1":{%22pageTypeStringAttributesId%22:%2239%22,%22value%22:%22regionValue%22},
+                //"2":{%22pageTypeStringAttributesId%22:%2230%22,%22value%22:%22titleValue%22},
+                //"3":{%22pageTypeStringAttributesId%22:%2242%22,%22value%22:%22timestampValue%22}}
+
+
+        
+        //pageValues in the works
+        String regionCode = "0001";
+        //may have to add escape characters 
+        String values = URLEncoder.encode("\"0\":{\"pageTypeStringAttributesId\":") + URLEncoder.encode("\"33,\"")
+                        + URLEncoder.encode("\"value\":") + URLEncoder.encode(coordinates)
+                        + URLEncoder.encode("\"1\":{\"pageTypeStringAttributesId\":") + URLEncoder.encode("\"39,\"")
+                        + URLEncoder.encode("\"value\":") + URLEncoder.encode(regionCode)
+                        + URLEncoder.encode("\"2\":{\"pageTypeStringAttributesId\":") + URLEncoder.encode("\"30,\"")
+                        + URLEncoder.encode("\"value\":") + URLEncoder.encode(title)
+                        + URLEncoder.encode("\"3\":{\"pageTypeStringAttributesId\":") + URLEncoder.encode("\"42,\"")
+                        + URLEncoder.encode("\"value\":") + URLEncoder.encode(timestampString);
+                        
+                        
+        ///////////////////////////////////////////////////////////////////////////////////////////
         try {
             URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=addPage&");
             String data = URLEncoder.encode("description", "UTF-8") + "=" + URLEncoder.encode(desc, "UTF-8")
                     + "&" + URLEncoder.encode("title", "UTF-8") + "=" + URLEncoder.encode(memoryString, "UTF-8")
                     + "&" + URLEncoder.encode("scope", "UTF-8") + "=" + URLEncoder.encode(scope, "UTF-8")
-                    + "&" + URLEncoder.encode("pageTypeId", "UTF-8") + "=" + URLEncoder.encode("75", "UTF-8")
-                    + "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8");
+                    + "&" + URLEncoder.encode("pageTypeId", "UTF-8") + "=" + URLEncoder.encode("21", "UTF-8")
+                    + "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8")
+                    + "&" + URLEncoder.encode("pageValues", "UTF-8") + "={" + values;
 
             URL nUrl = new URL(url + data);
             Log.d(null, nUrl.toString());

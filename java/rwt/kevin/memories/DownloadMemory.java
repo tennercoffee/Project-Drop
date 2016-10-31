@@ -154,18 +154,18 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 			conn = url.openConnection();
 			BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 			Log.d(null, "in");
-
-
+			
+			
 			/***************************************************************************************
-			 *
-			 *
+			 * 
+			 * 
 			 * Design callback funtion here
 			 *  idk what that means
-			 *
-			 *
+			 * 
+			 * 
 			 * ***************************************************************************************/
-
-
+			
+			
 			while ((s = in.readLine()) != null) {
 				jsonArray = new JSONArray(s);
 			}
@@ -185,7 +185,7 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 		Log.d(null, jsonArray.toString());
 
 		/*try{
-			/*for(int n = 0; n < jsonArray.length(); n++) {
+			for(int n = 0; n < jsonArray.length(); n++) {
 				JSONObject j = jsonArray.getJSONObject(n);
 
 				idObject = j.getInt("id");
@@ -203,10 +203,9 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
     			 * this may or may not work
     			 * 
     			 *****************************************************/
+				
 
-
-
-		/*
+			}
 			Log.d(null, "list downloaded");
 
 		} catch (JSONException e) {
