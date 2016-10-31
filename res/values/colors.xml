@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#A4C639</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="menu_grey">#AEA79F</color>
+    <color name="android_green">#A4C639</color>
+    <color name="light_grey">#AEA79F</color>
+</resources>
