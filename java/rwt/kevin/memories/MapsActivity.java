@@ -133,23 +133,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.setMaxZoomPreference(18);
         }
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     
     /////////////////////////////////////////////////////////////////////////////
-    
-    
-    
+
     
     public void addMarkerToList(LatLng location, String s) {
         Log.d(null, "addmarkertolist" + s);
@@ -170,12 +157,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         Log.d(null, "addmarkertomap");
         String id = null;
-        String locationString = null;
+        LatLng location = null;
         if(resultList != null) {
             id = String.valueOf(resultList.get(0));
             Log.d(null, "id:" + id);
-            locationString = String.valueOf(resultList.get(1));
-            Log.d(null, "location:" + locationString);
+            TextScanner t = new TextScanner();
+            location = t.locationStringToLatLng(resultList.get(1));
+            Log.d(null, "location:" + location);
         }
 
         if (markersList == null){
@@ -195,13 +183,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 double longitude = Double.parseDouble(latlng[1]);
                 latlngFinal= new LatLng(latitude, longitude);
             */
-                //this might be the wrong map to be calling
-                TextScanner t = new TextScanner();
-                LatLng latlng = t.locationStringtoLatLng(locationString);
-
-                Marker marker = mMap.addMarker(new MarkerOptions().position(latlng).title(id));
-                Log.d(null, "adding marker");
-                markersList.add(marker);
+            //this might be the wrong map to be calling
+            Marker marker = mMap.addMarker(new MarkerOptions().position(location).title(id));
+            Log.d(null, "adding marker");
+            markersList.add(marker);
 
         }else{Log.d(null, "mMap null");}
     }
@@ -223,17 +208,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     /////////////////////////////////////////////////////////////////////////////
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     private void enableMyLocation() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -373,6 +348,4 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         client.disconnect();
         super.onStop();
     }
-
-
 }

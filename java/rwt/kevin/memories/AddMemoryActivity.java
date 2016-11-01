@@ -225,7 +225,7 @@ class AddMemory extends AsyncTask<String, String, Void> {
                         + URLEncoder.encode("\"1\":{\"pageTypeStringAttributesId\":") + URLEncoder.encode("\"39,\"")
                         + URLEncoder.encode("\"value\":") + URLEncoder.encode(regionCode)
                         + URLEncoder.encode("\"2\":{\"pageTypeStringAttributesId\":") + URLEncoder.encode("\"30,\"")
-                        + URLEncoder.encode("\"value\":") + URLEncoder.encode(title)
+                        + URLEncoder.encode("\"value\":") + URLEncoder.encode(memoryString)
                         + URLEncoder.encode("\"3\":{\"pageTypeStringAttributesId\":") + URLEncoder.encode("\"42,\"")
                         + URLEncoder.encode("\"value\":") + URLEncoder.encode(timestampString);
                         
@@ -297,7 +297,7 @@ class AddMemory extends AsyncTask<String, String, Void> {
 
         if(successObject == "true"){
             Log.d(null, "success true");
-            Toast.makeText(null, "success!", Toast.LENGTH_LONG);
+            Toast.makeText(null, "success!", Toast.LENGTH_LONG).show();
         }
     }
 }

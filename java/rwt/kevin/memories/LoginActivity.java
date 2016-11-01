@@ -1,23 +1,12 @@
 package rwt.kevin.memories;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
-
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
+import android.content.Intent;
 import android.os.AsyncTask;
 
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -38,7 +27,7 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity {
+public class LoginActivity extends MainActivity{
 
     Toolbar toolbar;
 
@@ -78,11 +67,13 @@ public class LoginActivity {
         }
         Button loginButton = (Button) findViewById(R.id.login_button);
         if(loginButton != null){
+            final String finalEmail = email;
+            final String finalPassword = password;
             loginButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     LoginUser user = new LoginUser();
-                    user.execute(email,password);
+                    user.execute(finalEmail, finalPassword);
                 }
             });
         }
@@ -118,9 +109,9 @@ class LoginUser extends AsyncTask<String, String, Void> {
 
         String email = params[0];
         String password = params[1];
-        Log.d(null, "doInBackground for:" + email + password)
+        Log.d(null, "doInBackground for:" + email + password);
         String url = null;
-        
+
         return null;
     }
     protected void onPostExecute(Void v) {

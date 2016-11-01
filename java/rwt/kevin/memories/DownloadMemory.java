@@ -203,14 +203,15 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
     			 * this may or may not work
     			 * 
     			 *****************************************************/
-				
 
-			}
 			Log.d(null, "list downloaded");
+			}
 
+/*
 		} catch (JSONException e) {
 			Log.d(null, "json exception");
 			e.printStackTrace();
-		}*/
+		}
 	}
+*/
 }
