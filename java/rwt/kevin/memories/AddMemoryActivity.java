@@ -6,7 +6,9 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.ArrayMap;
 import android.util.Log;
+import android.util.StringBuilderPrinter;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -15,6 +17,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.internal.LinkedHashTreeMap;
+import com.google.gson.internal.LinkedTreeMap;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,12 +27,18 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class AddMemoryActivity extends MapsActivity {
@@ -96,9 +107,9 @@ public class AddMemoryActivity extends MapsActivity {
                         String memoryString = memoryInput.getText().toString();
 
                         AddMemory post = new AddMemory();
-                        String id = post.execute(location, scope, memoryString).toString();
+                        post.execute(location, scope, memoryString);
 
-                        Log.d(null, id);
+                        try{Thread.sleep(3000);}catch(Exception e){e.printStackTrace();}
                         //TODO: finish this, add regionCode
                         finish();
                         //Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
@@ -174,8 +185,8 @@ class AddMemory extends AsyncTask<String, String, Void> {
     }
     @Override
     protected Void doInBackground(String... params) {
-        String location = params[0];
         String scope = params[1];
+        String location = params[0];
         String memoryString = params[2];
         String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
         //old key--a76c33b2-4c76-11e6-8c59-e0cb4ea6dd17
@@ -204,58 +215,68 @@ class AddMemory extends AsyncTask<String, String, Void> {
         String timestampString =  y + ":" + m + ":" + d + ":" + h + ":" + m1 + ":" + s1 + ":" + m2;
         // 0001 is western hemisphere
         String desc = timestampString + " 0001 " + coordinates;
-        Log.d(null, desc);
-
-        //////////////////////////////////////////////////////////////////////
-                            //rebuild this//
-        //http://web.webapps.centennialarts.com/page.php?command=addPage
-            //&title=hello&pageTypeId=21&pageValues={
-                //"0":{%22pageTypeStringAttributesId%22:%2233%22,%22value%22:%22locationValue%22},
-                //"1":{%22pageTypeStringAttributesId%22:%2239%22,%22value%22:%22regionValue%22},
-                //"2":{%22pageTypeStringAttributesId%22:%2230%22,%22value%22:%22titleValue%22},
-                //"3":{%22pageTypeStringAttributesId%22:%2242%22,%22value%22:%22timestampValue%22}}
 
 
-        
-        //pageValues in the works
         String regionCode = "0001";
-        //may have to add escape characters 
-        String values = URLEncoder.encode("\"0\":{\"pageTypeStringAttributesId\":") + URLEncoder.encode("\"33,\"")
-                        + URLEncoder.encode("\"value\":") + URLEncoder.encode(coordinates)
-                        + URLEncoder.encode("\"1\":{\"pageTypeStringAttributesId\":") + URLEncoder.encode("\"39,\"")
-                        + URLEncoder.encode("\"value\":") + URLEncoder.encode(regionCode)
-                        + URLEncoder.encode("\"2\":{\"pageTypeStringAttributesId\":") + URLEncoder.encode("\"30,\"")
-                        + URLEncoder.encode("\"value\":") + URLEncoder.encode(memoryString)
-                        + URLEncoder.encode("\"3\":{\"pageTypeStringAttributesId\":") + URLEncoder.encode("\"42,\"")
-                        + URLEncoder.encode("\"value\":") + URLEncoder.encode(timestampString);
-                        
-                        
+
         ///////////////////////////////////////////////////////////////////////////////////////////
         try {
-            URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=addPage&");
-            String data = URLEncoder.encode("description", "UTF-8") + "=" + URLEncoder.encode(desc, "UTF-8")
+            JSONObject pageValuesObject = new JSONObject();
+            JSONObject regionObject = new JSONObject().put("pageTypeStringAttributesId", "54").put("value", regionCode);
+            JSONObject titleObject = new JSONObject().put("pageTypeStringAttributesId", "48").put("value", memoryString);
+            JSONObject coorObject = new JSONObject().put("pageTypeStringAttributesId", "51").put("value", coordinates);
+            JSONObject timestampObject = new JSONObject().put("pageTypeStringAttributesId", "57").put("value", timestampString);
+
+//            JSONObject pageValuesObject = new JSONObject();
+//            JSONObject regionObject = new JSONObject().put("\"pageTypeStringAttributesId\"", "\"54\"").put("\"value\"", "\"" + regionCode + "\"");
+//            JSONObject titleObject = new JSONObject().put("\"pageTypeStringAttributesId\"", "\"48\"").put("\"value\"", "\"" + memoryString + "\"");
+//            JSONObject coorObject = new JSONObject().put("\"pageTypeStringAttributesId\"", "\"51\"").put("\"value\"", "\"" + coordinates + "\"");
+//            JSONObject timestampObject = new JSONObject().put("\"pageTypeStringAttributesId\"", "\"57\"").put("\"value\"", "\"" + timestampString + "\"");
+
+            pageValuesObject.put("0", regionObject).put("1", titleObject).put("2", coorObject).put("3", timestampObject);
+            Log.d(null, pageValuesObject.toString());
+
+            Log.d(null, "building datastring");
+            String dataString = URLEncoder.encode("description", "UTF-8") + "=" + URLEncoder.encode(desc, "UTF-8")
                     + "&" + URLEncoder.encode("title", "UTF-8") + "=" + URLEncoder.encode(memoryString, "UTF-8")
                     + "&" + URLEncoder.encode("scope", "UTF-8") + "=" + URLEncoder.encode(scope, "UTF-8")
-                    + "&" + URLEncoder.encode("pageTypeId", "UTF-8") + "=" + URLEncoder.encode("21", "UTF-8")
+                    + "&" + URLEncoder.encode("pageTypeId", "UTF-8") + "=" + URLEncoder.encode("30", "UTF-8")
                     + "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8")
-                    + "&" + URLEncoder.encode("pageValues", "UTF-8") + "={" + values;
+                    + "&" + URLEncoder.encode("pageValues", "UTF-8") + "=" + URLEncoder.encode(pageValuesObject.toString(),"UTF-8");
 
-            URL nUrl = new URL(url + data);
-            Log.d(null, nUrl.toString());
-            URLConnection conn = nUrl.openConnection();
+            URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=addPage&" + dataString);
+            Log.d(null, url.toString());
+            final URLConnection conn= url.openConnection();
+
+            final BufferedReader[] in = new BufferedReader[1];
+            DownloadMemoryList.InputReader reader = new DownloadMemoryList.InputReader() {
+                @Override
+                public String getInput() {
+                    try {
+                        in[0] = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        Log.d(null, in[0].toString());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }
+            };
             try{
                 Thread.sleep(2000);
             } catch(Exception e){
                 Log.d(null, "no sleep1");
             }
-            in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            while ((s = in.readLine()) != null) {
+
+            reader.getInput();
+
+            while ((s = in[0].readLine()) != null) {
                 Log.d(null, s);
 
                 jsonArray = new JSONArray(s);
                 Log.d(null, "jArray");
 
             }
+
         } catch (UnsupportedEncodingException e1) {
             Log.d(null, e1.toString());
             e1.printStackTrace();
@@ -267,19 +288,13 @@ class AddMemory extends AsyncTask<String, String, Void> {
             e4.printStackTrace();
         } catch (Exception e) {
             Log.d(null, "StringBuilding & BufferedReader\", \"Error converting result ");
-        } finally {
-            try {
-                in.close();
-            } catch (IOException ioe) {
-                // just going to ignore this one
-            }
         }
         return null;
     }
     protected void onPostExecute(Void v) {
         //TODO: parse success
 
-        try {
+        try {if(jsonArray != null){
             for (int n = 0; n < jsonArray.length(); n++) {
                 Log.d(null, String.valueOf(n));
                 JSONObject j = jsonArray.getJSONObject(n);
@@ -290,7 +305,7 @@ class AddMemory extends AsyncTask<String, String, Void> {
                 successObject = j.getString("success");
                 Log.d(null, "successObject: " + successObject);
                 //TODO: set up success message after adding mem
-            }
+            }}
         } catch (JSONException e) {
             e.printStackTrace();
         }
