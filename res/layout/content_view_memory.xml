@@ -86,6 +86,14 @@
         android:layout_toRightOf="@+id/dislikeButton"
         android:layout_toEndOf="@+id/dislikeButton"
         android:id="@+id/likeButton" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/usernameText"
+        android:text="jlKAJD;LKAjsdl;kjaSD"
+        android:layout_above="@+id/memoryTextView"
+        android:layout_centerHorizontal="true" />
     <!--<ImageView
         android:layout_width="400dp"
         android:layout_height="150dp"

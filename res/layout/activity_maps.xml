@@ -12,7 +12,8 @@
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:theme="@style/AppTheme.AppBarOverlay"
+        android:id="@+id/appBarLayout">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/map_toolbar"
@@ -22,6 +23,15 @@
             android:elevation="4dp"
             android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+        <Button
+            android:id="@+id/profile_button"
+            style="?android:textAppearanceSmall"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="My Profile"
+            android:textStyle="bold"
+            android:layout_below="@+id/map_toolbar"/>
 
     </android.support.design.widget.AppBarLayout>
 
@@ -43,5 +53,14 @@
         android:layout_marginBottom="40dp"
         android:src="@drawable/plussignicon"
         android:onClick="AddMemoryActivity"/>
+
+    <Button
+        android:text="Reveal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/appBarLayout"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:id="@+id/reveal_button" />
 
 </RelativeLayout>

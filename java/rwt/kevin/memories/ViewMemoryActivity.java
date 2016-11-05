@@ -42,7 +42,8 @@ public class ViewMemoryActivity extends MapsActivity {
 
         TextView locationTextView = (TextView)findViewById(R.id.locationTextView);
         TextView memoryTextView = (TextView) findViewById(R.id.memoryTextView);
-		TextView timestampView = (TextView) findViewById(R.id.timestamp_view);
+		TextView timestampTextView = (TextView) findViewById(R.id.timestamp_view);
+		TextView usernameTextView = (TextView) findViewById(R.id.usernameText);
 
 		//TODO:this may need to be brought into scope
 		if(memoryTextView != null) {
@@ -51,8 +52,13 @@ public class ViewMemoryActivity extends MapsActivity {
         if(locationTextView != null) {
             locationTextView.setText(location.toString());
         }
-		if(timestampView != null) {
-			timestampView.setText(timestamp);
+		if(timestampTextView != null) {
+			timestampTextView.setText(timestamp);
+		}
+		if(usernameTextView != null) {
+			//get marker id number
+				//get username from this
+					//build function in download mem
 		}
 
 		//TODO: run marker id against privatemarker arrayList, if present, enable remove Button

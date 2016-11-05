@@ -109,7 +109,6 @@ public class AddMemoryActivity extends MapsActivity {
                         AddMemory post = new AddMemory();
                         post.execute(location, scope, memoryString);
 
-                        try{Thread.sleep(3000);}catch(Exception e){e.printStackTrace();}
                         //TODO: finish this, add regionCode
                         finish();
                         //Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
@@ -118,18 +117,6 @@ public class AddMemoryActivity extends MapsActivity {
                     }else {
                         Log.d(null, "error");
                         //change color of toolbar to red
-                        /*if(toolbar != null) {
-                            toolbar.findViewById(R.id.toolbar_error);
-                            toolbar.setTitle("Error, not logged in");
-                            try {
-                                Thread.sleep(2000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            toolbar.findViewById(R.id.add_memory_toolbar);
-                            toolbar.setTitle("Add New Moment");
-                            //error: user not signed in
-                        }*/
                     }
                 }
             });

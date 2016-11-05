@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -48,6 +49,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public SupportMapFragment mapFragment = null;
     Toolbar toolbar;
     List<List<String>> resultList;
+
+
+    public interface DownloadList {
+        String downloadList();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,10 +121,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
                     if (marker.getTitle() != null) {
 
-                        //run download memory here
-                        //get description and title
-                        //pass through as intent extras
-                        
                         DownloadMemory mem = new DownloadMemory();
                         mem.execute(marker.getTitle());
                     } else {
@@ -132,64 +134,79 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.setMinZoomPreference(18);
             mMap.setMaxZoomPreference(18);
         }
+        Button profileButton = (Button) findViewById(R.id.profile_button);
+        if(profileButton != null){
+            profileButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent i = new Intent(getApplicationContext(), MyProfileActivity.class);
+                    startActivity(i);
+                }
+            });
+        }
+        Button revealButton = (Button) findViewById(R.id.reveal_button);
+        if(revealButton != null){
+            revealButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(resultList != null) {
+                        addMarkersToMap(mMap);
+                        revealMarkers(mMap);
+                    } else {
+                        Log.d(null, "resultlist null");
+                    }
+                }
+            });
+        }
     }
-
-    
     /////////////////////////////////////////////////////////////////////////////
-
-    
-    public void addMarkerToList(LatLng location, String s) {
-        Log.d(null, "addmarkertolist" + s);
+    public void addMarkerToList(String location, String s) {
         resultList = new ArrayList<>();
         List<String> result = new ArrayList<>();
-        result.add(location.toString());
+        result.add(location);
         result.add(s);
         resultList.add(result);
+        Log.d(null, "markeraddedtolist");
     }
-    public void addMarkerToMap() {
-        try {
-            //has to sleep here,
-            // in order to get response before moving forward
-            //bad practice
-            Thread.sleep(2500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    public void addMarkersToMap(GoogleMap mMap) {
         Log.d(null, "addmarkertomap");
         String id = null;
         LatLng location = null;
         if(resultList != null) {
             id = String.valueOf(resultList.get(0));
-            Log.d(null, "id:" + id);
             TextScanner t = new TextScanner();
             location = t.locationStringToLatLng(resultList.get(1));
             Log.d(null, "location:" + location);
-        }
-
-        if (markersList == null){
-            markersList = new ArrayList<>();
-            Log.d(null, "null list");
-        }
-        if(mMap != null) {
+            if (markersList == null){
+                markersList = new ArrayList<>();
+                Log.d(null, "null list");
+            }
+            if(mMap != null) {
             /*TextScanner t = new TextScanner();
             LatLng latlngFinal;
             if(desc != null) {
                 String location = t.descSplitter(desc, 1, 0);
                 String latlngSplitString = t.locationSplitter(location);
-
-                String[] latlng = latlngSplitString.split(",");
-
-                double latitude = Double.parseDouble(latlng[0]);
-                double longitude = Double.parseDouble(latlng[1]);
-                latlngFinal= new LatLng(latitude, longitude);
             */
-            //this might be the wrong map to be calling
-            Marker marker = mMap.addMarker(new MarkerOptions().position(location).title(id));
-            Log.d(null, "adding marker");
-            markersList.add(marker);
+//                String[] latlng = location.split(",");
+//
+//                double latitude = Double.parseDouble(latlng[0]);
+//                double longitude = Double.parseDouble(latlng[1]);
+//                LatLng latlngFinal= new LatLng(latitude, longitude);
 
-        }else{Log.d(null, "mMap null");}
+                //this might be the wrong map to be calling
+                Marker marker = mMap.addMarker(new MarkerOptions().position(location).title(id));
+                Log.d(null, "adding marker");
+                markersList.add(marker);
+
+            } else {
+                Log.d(null, "mMap null");
+            }
+        } else {
+            Log.d(null, "resultlist null");
+        }
     }
+
     public void revealMarkers(GoogleMap mMap) {
         if(markersList != null) {
             for (int n = 0; n < markersList.size(); n++) {
@@ -260,22 +277,40 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             case R.id.action_sync:
                 //download memories, then reveal on map
                 
-                
-                
+
+
              /***************************************************************************************
-			 * 
-			 * 
+			 *
+			 *
 			 * Design callback funtion here
 			 *  idk what that means
-			 * 
-			 * 
+			 *
+			 *
 			 ****************************************************************************************/
-                
-                DownloadMemoryList dml = new DownloadMemoryList();
-                dml.execute("public");
 
-                //addMarkerToMap();
-                //revealMarkers(mMap);
+                DownloadList loadList = new DownloadList() {
+                    @Override
+                    public String downloadList() {
+                        DownloadMemoryList dml = new DownloadMemoryList();
+                        dml.execute("public");
+                        Log.d(null, "downloadList");
+
+
+                        return null;
+
+                    }
+                };
+                loadList.downloadList();
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+//                if(resultList != null) {
+//
+//                    addMarkersToMap(mMap);
+//                    revealMarkers(mMap);
+//                }else{Log.d(null, "resultlist null");}
                 return true;
             case R.id.action_list:
                 //open list activity

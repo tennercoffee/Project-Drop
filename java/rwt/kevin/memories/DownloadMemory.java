@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
@@ -18,6 +19,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+
+import static com.google.android.gms.analytics.internal.zzy.a;
+import static com.google.android.gms.analytics.internal.zzy.e;
 
 /**
  * Created by Kevin on 8/22/2016.
@@ -131,9 +135,15 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 //	public List<List<String>> resultList = new ArrayList<>();
 	String descObject;
 	int idObject;
+	String titleObject;
+	String locationObject;
 	private JSONArray jsonArray;
 	URL url;
-	String caccessKey = "a76c33b2-4c76-11e6-8c59-e0cb4ea6dd17";
+	String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
+
+	public interface InputReader{
+		String getInput();
+	}
 
 	protected void onPreExecute() {
 		Log.d(null, "downloading moments");
@@ -141,32 +151,37 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 	@Override
 	protected Void doInBackground(String... params) {
 		String s;
-		URLConnection conn;
+		final URLConnection conn;
 
+		//http://web.webapps.centennialarts.com/page.php?command=listPages&limit=100&filters={%220%22:{%22combine%22:%22AND%22,%22field%22:%22pageTypesId%22,%22option%22:%22EQUALS%22,%22value%22:%2230%22}}
 		try {
-			url = new URL("http://web.webapps.centennialarts.com/page.php?command=listPages"
-					+ "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8")
-					+ "&filters={"
-					+ "\"0\"" + ":{" + "\"combine\":" + "\"AND\"," + "\"field\":" + "\"pageTypesId\"," + "\"option\":" + "\"EQUALS\"," + "\"value\":" + "\"75\"" + "},"
-					+ "\"1\"" + ":{" + "\"combine\":" + "\"AND\"," + "\"field\":" + "\"scope\"," + "\"option\":" + "\"EQUALS\"," + "\"value\":" + "\"" + "public" + "\"" + "}}");
+			JSONObject filterObject = new JSONObject();
+			JSONObject idfilterObject = new JSONObject().put("combine", "AND").put("field", "pageTypesId").put("option","EQUALS").put("value","30");
+			filterObject.put("0",idfilterObject);
 
+			String data = "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8")
+					+ "&" + URLEncoder.encode("limit", "UTF-8") + "=" + URLEncoder.encode("100", "UTF-8")
+					+ "&" + URLEncoder.encode("filters", "UTF-8") + "=" + URLEncoder.encode(filterObject.toString(),"UTF-8");
+
+			url = new URL("http://web.webapps.centennialarts.com/page.php?command=listPages" + data);
 			Log.d(null, url.toString());
 			conn = url.openConnection();
-			BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-			Log.d(null, "in");
-			
-			
-			/***************************************************************************************
-			 * 
-			 * 
-			 * Design callback funtion here
-			 *  idk what that means
-			 * 
-			 * 
-			 * ***************************************************************************************/
-			
-			
-			while ((s = in.readLine()) != null) {
+
+			final BufferedReader[] in = new BufferedReader[1];
+			InputReader reader = new InputReader() {
+				@Override
+				public String getInput() {
+					try {
+						in[0] = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return null;
+				}
+			};
+			reader.getInput();
+
+			while ((s = in[0].readLine()) != null) {
 				jsonArray = new JSONArray(s);
 			}
 		} catch (MalformedURLException e) {
@@ -182,36 +197,36 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 		return null;
 	}
 	protected void onPostExecute(Void v) {
-		Log.d(null, jsonArray.toString());
+		Log.d(null, "postExecute");
+		//Log.d(null, jsonArray.toString());
 
-		/*try{
+		try{
 			for(int n = 0; n < jsonArray.length(); n++) {
 				JSONObject j = jsonArray.getJSONObject(n);
-
+				String locationValue = null;
 				idObject = j.getInt("id");
-				descObject = j.getString("description");
-				
-				JsonArray attrArray = j.getJsonArray("pageTypeAttributes");
-				JsonObject locationObject = attrArray.getJsonObject("Location");
-				
+
+				JSONArray attrArray = j.getJSONArray("pageTypeValues");
+				for(int i = 0; i < attrArray.length(); i++) {
+					JSONObject attrObject = (JSONObject) attrArray.get(i);
+					String title = attrObject.getString("title");
+					if (title.equals("Location")){
+						locationValue = (String) attrObject.get("value");
+					} else{
+
+					}
+//					JSONObject o = attrArray.getJSONObject(i);
+//					o.getJSONObject()
+					//locationObject = o.getString("Location");
+				}
+				Log.d(null, String.valueOf(idObject) + " " + locationValue);
+
 				MapsActivity m = new MapsActivity();
-				m.addMarkerToList(descObject, String.valueOf(idObject));
-				
-				/****************************************************
-    			 * 
-    			 * just get location here, instead of all desc.
-    			 * this may or may not work
-    			 * 
-    			 *****************************************************/
+				m.addMarkerToList(locationValue, String.valueOf(idObject));
 
-			Log.d(null, "list downloaded");
 			}
-
-/*
-		} catch (JSONException e) {
-			Log.d(null, "json exception");
-			e.printStackTrace();
+	} catch (JSONException e1) {
+			e1.printStackTrace();
 		}
 	}
-*/
 }

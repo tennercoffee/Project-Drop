@@ -41,15 +41,7 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_margin="15dp" />
-        <android.support.v7.widget.AppCompatButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/addPhotoButton"
-            android:text="Add Photo"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_margin="15dp"
-            android:layout_below="@+id/privacyTextView"/>
+
         <android.support.v7.widget.AppCompatButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -137,5 +129,15 @@
             android:layout_alignEnd="@+id/locationTextView"
             android:padding="10dp"
             android:layout_below="@+id/colorList"/>
+
+        <android.support.v7.widget.AppCompatButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/addPhotoButton"
+            android:text="Add Photo"
+            android:layout_above="@+id/submitMemoryButton"
+            android:layout_alignRight="@+id/colorList"
+            android:layout_alignEnd="@+id/colorList"
+            android:layout_marginBottom="24dp" />
     </RelativeLayout>
 </android.support.design.widget.CoordinatorLayout>
