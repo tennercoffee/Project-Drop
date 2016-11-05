@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -85,5 +86,22 @@ class TextScanner {
 
         Log.d(null, new LatLng(latitude,longitude).toString());
         return new LatLng(latitude,longitude);
+    }
+
+    public List<List<String>> resultSplitter(String result) {
+        Scanner scanner = new Scanner(result);
+        String location = scanner.next();
+        String id = scanner.next();
+
+        location = location.startsWith("[") ? location.substring(1) : location;
+        id = id.endsWith("]") ? id.substring(0, id.length() - 1) : id;
+
+        List<String> firstList =  new ArrayList<>();
+        List<List<String>> secondList =  new ArrayList<>();
+        firstList.add(id);
+        firstList.add(location);
+        secondList.add(firstList);
+
+        return secondList;
     }
 }

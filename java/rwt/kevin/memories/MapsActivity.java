@@ -35,6 +35,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import static android.view.View.OnClickListener;
 import static com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
@@ -52,7 +53,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     public interface DownloadList {
-        String downloadList();
+        List<List<String>> downloadList();
     }
 
     @Override
@@ -150,10 +151,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 @Override
                 public void onClick(View view) {
                     if(resultList != null) {
-                        addMarkersToMap(mMap);
-                        revealMarkers(mMap);
+                        addMarkersToMap(resultList, mMap);
+                        revealMarkers();
                     } else {
-                        Log.d(null, "resultlist null");
+                        Log.d(null, "resultlist null-button");
                     }
                 }
             });
@@ -168,46 +169,49 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         resultList.add(result);
         Log.d(null, "markeraddedtolist");
     }
-    public void addMarkersToMap(GoogleMap mMap) {
+    public void addMarkersToMap(List<List<String>> downloadList, GoogleMap mMap) {
         Log.d(null, "addmarkertomap");
-        String id = null;
-        LatLng location = null;
-        if(resultList != null) {
-            id = String.valueOf(resultList.get(0));
-            TextScanner t = new TextScanner();
-            location = t.locationStringToLatLng(resultList.get(1));
-            Log.d(null, "location:" + location);
-            if (markersList == null){
-                markersList = new ArrayList<>();
-                Log.d(null, "null list");
-            }
-            if(mMap != null) {
-            /*TextScanner t = new TextScanner();
-            LatLng latlngFinal;
-            if(desc != null) {
-                String location = t.descSplitter(desc, 1, 0);
-                String latlngSplitString = t.locationSplitter(location);
-            */
-//                String[] latlng = location.split(",");
-//
-//                double latitude = Double.parseDouble(latlng[0]);
-//                double longitude = Double.parseDouble(latlng[1]);
-//                LatLng latlngFinal= new LatLng(latitude, longitude);
+        String result = null;
+        if(downloadList != null) {
+            for(int i = 0; i < downloadList.size(); i++){
+                result = String.valueOf(downloadList.get(i));
+                TextScanner t = new TextScanner();
+                if (markersList == null){
+                    markersList = new ArrayList<>();
+                    Log.d(null, "null list");
+                }
+                if(mMap != null) {
+                    List<List<String>> list = t.resultSplitter(result);
+                    Scanner scanner = new Scanner(list.toString());
+                    String coordinates = scanner.next();
+                    String id = scanner.next();
 
-                //this might be the wrong map to be calling
-                Marker marker = mMap.addMarker(new MarkerOptions().position(location).title(id));
-                Log.d(null, "adding marker");
-                markersList.add(marker);
+                    coordinates = coordinates.startsWith("[[") ? coordinates.substring(2) : coordinates;
+                    id = id.endsWith(",]]") ? id.substring(0, id.length() - 3) : id;
+                    String[] latlng = coordinates.split(",");
 
-            } else {
-                Log.d(null, "mMap null");
+                    double latitude = Double.parseDouble(latlng[0]);
+                    double longitude = Double.parseDouble(latlng[1]);
+                    LatLng latlngFinal= new LatLng(latitude, longitude);
+
+                    Marker marker = mMap.addMarker(new MarkerOptions().position(latlngFinal).title(id));
+                    Log.d(null, "adding marker");
+                    markersList.add(marker);
+                } else {
+                    Log.d(null, "mMap null-addmarkerstomap");
+                }
             }
         } else {
-            Log.d(null, "resultlist null");
+            Log.d(null, "resultlist null-addmarkerstomap");
         }
     }
+    public void setList(List<List<String>> list) {
+        this.resultList = list;
+        Log.d(null, "list set");
+//        addMarkersToMap(list);
+    }
 
-    public void revealMarkers(GoogleMap mMap) {
+    public void revealMarkers() {
         if(markersList != null) {
             for (int n = 0; n < markersList.size(); n++) {
                 Log.d(null, "marker#" + String.valueOf(n));
@@ -276,28 +280,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 return true;
             case R.id.action_sync:
                 //download memories, then reveal on map
-                
-
-
-             /***************************************************************************************
-			 *
-			 *
-			 * Design callback funtion here
-			 *  idk what that means
-			 *
-			 *
-			 ****************************************************************************************/
 
                 DownloadList loadList = new DownloadList() {
                     @Override
-                    public String downloadList() {
+                    public List<List<String>> downloadList() {
                         DownloadMemoryList dml = new DownloadMemoryList();
                         dml.execute("public");
+                        dml.setMap(mMap);
                         Log.d(null, "downloadList");
-
-
                         return null;
-
                     }
                 };
                 loadList.downloadList();
@@ -306,11 +297,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-//                if(resultList != null) {
-//
-//                    addMarkersToMap(mMap);
-//                    revealMarkers(mMap);
-//                }else{Log.d(null, "resultlist null");}
+                //addMarkersToMap();
+//                revealMarkers();
                 return true;
             case R.id.action_list:
                 //open list activity
