@@ -119,15 +119,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 @Override
                 public boolean onMarkerClick(Marker marker) {
                     Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
+                    String id = null;
                     if (marker.getTitle() != null) {
                         //DownloadMemory mem = new DownloadMemory();
                         //mem.execute(marker.getTitle());
-                        String id = marker.getTitle();
+                         id = marker.getTitle();
                         i.putExtra("id",id);
                     } else {
                         Log.d(null, "null marker");
                     }
                     startActivity(i);
+                    ViewMemoryActivity view = new ViewMemoryActivity();
+                    if(id != null) {
+                        view.viewMemory(id);
+                    }
                     return false;
                 }
             });

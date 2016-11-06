@@ -17,6 +17,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.Marker;
 import com.google.gson.internal.LinkedHashTreeMap;
 import com.google.gson.internal.LinkedTreeMap;
 
@@ -34,6 +36,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -45,6 +48,7 @@ public class AddMemoryActivity extends MapsActivity {
     Toolbar toolbar;
     public TextView charCountTextView;
     public String location;
+    public String resultId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,8 +111,8 @@ public class AddMemoryActivity extends MapsActivity {
                         String memoryString = memoryInput.getText().toString();
 
                         AddMemory post = new AddMemory();
-                        String.valueOf(post.execute(location, scope, memoryString));
-                        //Log.d(null, id);
+                        post.execute(location, scope, memoryString);
+
                         //TODO: direct to viewmemory
                         //just get back id number from addmem()
                         //and pass through as intent
@@ -117,7 +121,19 @@ public class AddMemoryActivity extends MapsActivity {
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                        finish();
+                        if(resultId != null) {
+
+                            ViewMemoryActivity viewM = new ViewMemoryActivity();
+                            viewM.viewMemory(resultId);
+
+                            Log.d(null, resultId + " result id");
+                            Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
+//                            i.putExtra("id", resultId);
+                            startActivity(i);
+                        } else {//fix this
+                            Log.d(null, "null resultid");
+//                            finish();
+                        }
 //                        Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
 //                        i.putExtra("id", id);
 //                        startActivity(i);
@@ -166,6 +182,11 @@ public class AddMemoryActivity extends MapsActivity {
         public void afterTextChanged(Editable s) {
         }
     };
+    void setId(String resultId){
+//        this.list = list;
+//        this.mMap = map;
+        this.resultId = resultId;
+    }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class AddMemory extends AsyncTask<String, String, Void> {
@@ -272,9 +293,6 @@ class AddMemory extends AsyncTask<String, String, Void> {
                 jsonObject = new JSONObject(s);
                 Log.d(null, jsonObject.toString());
             }
-
-//            jsonObject = new JSONObject(in.toString());
-//            Log.d(null, "jObject: " + jsonObject);
         } catch (UnsupportedEncodingException e1) {
             Log.d(null, e1.toString());
             e1.printStackTrace();
@@ -295,12 +313,12 @@ class AddMemory extends AsyncTask<String, String, Void> {
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
-
         if(jsonObject != null){
             try {
                 Log.d(null, jsonObject.toString());
                 int idObject = jsonObject.getInt("id");
                 Log.d(null, "id: " + String.valueOf(idObject));
+
 
                 successObject = jsonObject.getString("success");
                 Log.d(null, "successObject: " + successObject);
@@ -308,6 +326,10 @@ class AddMemory extends AsyncTask<String, String, Void> {
                 if (successObject.equals("true")) {
                     Log.d(null, "success true");
 //                    Toast.makeText(null, "success!", Toast.LENGTH_LONG).show();
+//                    AddMemoryActivity a = new AddMemoryActivity();
+//                    a.setId(String.valueOf(idObject));
+                    ViewMemoryActivity view = new ViewMemoryActivity();
+                    view.viewMemory(String.valueOf(idObject));
                 }
             } catch (JSONException j) {
                 j.printStackTrace();

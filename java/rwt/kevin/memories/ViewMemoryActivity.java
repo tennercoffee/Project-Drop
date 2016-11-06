@@ -26,7 +26,7 @@ public class ViewMemoryActivity extends MapsActivity {
 	public String timestamp;
 	public LatLng location;
 	public String username;
-	String id;
+	String id = null;
 	public TextView locationTextView;
 	public TextView timestampTextView;
 	public TextView memoryTextView;
@@ -45,38 +45,13 @@ public class ViewMemoryActivity extends MapsActivity {
 		if(toolbar != null){
 			toolbar.setTitle("View Moment");
 		}
-		viewMemory();
-    }
-    private void viewMemory() {
-		Intent intent = getIntent();
-		id = intent.getStringExtra("id");
+//		viewMemory();
 
 		locationTextView = (TextView)findViewById(R.id.locationTextView);
-        memoryTextView = (TextView) findViewById(R.id.memoryTextView);
+		memoryTextView = (TextView) findViewById(R.id.memoryTextView);
 		timestampTextView = (TextView) findViewById(R.id.timestamp_view);
 		usernameTextView = (TextView) findViewById(R.id.usernameText);
 
-		//TODO:this may need to be brought into scope
-
-		//TODO: call getPage from api, using id number to get memorystring, location, timestamp
-		DownloadMemory dm = new DownloadMemory();
-		dm.setTextViews(locationTextView, memoryTextView, timestampTextView, usernameTextView);
-		dm.execute(id);
-
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
-
-//		if(usernameTextView != null) {
-//			//get marker id number
-//				//get username from this
-//					//build function in download mem
-//		}
-
-		//TODO: run marker id against privatemarker arrayList, if present, enable remove Button
 		final Button removeButton = (Button) findViewById(R.id.removeButton);
 		if(removeButton != null){
 			/*removeButton.setOnClickListener( new View.OnClickListener(){
@@ -128,7 +103,7 @@ public class ViewMemoryActivity extends MapsActivity {
 //				}
 //			});
 //		}
-        Button backButton = (Button) findViewById(R.id.backButton);
+		Button backButton = (Button) findViewById(R.id.backButton);
 		if(backButton != null){
 			backButton.setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -137,6 +112,36 @@ public class ViewMemoryActivity extends MapsActivity {
 				}
 			});
 		}
+    }
+    public void viewMemory(String id) {
+//		if (id == null) {
+//			Intent intent = getIntent();
+//			id = intent.getStringExtra("id");
+//		}
+
+
+		//TODO:this may need to be brought into scope
+
+		//TODO: call getPage from api, using id number to get memorystring, location, timestamp
+		DownloadMemory dm = new DownloadMemory();
+		dm.setTextViews(locationTextView, memoryTextView, timestampTextView, usernameTextView);
+		dm.execute(id);
+
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+
+//		if(usernameTextView != null) {
+//			//get marker id number
+//				//get username from this
+//					//build function in download mem
+//		}
+
+		//TODO: run marker id against privatemarker arrayList, if present, enable remove Button
+
     }
     public void setMemory(String timestampObject, TextView timestampTextView, LatLng locationObject, TextView locationTextView, String titleObject, TextView memoryTextView, String usernameObject, TextView usernameTextView) {
 		this.timestamp = timestampObject;
