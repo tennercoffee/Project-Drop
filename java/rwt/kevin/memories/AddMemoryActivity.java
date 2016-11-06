@@ -107,13 +107,20 @@ public class AddMemoryActivity extends MapsActivity {
                         String memoryString = memoryInput.getText().toString();
 
                         AddMemory post = new AddMemory();
-                        post.execute(location, scope, memoryString);
-
-                        //TODO: finish this, add regionCode
+                        String.valueOf(post.execute(location, scope, memoryString));
+                        //Log.d(null, id);
+                        //TODO: direct to viewmemory
+                        //just get back id number from addmem()
+                        //and pass through as intent
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         finish();
-                        //Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
-                        //i.putExtra("id", id);
-                        //startActivity(i);
+//                        Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
+//                        i.putExtra("id", id);
+//                        startActivity(i);
                     }else {
                         Log.d(null, "error");
                         //change color of toolbar to red
@@ -165,10 +172,25 @@ class AddMemory extends AsyncTask<String, String, Void> {
     private BufferedReader in;
     private String successObject;
     String id;
-    JSONArray jsonArray;
+    JSONObject jsonObject;
+    String timestampString;
 
     protected void onPreExecute() {
         Log.d(null, "adding memory");
+
+        //add timestamp here
+        Calendar timestamp = Calendar.getInstance();
+        String y = String.valueOf(timestamp.get(Calendar.YEAR));
+        String m = String.valueOf(timestamp.get(Calendar.MONTH));
+        String d = String.valueOf(timestamp.get(Calendar.DAY_OF_MONTH));
+        String h = String.valueOf(timestamp.get(Calendar.HOUR_OF_DAY));
+        String m1 = String.valueOf(timestamp.get(Calendar.MINUTE));
+        String s1 = String.valueOf(timestamp.get(Calendar.SECOND));
+        String m2 = String.valueOf(timestamp.get(Calendar.MILLISECOND));
+
+        timestampString =  y + ":" + m + ":" + d + ":" + h + ":" + m1 + ":" + s1 + ":" + m2;
+        // 0001 is western hemisphere
+//        String desc = timestampString + " 0001 " + coordinates;
     }
     @Override
     protected Void doInBackground(String... params) {
@@ -189,21 +211,6 @@ class AddMemory extends AsyncTask<String, String, Void> {
         coordinates = coordinates.startsWith("(") ? coordinates.substring(1) : coordinates;
         coordinates = coordinates.endsWith(")") ? coordinates.substring(0, coordinates.length() - 1) : coordinates;
 
-        //add timestamp here
-        Calendar timestamp = Calendar.getInstance();
-        String y = String.valueOf(timestamp.get(Calendar.YEAR));
-        String m = String.valueOf(timestamp.get(Calendar.MONTH));
-        String d = String.valueOf(timestamp.get(Calendar.DAY_OF_MONTH));
-        String h = String.valueOf(timestamp.get(Calendar.HOUR_OF_DAY));
-        String m1 = String.valueOf(timestamp.get(Calendar.MINUTE));
-        String s1 = String.valueOf(timestamp.get(Calendar.SECOND));
-        String m2 = String.valueOf(timestamp.get(Calendar.MILLISECOND));
-
-        String timestampString =  y + ":" + m + ":" + d + ":" + h + ":" + m1 + ":" + s1 + ":" + m2;
-        // 0001 is western hemisphere
-        String desc = timestampString + " 0001 " + coordinates;
-
-
         String regionCode = "0001";
 
         ///////////////////////////////////////////////////////////////////////////////////////////
@@ -213,18 +220,10 @@ class AddMemory extends AsyncTask<String, String, Void> {
             JSONObject titleObject = new JSONObject().put("pageTypeStringAttributesId", "48").put("value", memoryString);
             JSONObject coorObject = new JSONObject().put("pageTypeStringAttributesId", "51").put("value", coordinates);
             JSONObject timestampObject = new JSONObject().put("pageTypeStringAttributesId", "57").put("value", timestampString);
-
-//            JSONObject pageValuesObject = new JSONObject();
-//            JSONObject regionObject = new JSONObject().put("\"pageTypeStringAttributesId\"", "\"54\"").put("\"value\"", "\"" + regionCode + "\"");
-//            JSONObject titleObject = new JSONObject().put("\"pageTypeStringAttributesId\"", "\"48\"").put("\"value\"", "\"" + memoryString + "\"");
-//            JSONObject coorObject = new JSONObject().put("\"pageTypeStringAttributesId\"", "\"51\"").put("\"value\"", "\"" + coordinates + "\"");
-//            JSONObject timestampObject = new JSONObject().put("\"pageTypeStringAttributesId\"", "\"57\"").put("\"value\"", "\"" + timestampString + "\"");
-
             pageValuesObject.put("0", regionObject).put("1", titleObject).put("2", coorObject).put("3", timestampObject);
             Log.d(null, pageValuesObject.toString());
 
-            Log.d(null, "building datastring");
-            String dataString = URLEncoder.encode("description", "UTF-8") + "=" + URLEncoder.encode(desc, "UTF-8")
+            String dataString = URLEncoder.encode("description", "UTF-8") + "=" + URLEncoder.encode("", "UTF-8")
                     + "&" + URLEncoder.encode("title", "UTF-8") + "=" + URLEncoder.encode(memoryString, "UTF-8")
                     + "&" + URLEncoder.encode("scope", "UTF-8") + "=" + URLEncoder.encode(scope, "UTF-8")
                     + "&" + URLEncoder.encode("pageTypeId", "UTF-8") + "=" + URLEncoder.encode("30", "UTF-8")
@@ -232,8 +231,29 @@ class AddMemory extends AsyncTask<String, String, Void> {
                     + "&" + URLEncoder.encode("pageValues", "UTF-8") + "=" + URLEncoder.encode(pageValuesObject.toString(),"UTF-8");
 
             URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=addPage&" + dataString);
+
             Log.d(null, url.toString());
             final URLConnection conn= url.openConnection();
+
+//            final BufferedReader[] in = new BufferedReader[1];
+//            DownloadMemoryList.InputReader reader = new DownloadMemoryList.InputReader() {
+//                @Override
+//                public String getInput() {
+//                    try {
+//                        in[0] = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                    return in[0].toString();
+//                }
+//            };
+//            String input = reader.getInput();
+//            BufferedReader 	in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+//            while ((s = in.readLine()) != null) {
+//                Log.d(null, s);
+//                jsonObject = new JSONObject(s);
+//                Log.d(null, "jArray" + s);
+//            }
 
             final BufferedReader[] in = new BufferedReader[1];
             DownloadMemoryList.InputReader reader = new DownloadMemoryList.InputReader() {
@@ -241,29 +261,20 @@ class AddMemory extends AsyncTask<String, String, Void> {
                 public String getInput() {
                     try {
                         in[0] = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                        Log.d(null, in[0].toString());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                     return null;
                 }
             };
-            try{
-                Thread.sleep(2000);
-            } catch(Exception e){
-                Log.d(null, "no sleep1");
-            }
-
             reader.getInput();
-
             while ((s = in[0].readLine()) != null) {
-                Log.d(null, s);
-
-                jsonArray = new JSONArray(s);
-                Log.d(null, "jArray");
-
+                jsonObject = new JSONObject(s);
+                Log.d(null, jsonObject.toString());
             }
 
+//            jsonObject = new JSONObject(in.toString());
+//            Log.d(null, "jObject: " + jsonObject);
         } catch (UnsupportedEncodingException e1) {
             Log.d(null, e1.toString());
             e1.printStackTrace();
@@ -279,27 +290,34 @@ class AddMemory extends AsyncTask<String, String, Void> {
         return null;
     }
     protected void onPostExecute(Void v) {
-        //TODO: parse success
+//        try {
+//            Thread.sleep(2000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
-        try {if(jsonArray != null){
-            for (int n = 0; n < jsonArray.length(); n++) {
-                Log.d(null, String.valueOf(n));
-                JSONObject j = jsonArray.getJSONObject(n);
-
-                int idObject = j.getInt("id");
+        if(jsonObject != null){
+            try {
+                Log.d(null, jsonObject.toString());
+                int idObject = jsonObject.getInt("id");
                 Log.d(null, "id: " + String.valueOf(idObject));
 
-                successObject = j.getString("success");
+                successObject = jsonObject.getString("success");
                 Log.d(null, "successObject: " + successObject);
                 //TODO: set up success message after adding mem
-            }}
-        } catch (JSONException e) {
+                if (successObject.equals("true")) {
+                    Log.d(null, "success true");
+//                    Toast.makeText(null, "success!", Toast.LENGTH_LONG).show();
+                }
+            } catch (JSONException j) {
+                j.printStackTrace();
+            }
+        } else { Log.d(null, "null jsonobject");}
+        /*} catch (JSONException e) {
             e.printStackTrace();
-        }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }*/
 
-        if(successObject == "true"){
-            Log.d(null, "success true");
-            Toast.makeText(null, "success!", Toast.LENGTH_LONG).show();
-        }
     }
 }

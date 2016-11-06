@@ -25,11 +25,22 @@ public class ViewMemoryActivity extends MapsActivity {
 	public String title;
 	public String timestamp;
 	public LatLng location;
+	public String username;
 	String id;
+	public TextView locationTextView;
+	public TextView timestampTextView;
+	public TextView memoryTextView;
+	public TextView usernameTextView;
 
 	protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_view_memory);
+
+//		try {
+//			Thread.sleep(500);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
+		setContentView(R.layout.activity_view_memory);
 		Toolbar toolbar = (Toolbar) findViewById(R.id.view_memory_toolbar);
 		if(toolbar != null){
 			toolbar.setTitle("View Moment");
@@ -38,28 +49,32 @@ public class ViewMemoryActivity extends MapsActivity {
     }
     private void viewMemory() {
 		Intent intent = getIntent();
-		id = intent.getParcelableExtra("id");
+		id = intent.getStringExtra("id");
 
-        TextView locationTextView = (TextView)findViewById(R.id.locationTextView);
-        TextView memoryTextView = (TextView) findViewById(R.id.memoryTextView);
-		TextView timestampTextView = (TextView) findViewById(R.id.timestamp_view);
-		TextView usernameTextView = (TextView) findViewById(R.id.usernameText);
+		locationTextView = (TextView)findViewById(R.id.locationTextView);
+        memoryTextView = (TextView) findViewById(R.id.memoryTextView);
+		timestampTextView = (TextView) findViewById(R.id.timestamp_view);
+		usernameTextView = (TextView) findViewById(R.id.usernameText);
 
 		//TODO:this may need to be brought into scope
-		if(memoryTextView != null) {
-			memoryTextView.setText(title);
+
+		//TODO: call getPage from api, using id number to get memorystring, location, timestamp
+		DownloadMemory dm = new DownloadMemory();
+		dm.setTextViews(locationTextView, memoryTextView, timestampTextView, usernameTextView);
+		dm.execute(id);
+
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
-        if(locationTextView != null) {
-            locationTextView.setText(location.toString());
-        }
-		if(timestampTextView != null) {
-			timestampTextView.setText(timestamp);
-		}
-		if(usernameTextView != null) {
-			//get marker id number
-				//get username from this
-					//build function in download mem
-		}
+
+
+//		if(usernameTextView != null) {
+//			//get marker id number
+//				//get username from this
+//					//build function in download mem
+//		}
 
 		//TODO: run marker id against privatemarker arrayList, if present, enable remove Button
 		final Button removeButton = (Button) findViewById(R.id.removeButton);
@@ -86,33 +101,33 @@ public class ViewMemoryActivity extends MapsActivity {
 			});*/
 		}
 
-		Button dislikeButton = (Button) findViewById(R.id.dislikeButton);
-		if(dislikeButton != null) {
-			dislikeButton.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					//TODO: enter code for rating system
-					//thumbs up/down?
-					//or variation on principle
-					//i like reddit's upvote system
-					//add xml
-					//build async program to handle ratings system
-				}
-			});
-		}
-		Button likeButton = (Button) findViewById(R.id.likeButton);
-		if(likeButton != null) {
-			likeButton.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					//TODO: enter code for rating system
-					//thumbs up/down?
-					//or variation on principle
-					//i like reddit's upvote system
-					//add xml
-				}
-			});
-		}
+//		Button dislikeButton = (Button) findViewById(R.id.dislikeButton);
+//		if(dislikeButton != null) {
+//			dislikeButton.setOnClickListener(new View.OnClickListener() {
+//				@Override
+//				public void onClick(View view) {
+//					//TODO: enter code for rating system
+//					//thumbs up/down?
+//					//or variation on principle
+//					//i like reddit's upvote system
+//					//add xml
+//					//build async program to handle ratings system
+//				}
+//			});
+//		}
+//		Button likeButton = (Button) findViewById(R.id.likeButton);
+//		if(likeButton != null) {
+//			likeButton.setOnClickListener(new View.OnClickListener() {
+//				@Override
+//				public void onClick(View view) {
+//					//TODO: enter code for rating system
+//					//thumbs up/down?
+//					//or variation on principle
+//					//i like reddit's upvote system
+//					//add xml
+//				}
+//			});
+//		}
         Button backButton = (Button) findViewById(R.id.backButton);
 		if(backButton != null){
 			backButton.setOnClickListener(new View.OnClickListener() {
@@ -123,13 +138,40 @@ public class ViewMemoryActivity extends MapsActivity {
 			});
 		}
     }
-    public void setMemory(String timestampObject, LatLng locationObject, String titleObject) {
-		timestamp = timestampObject;
-		location = locationObject;
-		title = titleObject;
-		Log.d(null, timestamp + " " + location + " " + title + " setmem");
-		DownloadMemory d = new DownloadMemory();
-		d.execute(id);
+    public void setMemory(String timestampObject, TextView timestampTextView, LatLng locationObject, TextView locationTextView, String titleObject, TextView memoryTextView, String usernameObject, TextView usernameTextView) {
+		this.timestamp = timestampObject;
+		this.location = locationObject;
+		this.title = titleObject;
+		this.username = usernameObject;
+
+		Log.d(null, timestamp + " " + location + " " + title + " " + username + "--- setmem");
+
+		this.locationTextView = locationTextView;
+		this.memoryTextView = memoryTextView;
+		this.timestampTextView = timestampTextView;
+		this.usernameTextView = usernameTextView;
+
+		if(memoryTextView != null) {
+			memoryTextView.setText(title);
+			Log.d(null, title + " set");
+		} else if (title == null) {
+			Log.d(null, "null title");
+		} else { Log.d(null, "no text view");}
+		if(locationTextView != null && location != null) {
+			locationTextView.setText(location.toString());
+			Log.d(null, location + " set");
+		} else if (location == null) {
+			locationTextView.setText("error getting location");
+		} else if (locationTextView == null) {
+			Log.d(null, "textview null");
+		}
+		if(timestampTextView != null) {
+			timestampTextView.setText(timestamp);
+			Log.d(null, timestamp + " set");
+		}
+		if (usernameTextView != null && username != null) {
+			usernameTextView.setText(username);
+		}
     }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////

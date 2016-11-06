@@ -33,6 +33,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -51,11 +54,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     Toolbar toolbar;
     List<List<String>> resultList;
 
-
     public interface DownloadList {
         List<List<String>> downloadList();
     }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,7 +105,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void onClick(View view) {
                         final LatLng myLocation = getLocation();
-
                         if (myLocation != null) {
                             Intent i = new Intent(getApplicationContext(), AddMemoryActivity.class);
                             i.putExtra("location", myLocation);
@@ -118,12 +118,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.setOnMarkerClickListener(new OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker) {
-
                     Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
                     if (marker.getTitle() != null) {
-
-                        DownloadMemory mem = new DownloadMemory();
-                        mem.execute(marker.getTitle());
+                        //DownloadMemory mem = new DownloadMemory();
+                        //mem.execute(marker.getTitle());
+                        String id = marker.getTitle();
+                        i.putExtra("id",id);
                     } else {
                         Log.d(null, "null marker");
                     }
@@ -132,8 +132,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
             //mMap.setOnMyLocationChangeListener();
-            mMap.setMinZoomPreference(18);
-            mMap.setMaxZoomPreference(18);
+            mMap.setMinZoomPreference(19);
+            mMap.setMaxZoomPreference(20);
         }
         Button profileButton = (Button) findViewById(R.id.profile_button);
         if(profileButton != null){
@@ -142,20 +142,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 public void onClick(View view) {
                     Intent i = new Intent(getApplicationContext(), MyProfileActivity.class);
                     startActivity(i);
-                }
-            });
-        }
-        Button revealButton = (Button) findViewById(R.id.reveal_button);
-        if(revealButton != null){
-            revealButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if(resultList != null) {
-                        addMarkersToMap(resultList, mMap);
-                        revealMarkers();
-                    } else {
-                        Log.d(null, "resultlist null-button");
-                    }
                 }
             });
         }
@@ -169,67 +155,50 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         resultList.add(result);
         Log.d(null, "markeraddedtolist");
     }
-    public void addMarkersToMap(List<List<String>> downloadList, GoogleMap mMap) {
-        Log.d(null, "addmarkertomap");
+    public ArrayList<Marker> addMarkersToMap(JSONArray downloadArray, GoogleMap mMap) {
+        Log.d(null, "addmarkerstomap");
         String result = null;
-        if(downloadList != null) {
-            for(int i = 0; i < downloadList.size(); i++){
-                result = String.valueOf(downloadList.get(i));
-                TextScanner t = new TextScanner();
-                if (markersList == null){
-                    markersList = new ArrayList<>();
-                    Log.d(null, "null list");
-                }
-                if(mMap != null) {
-                    List<List<String>> list = t.resultSplitter(result);
-                    Scanner scanner = new Scanner(list.toString());
-                    String coordinates = scanner.next();
-                    String id = scanner.next();
+        if (markersList == null){
+            markersList = new ArrayList<>();
+            Log.d(null, "null list");
+        }
+        if(downloadArray != null && mMap != null) {
+            for(int i = 0; i < downloadArray.length(); i++){
+                try {
+                    JSONObject downloadObject = (JSONObject) downloadArray.get(i);
 
-                    coordinates = coordinates.startsWith("[[") ? coordinates.substring(2) : coordinates;
-                    id = id.endsWith(",]]") ? id.substring(0, id.length() - 3) : id;
+                    String coordinates = downloadObject.get("location").toString();
+                    String id = downloadObject.get("title").toString();
+
                     String[] latlng = coordinates.split(",");
-
                     double latitude = Double.parseDouble(latlng[0]);
                     double longitude = Double.parseDouble(latlng[1]);
-                    LatLng latlngFinal= new LatLng(latitude, longitude);
+                    LatLng latlngFinal = new LatLng(latitude, longitude);
 
                     Marker marker = mMap.addMarker(new MarkerOptions().position(latlngFinal).title(id));
-                    Log.d(null, "adding marker");
                     markersList.add(marker);
-                } else {
-                    Log.d(null, "mMap null-addmarkerstomap");
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         } else {
             Log.d(null, "resultlist null-addmarkerstomap");
         }
+        return markersList;
     }
-    public void setList(List<List<String>> list) {
-        this.resultList = list;
-        Log.d(null, "list set");
-//        addMarkersToMap(list);
-    }
+    public void revealMarkers(GoogleMap map, ArrayList<Marker> markersList) {
+        this.markersList = markersList;
+        for (int n = 0; n < markersList.size(); n++) {
+            Marker currentMarker = markersList.get(n);
 
-    public void revealMarkers() {
-        if(markersList != null) {
-            for (int n = 0; n < markersList.size(); n++) {
-                Log.d(null, "marker#" + String.valueOf(n));
-                Marker currentMarker = markersList.get(n);
+            String markerId = currentMarker.getTitle();
+            LatLng position = currentMarker.getPosition();
 
-                String markerId = currentMarker.getTitle();
-                LatLng position = currentMarker.getPosition();
-
-                mMap.addMarker(new MarkerOptions().position(position).title(markerId));
-            }
+            map.addMarker(new MarkerOptions().position(position).title(markerId));
         }
+        Log.d(null, "full map");
     }
-    
-    
     /////////////////////////////////////////////////////////////////////////////
-    
-    
-
     private void enableMyLocation() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -286,25 +255,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     public List<List<String>> downloadList() {
                         DownloadMemoryList dml = new DownloadMemoryList();
                         dml.execute("public");
-                        dml.setMap(mMap);
+                        dml.setMap(mMap, markersList);
                         Log.d(null, "downloadList");
                         return null;
                     }
                 };
                 loadList.downloadList();
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    Thread.sleep(3000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
                 //addMarkersToMap();
 //                revealMarkers();
                 return true;
-            case R.id.action_list:
-                //open list activity
-                Intent iList = new Intent(getApplicationContext(), MemoryListActivity.class);
-                startActivity(iList);
-                return true;
+//            case R.id.action_list:
+//                //open list activity
+//                Intent iList = new Intent(getApplicationContext(), MemoryListActivity.class);
+//                startActivity(iList);
+//                return true;
             case R.id.action_about:
                 //open about activity
                 Intent about = new Intent(getApplicationContext(), AboutActivity.class);

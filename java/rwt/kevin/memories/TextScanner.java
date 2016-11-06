@@ -87,7 +87,6 @@ class TextScanner {
         Log.d(null, new LatLng(latitude,longitude).toString());
         return new LatLng(latitude,longitude);
     }
-
     public List<List<String>> resultSplitter(String result) {
         Scanner scanner = new Scanner(result);
         String location = scanner.next();
