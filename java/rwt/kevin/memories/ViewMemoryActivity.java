@@ -45,8 +45,6 @@ public class ViewMemoryActivity extends MapsActivity {
 		if(toolbar != null){
 			toolbar.setTitle("View Moment");
 		}
-
-
 		locationTextView = (TextView)findViewById(R.id.locationTextView);
 		memoryTextView = (TextView) findViewById(R.id.memoryTextView);
 		timestampTextView = (TextView) findViewById(R.id.timestamp_view);
@@ -54,11 +52,10 @@ public class ViewMemoryActivity extends MapsActivity {
 		if (id == null) {
 			Intent intent = getIntent();
 			id = intent.getStringExtra("id");
+			Log.d(null, id);
 			loadMemory(id);
-
 		} else {
 			Log.d(null, "null id");
-//			loadMemory(id);
 		}
 //		/*final Button removeButton = (Button) findViewById(R.id.removeButton);
 //		if(removeButton != null){
@@ -122,21 +119,11 @@ public class ViewMemoryActivity extends MapsActivity {
 		}
     }
     public void loadMemory(String id) {
-
-//		Log.d(null, id);
 		DownloadMemory dm = new DownloadMemory();
 		dm.setTextViews(locationTextView, memoryTextView, timestampTextView, usernameTextView);
 		dm.execute(id);
-
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
     }
 	void setId(String id){
-//        Log.d(null, String.valueOf(idObject) + " getid");
-//        return String.valueOf(idObject);
 		this.id = id;
 	}
     public void setMemory(String timestampObject, TextView timestampTextView, LatLng locationObject, TextView locationTextView, String titleObject, TextView memoryTextView, String usernameObject, TextView usernameTextView) {

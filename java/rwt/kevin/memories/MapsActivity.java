@@ -193,9 +193,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             LatLng position = currentMarker.getPosition();
 
             map.addMarker(new MarkerOptions().position(position).title(markerId));
-//            if(getApplicationContext() != null) {
-//                Toast.makeText(getApplicationContext(), "success!", Toast.LENGTH_LONG).show();
-//            }
         }
         Log.d(null, "full map");
     }

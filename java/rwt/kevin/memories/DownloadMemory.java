@@ -49,7 +49,7 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
     protected JsonObject doInBackground(String... params) {
         final URLConnection conn;
         URL nUrl;
-         id = params[0];
+		id = params[0];
 
         String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
 		try {
@@ -59,25 +59,13 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 			Log.d(null, url.toString() + data);
 			nUrl = new URL(url + data);
 			conn = nUrl.openConnection();
-			Thread.sleep(2000);
-			final BufferedReader[] in = new BufferedReader[0];
-			DownloadMemoryList.InputReader reader = new DownloadMemoryList.InputReader() {
-				@Override
-				public String getInput() {
-					try {
-						in[0] = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					return null;
-				}
-			};
-			reader.getInput();
-			while ((s = in[0].readLine()) != null) {
-				jsonObject = new JSONObject(s);
-				Log.d(null, jsonObject.toString());
-			}
+			BufferedReader 	in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+			Thread.sleep(100);
 
+			while ((s = in.readLine()) != null) {
+				jsonArray = new JSONArray(s);
+				Log.d(null, "jArray" + s);
+			}
 		} catch (UnsupportedEncodingException e1) {
 			Log.d(null, e1.toString());
 			e1.printStackTrace();
@@ -100,33 +88,37 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 
 		try {
 			Thread.sleep(1000);
-			if(jsonObject != null) {
-				titleObject = jsonObject.getString("title");
-				Log.d(null, "title: " + titleObject);
+			for(int n = 0; n < jsonArray.length(); n++) {
+				jsonObject = jsonArray.getJSONObject(n);
+				if (jsonObject != null) {
+					titleObject = jsonObject.getString("title");
+					Log.d(null, "title: " + titleObject);
 
-				int j = jsonObject.getInt("id");
-				Log.d(null, String.valueOf(j));
-				ViewMemoryActivity v = new ViewMemoryActivity();
-				v.setId(id);
-
-				JSONArray attrArray = jsonObject.getJSONArray("pageTypeValues");
-				for(int i = 0; i < attrArray.length(); i++) {
-					JSONObject attrObject = (JSONObject) attrArray.get(i);
-					String title = attrObject.getString("title");
-					if (title.equals("Location")){
-						location = (String) attrObject.get("value");
-						String[] latlngArray = location.split(",");
-						double latitude = Double.parseDouble(latlngArray[0]);
-						double longitude = Double.parseDouble(latlngArray[1]);
-						latlngFinal = new LatLng(latitude, longitude);
+					JSONArray attrArray = jsonObject.getJSONArray("pageTypeValues");
+					for (int i = 0; i < attrArray.length(); i++) {
+						JSONObject attrObject = (JSONObject) attrArray.get(i);
+						String title = attrObject.getString("title");
+						if (title.equals("Location")) {
+							location = (String) attrObject.get("value");
+							String[] latlngArray = location.split(",");
+							double latitude = Double.parseDouble(latlngArray[0]);
+							double longitude = Double.parseDouble(latlngArray[1]);
+							latlngFinal = new LatLng(latitude, longitude);
+						}
+						if (i == 3) {
+							timestamp = (String) attrObject.get("value");
+							Log.d(null, timestamp);
+						}
 					}
-					if (i == 3){
-						timestamp = (String) attrObject.get("value");
-						Log.d(null, timestamp);
-					}
+					//create method in viewmemory to set obj
+				} else {
+					Log.d(null, "error");
 				}
-			} else {
-				Log.d(null, "error");
+				String username = "username";
+
+				ViewMemoryActivity view = new ViewMemoryActivity();
+//				view.setId(id);
+				view.setMemory(timestamp, timestampTextView, latlngFinal, locationTextView, titleObject, memoryTextView, username, usernameTextView);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -134,26 +126,12 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 			e.printStackTrace();
 		}
 		Log.d(null, "downloaded");
-
-		String username = "username";
-		//create method in viewmemory to set obj
-		ViewMemoryActivity v = new ViewMemoryActivity();
-		v.setId(titleObject);
-		v.setMemory(timestamp, timestampTextView, latlngFinal, locationTextView, titleObject, memoryTextView, username, usernameTextView);
-//		AddMemoryActivity a = new AddMemoryActivity();
-//		a.setId(titleObject);
 	}
 	void setTextViews(TextView locationTextView, TextView memoryTextView, TextView timestampTextView, TextView usernameTextView){
 		this.locationTextView = locationTextView;
 		this.memoryTextView = memoryTextView;
 		this.timestampTextView = timestampTextView;
 		this.usernameTextView = usernameTextView;
-	}
-	public void jsonObjectParse(JSONObject jObject) {
-
-	}
-	public void jsonArrayParse(JSONArray jarray) {
-
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////

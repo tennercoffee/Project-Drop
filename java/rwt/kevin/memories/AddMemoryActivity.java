@@ -124,20 +124,16 @@ public class AddMemoryActivity extends MapsActivity {
                         GetResultId getId = new GetResultId() {
                             @Override
                             public String getResultId() {
-                                AddMemory post = new AddMemory();
-                                post.execute(location, scope, memoryString);
-                                String id = post.getResultId("id");
-                                Log.d(null, id);
-                                return id;
+                                AddMemory addmem = new AddMemory();
+                                addmem.execute(location, scope, memoryString);
+                                return null;
                             }
                         };
-                        Log.d(null, getId.getResultId());
-
-                        Toast.makeText(getApplicationContext(), "success!", Toast.LENGTH_LONG).show();
-
-                        Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
-                        startActivity(i);
-//                        finish();
+                        getId.getResultId();
+                        Toast.makeText(getApplicationContext(), "Moment SuccessFully Added!", Toast.LENGTH_LONG).show();
+//                        Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
+//                        startActivity(i);
+                        finish();
                     }else {
                         Log.d(null, "error");
                         Toast.makeText(getApplicationContext(), "error! oh no!", Toast.LENGTH_LONG).show();                    }
@@ -273,14 +269,13 @@ class AddMemory extends AsyncTask<String, String, Void> {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    return null;
+                    return String.valueOf(in[0]);
                 }
             };
-            reader.getInput();
-            while ((s = in[0].readLine()) != null) {
-                jsonObject = new JSONObject(s);
+            String input = reader.getInput();
+                jsonObject = new JSONObject(input);
                 Log.d(null, jsonObject.toString());
-            }
+
         } catch (UnsupportedEncodingException e1) {
             Log.d(null, e1.toString());
             e1.printStackTrace();
