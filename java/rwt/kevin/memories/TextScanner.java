@@ -2,6 +2,10 @@ package rwt.kevin.memories;
 
 import android.util.Log;
 
+import com.google.android.gms.maps.model.LatLng;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -59,5 +63,44 @@ class TextScanner {
         //longitude = Double.parseDouble(latlng[1]);
 
         return location;
+    }
+    LatLng locationStringToLatLng(List<String> location) {
+        Log.d(null, "locationStringToLatLng");
+        String locationString = new String(String.valueOf(location));
+        Scanner scanner = new Scanner(locationString);
+        if (scanner.hasNext("lat/lng:")) {
+            scanner.skip(Pattern.compile("lat/lng:"));
+        } else if (scanner.hasNext(" lat/lng")) {
+            scanner.skip(Pattern.compile(" lat/lng: "));
+        }
+
+        locationString = locationString.startsWith("(") ? locationString.substring(1) : locationString;
+        locationString = locationString.endsWith(")") ? locationString.substring(0, locationString.length() - 1) : locationString;
+
+        double latitude;
+        double longitude;
+        String[] latlng = locationString.split(",");
+
+        latitude = Double.parseDouble(latlng[0]);
+        longitude = Double.parseDouble(latlng[1]);
+
+        Log.d(null, new LatLng(latitude,longitude).toString());
+        return new LatLng(latitude,longitude);
+    }
+    public List<List<String>> resultSplitter(String result) {
+        Scanner scanner = new Scanner(result);
+        String location = scanner.next();
+        String id = scanner.next();
+
+        location = location.startsWith("[") ? location.substring(1) : location;
+        id = id.endsWith("]") ? id.substring(0, id.length() - 1) : id;
+
+        List<String> firstList =  new ArrayList<>();
+        List<List<String>> secondList =  new ArrayList<>();
+        firstList.add(id);
+        firstList.add(location);
+        secondList.add(firstList);
+
+        return secondList;
     }
 }

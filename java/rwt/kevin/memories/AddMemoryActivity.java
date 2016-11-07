@@ -6,7 +6,9 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.ArrayMap;
 import android.util.Log;
+import android.util.StringBuilderPrinter;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -15,6 +17,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.Marker;
+import com.google.gson.internal.LinkedHashTreeMap;
+import com.google.gson.internal.LinkedTreeMap;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,18 +29,30 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class AddMemoryActivity extends MapsActivity {
     Toolbar toolbar;
     public TextView charCountTextView;
     public String location;
+    public String resultId;
+
+    interface GetResultId {
+        String getResultId();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,46 +102,6 @@ public class AddMemoryActivity extends MapsActivity {
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             scopeSpinner.setAdapter(adapter);
         }
-
-        Button submitButton = (Button) findViewById(R.id.submitMemoryButton);
-        //final LoginActivity user = new LoginActivity();
-        if(submitButton != null){
-            submitButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick (View view){
-                    if(memoryInput != null && location != null && scopeSpinner != null /*&& user.loggedIn()*/) {
-                        Log.d(null, location);
-                        final String scope = scopeSpinner.getSelectedItem().toString();
-                        String memoryString = memoryInput.getText().toString();
-
-                        AddMemory post = new AddMemory();
-                        String id = post.execute(location, scope, memoryString).toString();
-
-                        Log.d(null, id);
-                        //TODO: finish this, add regionCode
-                        finish();
-                        //Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
-                        //i.putExtra("id", id);
-                        //startActivity(i);
-                    }else {
-                        Log.d(null, "error");
-                        //change color of toolbar to red
-                        /*if(toolbar != null) {
-                            toolbar.findViewById(R.id.toolbar_error);
-                            toolbar.setTitle("Error, not logged in");
-                            try {
-                                Thread.sleep(2000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            toolbar.findViewById(R.id.add_memory_toolbar);
-                            toolbar.setTitle("Add New Moment");
-                            //error: user not signed in
-                        }*/
-                    }
-                }
-            });
-        }
         Button cancelButton = (Button) findViewById(R.id.cancelMemoryButton);
         if(cancelButton != null){
             cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -132,9 +111,45 @@ public class AddMemoryActivity extends MapsActivity {
                 }
             });
         }
+        Button submitButton = (Button) findViewById(R.id.submitMemoryButton);
+        if(submitButton != null){
+            submitButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick (View view){
+                    if(memoryInput != null && location != null && scopeSpinner != null /*&& user.loggedIn()*/) {
+                        Log.d(null, location);
+                        final String scope = scopeSpinner.getSelectedItem().toString();
+                        final String memoryString = memoryInput.getText().toString();
+
+                        GetResultId getId = new GetResultId() {
+                            @Override
+                            public String getResultId() {
+                                AddMemory post = new AddMemory();
+                                post.execute(location, scope, memoryString);
+                                String id = post.getResultId("id");
+                                Log.d(null, id);
+                                return id;
+                            }
+                        };
+                        Log.d(null, getId.getResultId());
+
+                        Toast.makeText(getApplicationContext(), "success!", Toast.LENGTH_LONG).show();
+
+                        Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
+                        startActivity(i);
+//                        finish();
+                    }else {
+                        Log.d(null, "error");
+                        Toast.makeText(getApplicationContext(), "error! oh no!", Toast.LENGTH_LONG).show();                    }
+                }
+            });
+        }
         //setupSnapshot();
     }
-
+//    void setResultId(String resultId){
+//        this.resultId = resultId;
+//        Log.d(null, "id set");
+//    }
     private void setupSnapshot() throws MalformedURLException, UnsupportedEncodingException {
         Log.d(null, "scan location");
         TextScanner scan = new TextScanner();
@@ -148,7 +163,6 @@ public class AddMemoryActivity extends MapsActivity {
 
         Log.d(null, "snapshot url" + url.toString() + data);
     }
-
     private final TextWatcher mTextEditorWatcher = new TextWatcher() {
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
         }
@@ -167,15 +181,31 @@ class AddMemory extends AsyncTask<String, String, Void> {
     private BufferedReader in;
     private String successObject;
     String id;
-    JSONArray jsonArray;
+    JSONObject jsonObject;
+    String timestampString;
+    int idObject;
 
     protected void onPreExecute() {
         Log.d(null, "adding memory");
+
+        //add timestamp here
+        Calendar timestamp = Calendar.getInstance();
+        String y = String.valueOf(timestamp.get(Calendar.YEAR));
+        String m = String.valueOf(timestamp.get(Calendar.MONTH));
+        String d = String.valueOf(timestamp.get(Calendar.DAY_OF_MONTH));
+        String h = String.valueOf(timestamp.get(Calendar.HOUR_OF_DAY));
+        String m1 = String.valueOf(timestamp.get(Calendar.MINUTE));
+        String s1 = String.valueOf(timestamp.get(Calendar.SECOND));
+        String m2 = String.valueOf(timestamp.get(Calendar.MILLISECOND));
+
+        timestampString =  y + ":" + m + ":" + d + ":" + h + ":" + m1 + ":" + s1 + ":" + m2;
+        // 0001 is western hemisphere
+//        String desc = timestampString + " 0001 " + coordinates;
     }
     @Override
     protected Void doInBackground(String... params) {
-        String location = params[0];
         String scope = params[1];
+        String location = params[0];
         String memoryString = params[2];
         String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
         //old key--a76c33b2-4c76-11e6-8c59-e0cb4ea6dd17
@@ -191,70 +221,65 @@ class AddMemory extends AsyncTask<String, String, Void> {
         coordinates = coordinates.startsWith("(") ? coordinates.substring(1) : coordinates;
         coordinates = coordinates.endsWith(")") ? coordinates.substring(0, coordinates.length() - 1) : coordinates;
 
-        //add timestamp here
-        Calendar timestamp = Calendar.getInstance();
-        String y = String.valueOf(timestamp.get(Calendar.YEAR));
-        String m = String.valueOf(timestamp.get(Calendar.MONTH));
-        String d = String.valueOf(timestamp.get(Calendar.DAY_OF_MONTH));
-        String h = String.valueOf(timestamp.get(Calendar.HOUR_OF_DAY));
-        String m1 = String.valueOf(timestamp.get(Calendar.MINUTE));
-        String s1 = String.valueOf(timestamp.get(Calendar.SECOND));
-        String m2 = String.valueOf(timestamp.get(Calendar.MILLISECOND));
-
-        String timestampString =  y + ":" + m + ":" + d + ":" + h + ":" + m1 + ":" + s1 + ":" + m2;
-        // 0001 is western hemisphere
-        String desc = timestampString + " 0001 " + coordinates;
-        Log.d(null, desc);
-
-        //////////////////////////////////////////////////////////////////////
-                            //rebuild this//
-        //http://web.webapps.centennialarts.com/page.php?command=addPage
-            //&title=hello&pageTypeId=21&pageValues={
-                //"0":{%22pageTypeStringAttributesId%22:%2233%22,%22value%22:%22locationValue%22},
-                //"1":{%22pageTypeStringAttributesId%22:%2239%22,%22value%22:%22regionValue%22},
-                //"2":{%22pageTypeStringAttributesId%22:%2230%22,%22value%22:%22titleValue%22},
-                //"3":{%22pageTypeStringAttributesId%22:%2242%22,%22value%22:%22timestampValue%22}}
-
-
-        
-        //pageValues in the works
         String regionCode = "0001";
-        //may have to add escape characters 
-        String values = URLEncoder.encode("\"0\":{\"pageTypeStringAttributesId\":") + URLEncoder.encode("\"33,\"")
-                        + URLEncoder.encode("\"value\":") + URLEncoder.encode(coordinates)
-                        + URLEncoder.encode("\"1\":{\"pageTypeStringAttributesId\":") + URLEncoder.encode("\"39,\"")
-                        + URLEncoder.encode("\"value\":") + URLEncoder.encode(regionCode)
-                        + URLEncoder.encode("\"2\":{\"pageTypeStringAttributesId\":") + URLEncoder.encode("\"30,\"")
-                        + URLEncoder.encode("\"value\":") + URLEncoder.encode(title)
-                        + URLEncoder.encode("\"3\":{\"pageTypeStringAttributesId\":") + URLEncoder.encode("\"42,\"")
-                        + URLEncoder.encode("\"value\":") + URLEncoder.encode(timestampString);
-                        
-                        
+
         ///////////////////////////////////////////////////////////////////////////////////////////
         try {
-            URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=addPage&");
-            String data = URLEncoder.encode("description", "UTF-8") + "=" + URLEncoder.encode(desc, "UTF-8")
+            JSONObject pageValuesObject = new JSONObject();
+            JSONObject regionObject = new JSONObject().put("pageTypeStringAttributesId", "54").put("value", regionCode);
+            JSONObject titleObject = new JSONObject().put("pageTypeStringAttributesId", "48").put("value", memoryString);
+            JSONObject coorObject = new JSONObject().put("pageTypeStringAttributesId", "51").put("value", coordinates);
+            JSONObject timestampObject = new JSONObject().put("pageTypeStringAttributesId", "57").put("value", timestampString);
+            pageValuesObject.put("0", regionObject).put("1", titleObject).put("2", coorObject).put("3", timestampObject);
+            Log.d(null, pageValuesObject.toString());
+
+            String dataString = URLEncoder.encode("description", "UTF-8") + "=" + URLEncoder.encode("", "UTF-8")
                     + "&" + URLEncoder.encode("title", "UTF-8") + "=" + URLEncoder.encode(memoryString, "UTF-8")
                     + "&" + URLEncoder.encode("scope", "UTF-8") + "=" + URLEncoder.encode(scope, "UTF-8")
-                    + "&" + URLEncoder.encode("pageTypeId", "UTF-8") + "=" + URLEncoder.encode("21", "UTF-8")
+                    + "&" + URLEncoder.encode("pageTypeId", "UTF-8") + "=" + URLEncoder.encode("30", "UTF-8")
                     + "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8")
-                    + "&" + URLEncoder.encode("pageValues", "UTF-8") + "={" + values;
+                    + "&" + URLEncoder.encode("pageValues", "UTF-8") + "=" + URLEncoder.encode(pageValuesObject.toString(),"UTF-8");
 
-            URL nUrl = new URL(url + data);
-            Log.d(null, nUrl.toString());
-            URLConnection conn = nUrl.openConnection();
-            try{
-                Thread.sleep(2000);
-            } catch(Exception e){
-                Log.d(null, "no sleep1");
-            }
-            in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            while ((s = in.readLine()) != null) {
-                Log.d(null, s);
+            URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=addPage&" + dataString);
 
-                jsonArray = new JSONArray(s);
-                Log.d(null, "jArray");
-
+            Log.d(null, url.toString());
+            final URLConnection conn= url.openConnection();
+//            final BufferedReader[] in = new BufferedReader[1];
+//            DownloadMemoryList.InputReader reader = new DownloadMemoryList.InputReader() {
+//                @Override
+//                public String getInput() {
+//                    try {
+//                        in[0] = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                    return in[0].toString();
+//                }
+//            };
+//            String input = reader.getInput();
+//            BufferedReader 	in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+//            while ((s = in.readLine()) != null) {
+//                Log.d(null, s);
+//                jsonObject = new JSONObject(s);
+//                Log.d(null, "jArray" + s);
+//            }
+            Thread.sleep(1000);
+            final BufferedReader[] in = new BufferedReader[1];
+            DownloadMemoryList.InputReader reader = new DownloadMemoryList.InputReader() {
+                @Override
+                public String getInput() {
+                    try {
+                        in[0] = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }
+            };
+            reader.getInput();
+            while ((s = in[0].readLine()) != null) {
+                jsonObject = new JSONObject(s);
+                Log.d(null, jsonObject.toString());
             }
         } catch (UnsupportedEncodingException e1) {
             Log.d(null, e1.toString());
@@ -267,37 +292,40 @@ class AddMemory extends AsyncTask<String, String, Void> {
             e4.printStackTrace();
         } catch (Exception e) {
             Log.d(null, "StringBuilding & BufferedReader\", \"Error converting result ");
-        } finally {
-            try {
-                in.close();
-            } catch (IOException ioe) {
-                // just going to ignore this one
-            }
         }
         return null;
     }
     protected void onPostExecute(Void v) {
-        //TODO: parse success
-
-        try {
-            for (int n = 0; n < jsonArray.length(); n++) {
-                Log.d(null, String.valueOf(n));
-                JSONObject j = jsonArray.getJSONObject(n);
-
-                int idObject = j.getInt("id");
+//        try {
+//            Thread.sleep(2000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        if(jsonObject != null){
+            try {
+                Log.d(null, jsonObject.toString());
+                idObject = jsonObject.getInt("id");
                 Log.d(null, "id: " + String.valueOf(idObject));
 
-                successObject = j.getString("success");
-                Log.d(null, "successObject: " + successObject);
-                //TODO: set up success message after adding mem
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+                ViewMemoryActivity view = new ViewMemoryActivity();
+                view.setId(String.valueOf(idObject));
 
-        if(successObject == "true"){
-            Log.d(null, "success true");
-            Toast.makeText(null, "success!", Toast.LENGTH_LONG);
+                successObject = jsonObject.getString("success");
+                Log.d(null, "successObject: " + successObject);
+                if (successObject.equals("true")) {
+                    Log.d(null, "success true");
+                }
+            } catch (JSONException j) {
+                j.printStackTrace();
+            }
+        } else { Log.d(null, "null jsonobject");}
+    }
+
+    String getResultId(String a) {
+        if(a.equals("id")){
+            return String.valueOf(idObject);
+        } else {
+            return null;
         }
     }
 }

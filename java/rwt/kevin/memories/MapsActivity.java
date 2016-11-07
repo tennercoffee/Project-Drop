@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -32,8 +33,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import static android.view.View.OnClickListener;
 import static com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
@@ -49,6 +54,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     Toolbar toolbar;
     List<List<String>> resultList;
 
+    public interface DownloadList {
+        List<List<String>> downloadList();
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,7 +105,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void onClick(View view) {
                         final LatLng myLocation = getLocation();
-
                         if (myLocation != null) {
                             Intent i = new Intent(getApplicationContext(), AddMemoryActivity.class);
                             i.putExtra("location", myLocation);
@@ -111,16 +118,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.setOnMarkerClickListener(new OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker) {
-
                     Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
                     if (marker.getTitle() != null) {
-
-                        //run download memory here
-                        //get description and title
-                        //pass through as intent extras
-                        
-                        DownloadMemory mem = new DownloadMemory();
-                        mem.execute(marker.getTitle());
+                        String id = marker.getTitle();
+                        i.putExtra("id",id);
                     } else {
                         Log.d(null, "null marker");
                     }
@@ -129,108 +130,76 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
             //mMap.setOnMyLocationChangeListener();
-            mMap.setMinZoomPreference(18);
-            mMap.setMaxZoomPreference(18);
+            mMap.setMinZoomPreference(19);
+            mMap.setMaxZoomPreference(20);
+        }
+        Button profileButton = (Button) findViewById(R.id.profile_button);
+        if(profileButton != null){
+            profileButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent i = new Intent(getApplicationContext(), MyProfileActivity.class);
+                    startActivity(i);
+                }
+            });
         }
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     /////////////////////////////////////////////////////////////////////////////
-    
-    
-    
-    
-    public void addMarkerToList(LatLng location, String s) {
-        Log.d(null, "addmarkertolist" + s);
+    public void addMarkerToList(String location, String s) {
         resultList = new ArrayList<>();
         List<String> result = new ArrayList<>();
         result.add(location);
         result.add(s);
         resultList.add(result);
+        Log.d(null, "markeraddedtolist");
     }
-    public void addMarkerToMap() {
-        try {
-            //has to sleep here,
-            // in order to get response before moving forward
-            //bad practice
-            Thread.sleep(2500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        Log.d(null, "addmarkertomap");
-        String id = null;
-        LatLng location = null;
-        if(resultList != null) {
-            id = String.valueOf(resultList.get(0));
-            Log.d(null, "id:" + id);
-            location = String.valueOf(resultList.get(1));
-            Log.d(null, "location:" + location);
-        }
-
+    public ArrayList<Marker> addMarkersToMap(JSONArray downloadArray, GoogleMap mMap) {
+        Log.d(null, "addmarkerstomap");
+        String result = null;
         if (markersList == null){
             markersList = new ArrayList<>();
             Log.d(null, "null list");
         }
-        if(mMap != null) {
-            /*TextScanner t = new TextScanner();
-            LatLng latlngFinal;
-            if(desc != null) {
-                String location = t.descSplitter(desc, 1, 0);
-                String latlngSplitString = t.locationSplitter(location);
+        if(downloadArray != null && mMap != null) {
+            for(int i = 0; i < downloadArray.length(); i++){
+                try {
+                    JSONObject downloadObject = (JSONObject) downloadArray.get(i);
 
-                String[] latlng = latlngSplitString.split(",");
+                    String coordinates = downloadObject.get("location").toString();
+                    String id = downloadObject.get("title").toString();
 
-                double latitude = Double.parseDouble(latlng[0]);
-                double longitude = Double.parseDouble(latlng[1]);
-                latlngFinal= new LatLng(latitude, longitude);
-            */
-                //this might be the wrong map to be calling
-                Marker marker = mMap.addMarker(new MarkerOptions().position(location).title(id));
-                Log.d(null, "adding marker");
-                markersList.add(marker);
+                    String[] latlng = coordinates.split(",");
+                    double latitude = Double.parseDouble(latlng[0]);
+                    double longitude = Double.parseDouble(latlng[1]);
+                    LatLng latlngFinal = new LatLng(latitude, longitude);
+
+                    Marker marker = mMap.addMarker(new MarkerOptions().position(latlngFinal).title(id));
+                    markersList.add(marker);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-        }else{Log.d(null, "mMap null");}
-    }
-    public void revealMarkers(GoogleMap mMap) {
-        if(markersList != null) {
-            for (int n = 0; n < markersList.size(); n++) {
-                Log.d(null, "marker#" + String.valueOf(n));
-                Marker currentMarker = markersList.get(n);
-
-                String markerId = currentMarker.getTitle();
-                LatLng position = currentMarker.getPosition();
-
-                mMap.addMarker(new MarkerOptions().position(position).title(markerId));
-            }
+        } else {
+            Log.d(null, "resultlist null-addmarkerstomap");
         }
+        return markersList;
     }
-    
-    
+    public void revealMarkers(GoogleMap map, ArrayList<Marker> markersList) {
+        this.markersList = markersList;
+        for (int n = 0; n < markersList.size(); n++) {
+            Marker currentMarker = markersList.get(n);
+
+            String markerId = currentMarker.getTitle();
+            LatLng position = currentMarker.getPosition();
+
+            map.addMarker(new MarkerOptions().position(position).title(markerId));
+//            if(getApplicationContext() != null) {
+//                Toast.makeText(getApplicationContext(), "success!", Toast.LENGTH_LONG).show();
+//            }
+        }
+        Log.d(null, "full map");
+    }
     /////////////////////////////////////////////////////////////////////////////
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     private void enableMyLocation() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -281,29 +250,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 return true;
             case R.id.action_sync:
                 //download memories, then reveal on map
-                
-                
-                
-             /***************************************************************************************
-			 * 
-			 * 
-			 * Design callback funtion here
-			 *  idk what that means
-			 * 
-			 * 
-			 ****************************************************************************************/
-                
-                DownloadMemoryList dml = new DownloadMemoryList();
-                dml.execute("public");
 
-                //addMarkerToMap();
-                //revealMarkers(mMap);
+                DownloadList loadList = new DownloadList() {
+                    @Override
+                    public List<List<String>> downloadList() {
+                        DownloadMemoryList dml = new DownloadMemoryList();
+                        dml.execute("public");
+                        dml.setMap(mMap, markersList);
+                        Log.d(null, "downloadList");
+                        return null;
+                    }
+                };
+                loadList.downloadList();
+
                 return true;
-            case R.id.action_list:
-                //open list activity
-                Intent iList = new Intent(getApplicationContext(), MemoryListActivity.class);
-                startActivity(iList);
-                return true;
+//            case R.id.action_list:
+//                //open list activity
+//                Intent iList = new Intent(getApplicationContext(), MemoryListActivity.class);
+//                startActivity(iList);
+//                return true;
             case R.id.action_about:
                 //open about activity
                 Intent about = new Intent(getApplicationContext(), AboutActivity.class);
@@ -370,6 +335,4 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         client.disconnect();
         super.onStop();
     }
-
-
 }

@@ -25,89 +25,93 @@ public class ViewMemoryActivity extends MapsActivity {
 	public String title;
 	public String timestamp;
 	public LatLng location;
+	public String username;
 	String id;
+	public TextView locationTextView;
+	public TextView timestampTextView;
+	public TextView memoryTextView;
+	public TextView usernameTextView;
 
 	protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_view_memory);
+
+//		try {
+//			Thread.sleep(500);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
+		setContentView(R.layout.activity_view_memory);
 		Toolbar toolbar = (Toolbar) findViewById(R.id.view_memory_toolbar);
 		if(toolbar != null){
 			toolbar.setTitle("View Moment");
 		}
-		viewMemory();
-    }
-    private void viewMemory() {
-		Intent intent = getIntent();
-		id = intent.getParcelableExtra("id");
 
-        TextView locationTextView = (TextView)findViewById(R.id.locationTextView);
-        TextView memoryTextView = (TextView) findViewById(R.id.memoryTextView);
-		TextView timestampView = (TextView) findViewById(R.id.timestamp_view);
 
-		//TODO:this may need to be brought into scope
-		if(memoryTextView != null) {
-			memoryTextView.setText(title);
+		locationTextView = (TextView)findViewById(R.id.locationTextView);
+		memoryTextView = (TextView) findViewById(R.id.memoryTextView);
+		timestampTextView = (TextView) findViewById(R.id.timestamp_view);
+		usernameTextView = (TextView) findViewById(R.id.usernameText);
+		if (id == null) {
+			Intent intent = getIntent();
+			id = intent.getStringExtra("id");
+			loadMemory(id);
+
+		} else {
+			Log.d(null, "null id");
+//			loadMemory(id);
 		}
-        if(locationTextView != null) {
-            locationTextView.setText(location.toString());
-        }
-		if(timestampView != null) {
-			timestampView.setText(timestamp);
-		}
-
-		//TODO: run marker id against privatemarker arrayList, if present, enable remove Button
-		final Button removeButton = (Button) findViewById(R.id.removeButton);
-		if(removeButton != null){
-			/*removeButton.setOnClickListener( new View.OnClickListener(){
-				@Override
-				public void onClick(View view){
-
-					new AlertDialog.Builder(getApplicationContext())
-							.setTitle("Confirm")
-							.setMessage("Do you really want delete this Moment?")
-							.setIcon(android.R.drawable.ic_dialog_alert)
-							.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog, int whichButton) {
-									Toast.makeText(ViewMemoryActivity.this, "Gone!", Toast.LENGTH_SHORT).show();
-
-									RemoveMemory rm = new RemoveMemory();
-									rm.execute(id);
-									finish();
-								}
-							})
-							.setNegativeButton(android.R.string.no, null).show();
-				}
-			});*/
-		}
-
-		Button dislikeButton = (Button) findViewById(R.id.dislikeButton);
-		if(dislikeButton != null) {
-			dislikeButton.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					//TODO: enter code for rating system
-					//thumbs up/down?
-					//or variation on principle
-					//i like reddit's upvote system
-					//add xml
-					//build async program to handle ratings system
-				}
-			});
-		}
-		Button likeButton = (Button) findViewById(R.id.likeButton);
-		if(likeButton != null) {
-			likeButton.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					//TODO: enter code for rating system
-					//thumbs up/down?
-					//or variation on principle
-					//i like reddit's upvote system
-					//add xml
-				}
-			});
-		}
-        Button backButton = (Button) findViewById(R.id.backButton);
+//		/*final Button removeButton = (Button) findViewById(R.id.removeButton);
+//		if(removeButton != null){
+//			removeButton.setOnClickListener( new View.OnClickListener(){
+//				@Override
+//				public void onClick(View view){
+//
+//					new AlertDialog.Builder(getApplicationContext())
+//							.setTitle("Confirm")
+//							.setMessage("Do you really want delete this Moment?")
+//							.setIcon(android.R.drawable.ic_dialog_alert)
+//							.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+//								public void onClick(DialogInterface dialog, int whichButton) {
+//									Toast.makeText(ViewMemoryActivity.this, "Gone!", Toast.LENGTH_SHORT).show();
+//
+//									RemoveMemory rm = new RemoveMemory();
+//									rm.execute(id);
+//									finish();
+//								}
+//							})
+//							.setNegativeButton(android.R.string.no, null).show();
+//				}
+//			});
+//		}*/
+//
+////		Button dislikeButton = (Button) findViewById(R.id.dislikeButton);
+////		if(dislikeButton != null) {
+////			dislikeButton.setOnClickListener(new View.OnClickListener() {
+////				@Override
+////				public void onClick(View view) {
+////					//TODO: enter code for rating system
+////					//thumbs up/down?
+////					//or variation on principle
+////					//i like reddit's upvote system
+////					//add xml
+////					//build async program to handle ratings system
+////				}
+////			});
+////		}
+////		Button likeButton = (Button) findViewById(R.id.likeButton);
+////		if(likeButton != null) {
+////			likeButton.setOnClickListener(new View.OnClickListener() {
+////				@Override
+////				public void onClick(View view) {
+////					//TODO: enter code for rating system
+////					//thumbs up/down?
+////					//or variation on principle
+////					//i like reddit's upvote system
+////					//add xml
+////				}
+////			});
+////		}
+		Button backButton = (Button) findViewById(R.id.backButton);
 		if(backButton != null){
 			backButton.setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -117,13 +121,58 @@ public class ViewMemoryActivity extends MapsActivity {
 			});
 		}
     }
-    public void setMemory(String timestampObject, LatLng locationObject, String titleObject) {
-		timestamp = timestampObject;
-		location = locationObject;
-		title = titleObject;
-		Log.d(null, timestamp + " " + location + " " + title + " setmem");
-		DownloadMemory d = new DownloadMemory();
-		d.execute(id);
+    public void loadMemory(String id) {
+
+//		Log.d(null, id);
+		DownloadMemory dm = new DownloadMemory();
+		dm.setTextViews(locationTextView, memoryTextView, timestampTextView, usernameTextView);
+		dm.execute(id);
+
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+    }
+	void setId(String id){
+//        Log.d(null, String.valueOf(idObject) + " getid");
+//        return String.valueOf(idObject);
+		this.id = id;
+	}
+    public void setMemory(String timestampObject, TextView timestampTextView, LatLng locationObject, TextView locationTextView, String titleObject, TextView memoryTextView, String usernameObject, TextView usernameTextView) {
+		this.timestamp = timestampObject;
+		this.location = locationObject;
+		this.title = titleObject;
+		this.username = usernameObject;
+
+		Log.d(null, timestamp + " " + location + " " + title + " " + username + "--- setmem");
+
+		this.locationTextView = locationTextView;
+		this.memoryTextView = memoryTextView;
+		this.timestampTextView = timestampTextView;
+		this.usernameTextView = usernameTextView;
+
+		if(memoryTextView != null) {
+			memoryTextView.setText(title);
+			Log.d(null, title + " set");
+		} else if (title == null) {
+			Log.d(null, "null title");
+		} else { Log.d(null, "no text view");}
+		if(locationTextView != null && location != null) {
+			locationTextView.setText(location.toString());
+			Log.d(null, location + " set");
+		} else if (location == null) {
+			locationTextView.setText("error getting location");
+		} else if (locationTextView == null) {
+			Log.d(null, "textview null");
+		}
+		if(timestampTextView != null) {
+			timestampTextView.setText(timestamp);
+			Log.d(null, timestamp + " set");
+		}
+		if (usernameTextView != null && username != null) {
+			usernameTextView.setText(username);
+		}
     }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
