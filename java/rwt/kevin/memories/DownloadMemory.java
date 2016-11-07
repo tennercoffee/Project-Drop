@@ -32,10 +32,14 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
     private String titleObject;
 	private String descObject;
 	private JSONArray jsonArray;
+	private JSONObject jsonObject;
 	private TextView locationTextView;
 	private TextView memoryTextView;
 	private TextView timestampTextView;
 	private TextView usernameTextView;
+	String s;
+	String id;
+	JSONArray jArray;
 
 
 	protected void onPreExecute() {
@@ -45,9 +49,9 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
     protected JsonObject doInBackground(String... params) {
         final URLConnection conn;
         URL nUrl;
-        String id = params[0];
+		id = params[0];
+
         String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
-        String s;
 		try {
 			URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=getPage&");
 			String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(id, "UTF-8")
@@ -55,25 +59,13 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 			Log.d(null, url.toString() + data);
 			nUrl = new URL(url + data);
 			conn = nUrl.openConnection();
-//			final BufferedReader[] in = new BufferedReader[1];
-//			DownloadMemoryList.InputReader reader = new DownloadMemoryList.InputReader() {
-//				@Override
-//				public String getInput() {
-//					try {
-//						in[0] = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-//					} catch (IOException e) {
-//						e.printStackTrace();
-//					}
-//					return null;
-//				}
-//			};
-//			reader.getInput();
 			BufferedReader 	in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+			Thread.sleep(100);
+
 			while ((s = in.readLine()) != null) {
 				jsonArray = new JSONArray(s);
 				Log.d(null, "jArray" + s);
 			}
-
 		} catch (UnsupportedEncodingException e1) {
 			Log.d(null, e1.toString());
 			e1.printStackTrace();
@@ -89,42 +81,51 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
         return null;
     }
     protected void onPostExecute(JsonObject obj) {
+		Log.d(null, "postexecute");
 		String timestamp= null;
-		LatLng latlngFinal = null;
 		String location = null;
+		LatLng latlngFinal = null;
 
-			Log.d(null, jsonArray.toString());
-			try {
-				JSONObject j = jsonArray.getJSONObject(0);
-				titleObject = j.getString("title");
-				Log.d(null, "title: " + titleObject);
+		try {
+			Thread.sleep(1000);
+			for(int n = 0; n < jsonArray.length(); n++) {
+				jsonObject = jsonArray.getJSONObject(n);
+				if (jsonObject != null) {
+					titleObject = jsonObject.getString("title");
+					Log.d(null, "title: " + titleObject);
 
-				JSONArray attrArray = j.getJSONArray("pageTypeValues");
-				for(int i = 0; i < attrArray.length(); i++) {
-					JSONObject attrObject = (JSONObject) attrArray.get(i);
-					String title = attrObject.getString("title");
-					if (title.equals("Location")){
-						location = (String) attrObject.get("value");
+					JSONArray attrArray = jsonObject.getJSONArray("pageTypeValues");
+					for (int i = 0; i < attrArray.length(); i++) {
+						JSONObject attrObject = (JSONObject) attrArray.get(i);
+						String title = attrObject.getString("title");
+						if (title.equals("Location")) {
+							location = (String) attrObject.get("value");
+							String[] latlngArray = location.split(",");
+							double latitude = Double.parseDouble(latlngArray[0]);
+							double longitude = Double.parseDouble(latlngArray[1]);
+							latlngFinal = new LatLng(latitude, longitude);
+						}
+						if (i == 3) {
+							timestamp = (String) attrObject.get("value");
+							Log.d(null, timestamp);
+						}
 					}
-					if (i == 3){
-						timestamp = (String) attrObject.get("value");
-						Log.d(null, timestamp);
-					}
+					//create method in viewmemory to set obj
+				} else {
+					Log.d(null, "error");
 				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-			Log.d(null, "downloaded");
-			TextScanner t = new TextScanner();
-			String[] latlngArray = location.split(",");
-			double latitude = Double.parseDouble(latlngArray[0]);
-			double longitude = Double.parseDouble(latlngArray[1]);
-			latlngFinal = new LatLng(latitude, longitude);
-		String username = "username";
-			//create method in viewmemory to set obj
-			ViewMemoryActivity v = new ViewMemoryActivity();
-			v.setMemory(timestamp, timestampTextView, latlngFinal, locationTextView, titleObject, memoryTextView, username, usernameTextView);
+				String username = "username";
 
+				ViewMemoryActivity view = new ViewMemoryActivity();
+//				view.setId(id);
+				view.setMemory(timestamp, timestampTextView, latlngFinal, locationTextView, titleObject, memoryTextView, username, usernameTextView);
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		Log.d(null, "downloaded");
 	}
 	void setTextViews(TextView locationTextView, TextView memoryTextView, TextView timestampTextView, TextView usernameTextView){
 		this.locationTextView = locationTextView;
@@ -206,12 +207,14 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 						downloadObject.put("title", idObject);
 						downloadObject.put("location", locationValue);
 						downloadArray.put(downloadObject);
+
 					}
 					//Log.d(null, idObject + " " + locationValue);
 				}
 			}
 			MapsActivity m = new MapsActivity();
 			Log.d(null, downloadArray.toString());
+
 			ArrayList<Marker> list = m.addMarkersToMap(downloadArray, mMap);
 			m.revealMarkers(mMap, list);
 		} catch (JSONException e1) {
