@@ -2,8 +2,11 @@ package rwt.kevin.memories;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.TextView;
 
+import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
@@ -18,6 +21,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Kevin on 8/22/2016.
@@ -27,35 +32,48 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
     private String titleObject;
 	private String descObject;
 	private JSONArray jsonArray;
+	private TextView locationTextView;
+	private TextView memoryTextView;
+	private TextView timestampTextView;
+	private TextView usernameTextView;
+
 
 	protected void onPreExecute() {
         Log.d(null, "loading moment");
     }
-
     @Override
     protected JsonObject doInBackground(String... params) {
-
-        URLConnection conn;
+        final URLConnection conn;
         URL nUrl;
         String id = params[0];
-		//List<List<String>> resultList = params[1];
         String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
         String s;
-
 		try {
 			URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=getPage&");
 			String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(id, "UTF-8")
 				+ "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8");
-
 			Log.d(null, url.toString() + data);
 			nUrl = new URL(url + data);
 			conn = nUrl.openConnection();
-
-			BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+//			final BufferedReader[] in = new BufferedReader[1];
+//			DownloadMemoryList.InputReader reader = new DownloadMemoryList.InputReader() {
+//				@Override
+//				public String getInput() {
+//					try {
+//						in[0] = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+//					} catch (IOException e) {
+//						e.printStackTrace();
+//					}
+//					return null;
+//				}
+//			};
+//			reader.getInput();
+			BufferedReader 	in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 			while ((s = in.readLine()) != null) {
 				jsonArray = new JSONArray(s);
 				Log.d(null, "jArray" + s);
 			}
+
 		} catch (UnsupportedEncodingException e1) {
 			Log.d(null, e1.toString());
 			e1.printStackTrace();
@@ -66,108 +84,97 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 			Log.d("IOException", e4.toString());
 			e4.printStackTrace();
 		} catch (Exception e) {
-			//Log.e("StringBuilding & BufferedReader", "Error converting result " + e.toString());
 			Log.d(null, "StringBuilding & BufferedReader\", \"Error converting result ");
 		}
         return null;
     }
     protected void onPostExecute(JsonObject obj) {
-		String timestampString = null;
+		String timestamp= null;
 		LatLng latlngFinal = null;
+		String location = null;
 
-		for(int n = 0; n < jsonArray.length(); n++) {
+			Log.d(null, jsonArray.toString());
 			try {
-				Log.d(null, String.valueOf(n));
-				JSONObject j = jsonArray.getJSONObject(n);
-
-				titleObject = String.valueOf("title");
+				JSONObject j = jsonArray.getJSONObject(0);
+				titleObject = j.getString("title");
 				Log.d(null, "title: " + titleObject);
 
-				descObject = j.getString("description");
-				Log.d(null, "desc: " + descObject);
-				
-				
-    			 /****************************************************
-    			 * 
-    			 * add rest of json parsing here, (timestamp, regioncode, 
-    			 * 
-    			 *      get code from downloadmemlist
-    			 * 
-    			 *****************************************************/
-				
-				
-				
-				
-				
+				JSONArray attrArray = j.getJSONArray("pageTypeValues");
+				for(int i = 0; i < attrArray.length(); i++) {
+					JSONObject attrObject = (JSONObject) attrArray.get(i);
+					String title = attrObject.getString("title");
+					if (title.equals("Location")){
+						location = (String) attrObject.get("value");
+					}
+					if (i == 3){
+						timestamp = (String) attrObject.get("value");
+						Log.d(null, timestamp);
+					}
+				}
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 			Log.d(null, "downloaded");
-
 			TextScanner t = new TextScanner();
-			Log.d(null, "scanner");
-			if(descObject != null) {
-				String latlngString = t.descSplitter(descObject, 1, 0);
-				String latlngSplitString = t.locationSplitter(latlngString);
-
-				String[] latlng = latlngSplitString.split(",");
-				Log.d(null, "split string");
-
-				double latitude = Double.parseDouble(latlng[0]);
-				double longitude = Double.parseDouble(latlng[1]);
-				latlngFinal = new LatLng(latitude, longitude);
-				Log.d(null, latlngFinal.toString());
-
-				 timestampString = t.descSplitter(descObject, 1, 1);
-			}
+			String[] latlngArray = location.split(",");
+			double latitude = Double.parseDouble(latlngArray[0]);
+			double longitude = Double.parseDouble(latlngArray[1]);
+			latlngFinal = new LatLng(latitude, longitude);
+		String username = "username";
 			//create method in viewmemory to set obj
 			ViewMemoryActivity v = new ViewMemoryActivity();
-			v.setMemory(timestampString, latlngFinal, titleObject);
-		}
+			v.setMemory(timestamp, timestampTextView, latlngFinal, locationTextView, titleObject, memoryTextView, username, usernameTextView);
+
+	}
+	void setTextViews(TextView locationTextView, TextView memoryTextView, TextView timestampTextView, TextView usernameTextView){
+		this.locationTextView = locationTextView;
+		this.memoryTextView = memoryTextView;
+		this.timestampTextView = timestampTextView;
+		this.usernameTextView = usernameTextView;
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class DownloadMemoryList extends AsyncTask<String, String, Void> {
-//	public List<List<String>> resultList = new ArrayList<>();
-	String descObject;
-	int idObject;
 	private JSONArray jsonArray;
-	URL url;
-	String caccessKey = "a76c33b2-4c76-11e6-8c59-e0cb4ea6dd17";
+	private GoogleMap mMap;
+	private ArrayList<Marker> list;
+	private String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
 
+	interface InputReader{
+		String getInput();
+	}
 	protected void onPreExecute() {
 		Log.d(null, "downloading moments");
 	}
 	@Override
 	protected Void doInBackground(String... params) {
 		String s;
-		URLConnection conn;
-
 		try {
-			url = new URL("http://web.webapps.centennialarts.com/page.php?command=listPages"
-					+ "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8")
-					+ "&filters={"
-					+ "\"0\"" + ":{" + "\"combine\":" + "\"AND\"," + "\"field\":" + "\"pageTypesId\"," + "\"option\":" + "\"EQUALS\"," + "\"value\":" + "\"75\"" + "},"
-					+ "\"1\"" + ":{" + "\"combine\":" + "\"AND\"," + "\"field\":" + "\"scope\"," + "\"option\":" + "\"EQUALS\"," + "\"value\":" + "\"" + "public" + "\"" + "}}");
-
+			JSONObject filterObject = new JSONObject();
+			JSONObject idfilterObject = new JSONObject().put("combine", "AND").put("field", "pageTypesId").put("option","EQUALS").put("value","30");
+			filterObject.put("0",idfilterObject);
+			String data = "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8")
+					+ "&" + URLEncoder.encode("limit", "UTF-8") + "=" + URLEncoder.encode("100", "UTF-8")
+					+ "&" + URLEncoder.encode("filters", "UTF-8") + "=" + URLEncoder.encode(filterObject.toString(),"UTF-8");
+			URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=listPages" + data);
 			Log.d(null, url.toString());
-			conn = url.openConnection();
-			BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-			Log.d(null, "in");
-			
-			
-			/***************************************************************************************
-			 * 
-			 * 
-			 * Design callback funtion here
-			 *  idk what that means
-			 * 
-			 * 
-			 * ***************************************************************************************/
-			
-			
-			while ((s = in.readLine()) != null) {
+			final URLConnection conn = url.openConnection();
+			final BufferedReader[] in = new BufferedReader[1];
+			InputReader reader = new InputReader() {
+				@Override
+				public String getInput() {
+					try {
+						in[0] = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return null;
+				}
+			};
+			reader.getInput();
+			while ((s = in[0].readLine()) != null) {
 				jsonArray = new JSONArray(s);
+				Log.d(null, jsonArray.toString());
 			}
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
@@ -182,36 +189,37 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 		return null;
 	}
 	protected void onPostExecute(Void v) {
-		Log.d(null, jsonArray.toString());
-
-		/*try{
-			for(int n = 0; n < jsonArray.length(); n++) {
+		Log.d(null, "postExecute");
+		try {
+			JSONArray downloadArray = new JSONArray();
+			for (int n = 0; n < jsonArray.length(); n++) {
 				JSONObject j = jsonArray.getJSONObject(n);
-
-				idObject = j.getInt("id");
-				descObject = j.getString("description");
-				
-				JsonArray attrArray = j.getJsonArray("pageTypeAttributes");
-				JsonObject locationObject = attrArray.getJsonObject("Location");
-				
-				MapsActivity m = new MapsActivity();
-				m.addMarkerToList(descObject, String.valueOf(idObject));
-				
-				/****************************************************
-    			 * 
-    			 * just get location here, instead of all desc.
-    			 * this may or may not work
-    			 * 
-    			 *****************************************************/
-
-			Log.d(null, "list downloaded");
+				String locationValue = null;
+				int idObject = j.getInt("id");
+				JSONArray attrArray = j.getJSONArray("pageTypeValues");
+				for (int i = 0; i < attrArray.length(); i++) {
+					JSONObject attrObject = (JSONObject) attrArray.get(i);
+					String title = attrObject.getString("title");
+					if (title.equals("Location")) {
+						locationValue = (String) attrObject.get("value");
+						JSONObject downloadObject = new JSONObject();
+						downloadObject.put("title", idObject);
+						downloadObject.put("location", locationValue);
+						downloadArray.put(downloadObject);
+					}
+					//Log.d(null, idObject + " " + locationValue);
+				}
 			}
-
-/*
-		} catch (JSONException e) {
-			Log.d(null, "json exception");
-			e.printStackTrace();
+			MapsActivity m = new MapsActivity();
+			Log.d(null, downloadArray.toString());
+			ArrayList<Marker> list = m.addMarkersToMap(downloadArray, mMap);
+			m.revealMarkers(mMap, list);
+		} catch (JSONException e1) {
+			e1.printStackTrace();
 		}
 	}
-*/
+	void setMap(GoogleMap map, ArrayList<Marker> list){
+		this.list = list;
+		this.mMap = map;
+	}
 }

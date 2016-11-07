@@ -69,23 +69,31 @@
         android:layout_below="@+id/locationTextView"
         android:layout_centerHorizontal="true"
         android:layout_margin="20dp" />
-    <Button
-        android:text="Dislike"
+    <!--<Button-->
+        <!--android:text="Dislike"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_above="@+id/backButton"-->
+        <!--android:layout_alignRight="@+id/timestamp_view"-->
+        <!--android:layout_alignEnd="@+id/timestamp_view"-->
+        <!--android:layout_marginBottom="101dp"-->
+        <!--android:id="@+id/dislikeButton" />-->
+    <!--<Button-->
+        <!--android:text="Like"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignBottom="@+id/dislikeButton"-->
+        <!--android:layout_toRightOf="@+id/dislikeButton"-->
+        <!--android:layout_toEndOf="@+id/dislikeButton"-->
+        <!--android:id="@+id/likeButton" />-->
+
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/backButton"
-        android:layout_alignRight="@+id/timestamp_view"
-        android:layout_alignEnd="@+id/timestamp_view"
-        android:layout_marginBottom="101dp"
-        android:id="@+id/dislikeButton" />
-    <Button
-        android:text="Like"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/dislikeButton"
-        android:layout_toRightOf="@+id/dislikeButton"
-        android:layout_toEndOf="@+id/dislikeButton"
-        android:id="@+id/likeButton" />
+        android:id="@+id/usernameText"
+        android:text="jlKAJD;LKAjsdl;kjaSD"
+        android:layout_above="@+id/memoryTextView"
+        android:layout_centerHorizontal="true" />
     <!--<ImageView
         android:layout_width="400dp"
         android:layout_height="150dp"
