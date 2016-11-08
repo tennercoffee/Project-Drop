@@ -22,7 +22,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Kevin on 8/22/2016.
@@ -30,17 +29,12 @@ import java.util.List;
 
 class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
     private String titleObject;
-	private String descObject;
 	private JSONArray jsonArray;
-	private JSONObject jsonObject;
 	private TextView locationTextView;
 	private TextView memoryTextView;
 	private TextView timestampTextView;
 	private TextView usernameTextView;
-	String s;
 	String id;
-	JSONArray jArray;
-
 
 	protected void onPreExecute() {
         Log.d(null, "loading moment");
@@ -50,7 +44,6 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
         final URLConnection conn;
         URL nUrl;
 		id = params[0];
-
         String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
 		try {
 			URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=getPage&");
@@ -61,7 +54,7 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 			conn = nUrl.openConnection();
 			BufferedReader 	in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 			Thread.sleep(100);
-
+			String s;
 			while ((s = in.readLine()) != null) {
 				jsonArray = new JSONArray(s);
 				Log.d(null, "jArray" + s);
@@ -83,12 +76,12 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
     protected void onPostExecute(JsonObject obj) {
 		Log.d(null, "postexecute");
 		String timestamp= null;
-		String location = null;
+		String location;
 		LatLng latlngFinal = null;
 
 		try {
 			for(int n = 0; n < jsonArray.length(); n++) {
-				jsonObject = jsonArray.getJSONObject(n);
+				JSONObject jsonObject = jsonArray.getJSONObject(n);
 				if (jsonObject != null) {
 					titleObject = jsonObject.getString("title");
 					Log.d(null, "title: " + titleObject);
@@ -205,14 +198,11 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 						downloadObject.put("title", idObject);
 						downloadObject.put("location", locationValue);
 						downloadArray.put(downloadObject);
-
 					}
-					//Log.d(null, idObject + " " + locationValue);
 				}
 			}
 			MapsActivity m = new MapsActivity();
 			Log.d(null, downloadArray.toString());
-
 			ArrayList<Marker> list = m.addMarkersToMap(downloadArray, mMap);
 			m.revealMarkers(mMap, list);
 		} catch (JSONException e1) {
