@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -38,14 +39,12 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 import static android.view.View.OnClickListener;
 import static com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import static com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, OnMyLocationButtonClickListener, com.google.android.gms.location.LocationListener{
-    String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1, MY_LOCATION_REQUEST_CODE = 1;
     public GoogleMap mMap;
     public GoogleApiClient client;
@@ -60,7 +59,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         loadMap(savedInstanceState);
         toolbar = (Toolbar) findViewById(R.id.map_toolbar);
         if (toolbar != null) {
@@ -71,7 +69,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     public void loadMap(Bundle savedInstanceState) {
         setContentView(R.layout.activity_maps);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -81,19 +78,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (client == null) {
             buildClient();
         }
-        //LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest()
         if (map != null) {
             mMap = map;
-//        mMap.setOnCameraChangeListener(getCameraChangeListener());
-
-            mMap.setOnMyLocationButtonClickListener(this);
-
-            //needs check if location not available
             enableMyLocation();
-
+            mMap.setOnMyLocationButtonClickListener(this);
             mMap.getUiSettings().setScrollGesturesEnabled(false);
             mMap.getUiSettings().setRotateGesturesEnabled(true);
-
+            mMap.getUiSettings().setCompassEnabled(true);
+            mMap.getUiSettings().setMapToolbarEnabled(false);
+            mMap.setMinZoomPreference(19);
+            mMap.setMaxZoomPreference(20);
             LatLng currentLocation = getLocation();
             if (currentLocation != null) {
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
@@ -129,9 +123,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     return false;
                 }
             });
-            //mMap.setOnMyLocationChangeListener();
-            mMap.setMinZoomPreference(19);
-            mMap.setMaxZoomPreference(20);
         }
         Button profileButton = (Button) findViewById(R.id.profile_button);
         if(profileButton != null){
@@ -140,6 +131,37 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 public void onClick(View view) {
                     Intent i = new Intent(getApplicationContext(), MyProfileActivity.class);
                     startActivity(i);
+                }
+            });
+        }
+        ToggleButton toggle = (ToggleButton) findViewById(R.id.scope_toggle_button);
+        if(toggle != null){
+            toggle.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    boolean on = ((ToggleButton) view).isChecked();
+                    final String scope;
+                    if(on) {
+                        scope = "private";
+                    } else {
+                        scope = "public";
+                    }
+                    mMap.clear();
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    DownloadList loadList = new DownloadList() {
+                        @Override
+                        public List<List<String>> downloadList() {
+                            DownloadMemoryList dml = new DownloadMemoryList();
+                            dml.execute(scope);
+                            dml.setMap(mMap, markersList);
+                            return null;
+                        }
+                    };
+                    loadList.downloadList();
                 }
             });
         }
@@ -155,24 +177,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     public ArrayList<Marker> addMarkersToMap(JSONArray downloadArray, GoogleMap mMap) {
         Log.d(null, "addmarkerstomap");
-        String result = null;
         if (markersList == null){
             markersList = new ArrayList<>();
-            Log.d(null, "null list");
         }
         if(downloadArray != null && mMap != null) {
             for(int i = 0; i < downloadArray.length(); i++){
                 try {
                     JSONObject downloadObject = (JSONObject) downloadArray.get(i);
-
                     String coordinates = downloadObject.get("location").toString();
                     String id = downloadObject.get("title").toString();
-
                     String[] latlng = coordinates.split(",");
                     double latitude = Double.parseDouble(latlng[0]);
                     double longitude = Double.parseDouble(latlng[1]);
                     LatLng latlngFinal = new LatLng(latitude, longitude);
-
                     Marker marker = mMap.addMarker(new MarkerOptions().position(latlngFinal).title(id));
                     markersList.add(marker);
                 } catch (Exception e) {
@@ -188,10 +205,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         this.markersList = markersList;
         for (int n = 0; n < markersList.size(); n++) {
             Marker currentMarker = markersList.get(n);
-
             String markerId = currentMarker.getTitle();
             LatLng position = currentMarker.getPosition();
-
             map.addMarker(new MarkerOptions().position(position).title(markerId));
         }
         Log.d(null, "full map");
@@ -241,13 +256,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_settings:
-                //open settings activity
                 Intent iSettings = new Intent(getApplicationContext(), SettingsActivity.class);
                 startActivity(iSettings);
                 return true;
             case R.id.action_sync:
-                //download memories, then reveal on map
-
+                mMap.clear();
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 DownloadList loadList = new DownloadList() {
                     @Override
                     public List<List<String>> downloadList() {
@@ -259,7 +277,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 };
                 loadList.downloadList();
-
                 return true;
 //            case R.id.action_list:
 //                //open list activity
@@ -300,8 +317,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
         } else {
-            //handle permission request
-            //ContextCompat.
             Log.d(null, "no permission");
         }
         // handles the result of the permission request by implementing the ActivityCompat.OnRequestPermissionsResultCallback
@@ -311,7 +326,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 mMap.setMyLocationEnabled(true);
             } else {
-                //handle permission request
                 Log.d(null, "no permission");
             }
         }
