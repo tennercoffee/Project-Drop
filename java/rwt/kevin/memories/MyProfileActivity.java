@@ -2,11 +2,15 @@ package rwt.kevin.memories;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 public class MyProfileActivity extends AppCompatActivity {
 
+    Toolbar toolbar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,9 +35,24 @@ public class MyProfileActivity extends AppCompatActivity {
          **************************************************/
 
         //ImageView profileImageView = (ImageView) findViewById(R.id.profile_photo);
+
+        toolbar = (Toolbar) findViewById(R.id.my_profile_toolbar);
+        if (toolbar != null) {
+            toolbar.setTitle("My Profile");
+            setSupportActionBar(toolbar);
+        }
+
         TextView usernameTextView = (TextView) findViewById(R.id.usernameText);
+        //get username here and settext
 
-
-
+        Button cancelButton = (Button) findViewById(R.id.backbutton);
+        if(cancelButton != null){
+            cancelButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    finish();
+                }
+            });
+        }
     }
 }

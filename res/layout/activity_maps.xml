@@ -12,6 +12,9 @@
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay"
         android:id="@+id/appBarLayout">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
         <android.support.v7.widget.Toolbar
             android:id="@+id/map_toolbar"
             android:layout_width="match_parent"
@@ -20,15 +23,29 @@
             android:elevation="4dp"
             android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
-        <Button
-            android:id="@+id/profile_button"
-            style="?android:textAppearanceSmall"
-            android:layout_width="match_parent"
+
+            <ToggleButton
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:text="My Profile"
-            android:textStyle="bold"
-            android:layout_below="@+id/map_toolbar"/>
+            android:id="@+id/scope_toggle_button"
+            android:textOn="Private"
+            android:textOff="Public"
+            android:layout_below="@+id/map_toolbar"
+            android:layout_gravity="left"
+            android:layout_marginTop="5dp" />
+
+            <Button
+                android:id="@+id/profile_button"
+                style="?android:textAppearanceSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="My Profile"
+                android:textStyle="bold"
+                android:layout_gravity="end"
+                android:layout_below="@+id/map_toolbar"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true" />
+        </RelativeLayout>
     </android.support.design.widget.AppBarLayout>
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"

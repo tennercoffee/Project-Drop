@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -93,6 +94,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             mMap.getUiSettings().setScrollGesturesEnabled(false);
             mMap.getUiSettings().setRotateGesturesEnabled(true);
+            mMap.getUiSettings().setCompassEnabled(true);
+            mMap.getUiSettings().setMapToolbarEnabled(false);
+            mMap.setMinZoomPreference(19);
+            mMap.setMaxZoomPreference(20);
 
             LatLng currentLocation = getLocation();
             if (currentLocation != null) {
@@ -130,8 +135,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
             //mMap.setOnMyLocationChangeListener();
-            mMap.setMinZoomPreference(19);
-            mMap.setMaxZoomPreference(20);
         }
         Button profileButton = (Button) findViewById(R.id.profile_button);
         if(profileButton != null){
@@ -140,6 +143,58 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 public void onClick(View view) {
                     Intent i = new Intent(getApplicationContext(), MyProfileActivity.class);
                     startActivity(i);
+                }
+            });
+        }
+        ToggleButton toggle = (ToggleButton) findViewById(R.id.scope_toggle_button);
+        if(toggle != null){
+            toggle.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    boolean on = ((ToggleButton) view).isChecked();
+                    final String scope;
+                    if(on) {
+                        //make scope to private
+                        Log.d(null, "private");
+                        scope = "private";
+                        mMap.clear();
+
+                        /********************************
+                         *
+                         * http://web.webapps.centennialarts.com/page.php?command=listPages&
+                         * accessKey=c3b128b6-9890-11e6-9298-e0cb4ea6daff&limit=100&
+                         * filters=
+                         * {"0":{"combine":"AND","field":"pageTypesId","option":"EQUALS","value":"30"},
+                         * "1":{"combine":"AND","field":"scope","option":"EQUALS","value":"private"}}
+                         *
+                         *
+                         *
+                         */
+
+
+
+                    } else {
+                        //make scope to public
+                        Log.d(null, "public");
+                        scope = "public";
+                        mMap.clear();
+                    }
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    DownloadList loadList = new DownloadList() {
+                        @Override
+                        public List<List<String>> downloadList() {
+                            DownloadMemoryList dml = new DownloadMemoryList();
+                            dml.execute(scope);
+                            dml.setMap(mMap, markersList);
+                            Log.d(null, "downloadList");
+                            return null;
+                        }
+                    };
+                    loadList.downloadList();
                 }
             });
         }
@@ -246,8 +301,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 startActivity(iSettings);
                 return true;
             case R.id.action_sync:
-                //download memories, then reveal on map
+                //clear map, then populate with new markers
 
+                mMap.clear();
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 DownloadList loadList = new DownloadList() {
                     @Override
                     public List<List<String>> downloadList() {
@@ -259,7 +320,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 };
                 loadList.downloadList();
-
                 return true;
 //            case R.id.action_list:
 //                //open list activity

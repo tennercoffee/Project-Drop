@@ -87,7 +87,6 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 		LatLng latlngFinal = null;
 
 		try {
-			Thread.sleep(1000);
 			for(int n = 0; n < jsonArray.length(); n++) {
 				jsonObject = jsonArray.getJSONObject(n);
 				if (jsonObject != null) {
@@ -110,19 +109,15 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 							Log.d(null, timestamp);
 						}
 					}
-					//create method in viewmemory to set obj
 				} else {
 					Log.d(null, "error");
 				}
 				String username = "username";
-
 				ViewMemoryActivity view = new ViewMemoryActivity();
 //				view.setId(id);
 				view.setMemory(timestamp, timestampTextView, latlngFinal, locationTextView, titleObject, memoryTextView, username, usernameTextView);
 			}
 		} catch (JSONException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 		Log.d(null, "downloaded");
@@ -149,11 +144,14 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 	}
 	@Override
 	protected Void doInBackground(String... params) {
+		String scope = params[0];
 		String s;
 		try {
 			JSONObject filterObject = new JSONObject();
 			JSONObject idfilterObject = new JSONObject().put("combine", "AND").put("field", "pageTypesId").put("option","EQUALS").put("value","30");
+			JSONObject scopeFilterObject = new JSONObject().put("combine", "AND").put("field", "scope").put("option","EQUALS").put("value",scope);
 			filterObject.put("0",idfilterObject);
+			filterObject.put("1",scopeFilterObject);
 			String data = "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8")
 					+ "&" + URLEncoder.encode("limit", "UTF-8") + "=" + URLEncoder.encode("100", "UTF-8")
 					+ "&" + URLEncoder.encode("filters", "UTF-8") + "=" + URLEncoder.encode(filterObject.toString(),"UTF-8");
