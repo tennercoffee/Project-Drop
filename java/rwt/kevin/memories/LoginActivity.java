@@ -61,7 +61,7 @@ public class LoginActivity extends MainActivity{
             cancelButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    //what to do here
+                    finish();
                 }
             });
         }
@@ -74,26 +74,6 @@ public class LoginActivity extends MainActivity{
                 public void onClick(View view) {
                     LoginUser user = new LoginUser();
                     user.execute(finalEmail, finalPassword);
-                }
-            });
-        }
-        Button signupButton = (Button) findViewById(R.id.signup_button);
-        if(signupButton != null){
-            signupButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent i = new Intent(getApplicationContext(), SignUpActivity.class);
-                    startActivity(i);
-                }
-            });
-        }
-        Button quicktourButton = (Button) findViewById(R.id.quicktour_button);
-        if(quicktourButton != null){
-            quicktourButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent i = new Intent(getApplicationContext(), TourActivity.class);
-                    startActivity(i);
                 }
             });
         }

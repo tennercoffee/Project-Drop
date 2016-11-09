@@ -77,4 +77,13 @@
         android:layout_alignLeft="@+id/backbutton"
         android:layout_alignStart="@+id/backbutton" />
 
+    <Button
+        android:text="Logout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/backbutton"
+        android:layout_alignRight="@+id/profile_imageview"
+        android:layout_alignEnd="@+id/profile_imageview"
+        android:id="@+id/logout_button" />
+
 </RelativeLayout>

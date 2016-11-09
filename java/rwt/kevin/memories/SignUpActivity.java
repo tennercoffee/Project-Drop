@@ -48,7 +48,7 @@ public class SignUpActivity extends MainActivity {
             cancelButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
+                    finish();
                 }
             });
         }

@@ -167,6 +167,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
     /////////////////////////////////////////////////////////////////////////////
+    //clustermanager work
+
+    
     public void addMarkerToList(String location, String s) {
         resultList = new ArrayList<>();
         List<String> result = new ArrayList<>();
@@ -192,6 +195,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     LatLng latlngFinal = new LatLng(latitude, longitude);
                     Marker marker = mMap.addMarker(new MarkerOptions().position(latlngFinal).title(id));
                     markersList.add(marker);
+                    MemoryListActivity mla = new MemoryListActivity();
+                    mla.setJsonArray(downloadArray);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -278,11 +283,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 };
                 loadList.downloadList();
                 return true;
-//            case R.id.action_list:
-//                //open list activity
-//                Intent iList = new Intent(getApplicationContext(), MemoryListActivity.class);
-//                startActivity(iList);
-//                return true;
+            case R.id.action_list:
+                //open list activity
+                Intent iList = new Intent(getApplicationContext(), MemoryListActivity.class);
+//                iList.putExtra();
+                startActivity(iList);
+                return true;
             case R.id.action_about:
                 //open about activity
                 Intent about = new Intent(getApplicationContext(), AboutActivity.class);

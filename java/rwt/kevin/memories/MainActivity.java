@@ -20,23 +20,12 @@ public class MainActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
-
-        
-
         setContentView(R.layout.activity_main);
-        try {
-            Thread.sleep(2000);
-        }catch (InterruptedException e) {
-            e.printStackTrace();
+        toolbar = (Toolbar) findViewById(R.id.login_toolbar);
+        if (toolbar != null) {
+            toolbar.setTitle("Main");
         }
-        Intent i = new Intent(getApplicationContext(), MapsActivity.class);
-        startActivity(i);
-        
-        /*toolbar = (Toolbar) findViewById(R.id.login_toolbar);
-                if (toolbar != null) {
-                    toolbar.setTitle("Login");
-                }*/
-        /*Button aboutButton = (Button) findViewById(R.id.aboutButton);
+        Button aboutButton = (Button) findViewById(R.id.aboutButton);
         if (aboutButton != null) {
             aboutButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -56,7 +45,7 @@ public class MainActivity extends FragmentActivity {
                 }
             });
         }
-        Button signinButton = (Button) findViewById(R.id.signinButton);
+        Button signinButton = (Button) findViewById(R.id.login_button);
         if(signinButton != null){
             signinButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -75,11 +64,7 @@ public class MainActivity extends FragmentActivity {
                     startActivity(i);
                 }
             });
-        }*/
-        
-        
-        
-        
+        }
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
