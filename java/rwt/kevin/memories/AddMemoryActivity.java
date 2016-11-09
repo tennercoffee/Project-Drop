@@ -220,11 +220,11 @@ class AddMemory extends AsyncTask<String, String, Void> {
             try {
                 Log.d(null, jsonObject.toString());
                 int idObject = jsonObject.getInt("id");
-                ViewMemoryActivity view = new ViewMemoryActivity();
-                view.setId(String.valueOf(idObject));
+//                ViewMemoryActivity view = new ViewMemoryActivity();
+//                view.setId(String.valueOf(idObject));
                 String successObject = jsonObject.getString("success");
                 if (successObject.equals("true")) {
-                    Log.d(null, "success true");
+                    Log.d(null, "success true...id: " + idObject);
                 }
             } catch (JSONException j) {
                 j.printStackTrace();

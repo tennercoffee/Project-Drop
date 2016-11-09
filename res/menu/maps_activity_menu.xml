@@ -6,10 +6,10 @@
         android:icon="@drawable/ic_sync_black_24dp"
         android:title="Sync"
         app:showAsAction="ifRoom"/>
-    <!--<item-->
-        <!--android:id="@+id/action_list"-->
-        <!--android:title="View List"-->
-        <!--app:showAsAction="never" />-->
+    <item
+        android:id="@+id/action_list"
+        android:title="View List"
+        app:showAsAction="never" />
     <item
         android:id="@+id/action_about"
         android:title="About"
