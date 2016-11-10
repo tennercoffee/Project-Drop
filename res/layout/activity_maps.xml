@@ -31,8 +31,7 @@
             android:textOn="Private"
             android:textOff="Public"
             android:layout_below="@+id/map_toolbar"
-            android:layout_gravity="left"
-            android:layout_marginTop="5dp" />
+            android:layout_gravity="left" />
 
             <Button
                 android:id="@+id/profile_button"
@@ -45,6 +44,14 @@
                 android:layout_below="@+id/map_toolbar"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true" />
+
+            <Button
+                android:text="List"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/map_toolbar"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/list_button" />
         </RelativeLayout>
     </android.support.design.widget.AppBarLayout>
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
@@ -63,5 +70,6 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="40dp"
         android:src="@drawable/plussignicon"
-        android:onClick="AddMemoryActivity"/>
+        android:onClick="AddMemoryActivity"
+        app:elevation="1dp" />
 </RelativeLayout>

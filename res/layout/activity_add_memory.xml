@@ -57,7 +57,7 @@
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:id="@+id/editInp"
-            android:hint=" Input your moment here, then Submit. "
+            android:hint=" Input your moment here, then click \n 'Submit' to make your mark on the map. "
             android:singleLine="false"
             android:inputType="text"
             android:gravity="top|left"

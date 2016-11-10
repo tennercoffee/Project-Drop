@@ -13,6 +13,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -33,6 +34,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.clustering.ClusterItem;
+import com.google.maps.android.clustering.ClusterManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -52,6 +55,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public SupportMapFragment mapFragment = null;
     Toolbar toolbar;
     List<List<String>> resultList;
+    ClusterManager<MarkerItems> mClusterManager;
+    JSONArray resultJSON = new JSONArray();
 
     public interface DownloadList {
         List<List<String>> downloadList();
@@ -86,8 +91,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.getUiSettings().setRotateGesturesEnabled(true);
             mMap.getUiSettings().setCompassEnabled(true);
             mMap.getUiSettings().setMapToolbarEnabled(false);
-            mMap.setMinZoomPreference(19);
+            mMap.setMinZoomPreference(10);
             mMap.setMaxZoomPreference(20);
+            mClusterManager = new ClusterManager<>(this, map);
+            mMap.setOnMarkerClickListener(mClusterManager);
+
             LatLng currentLocation = getLocation();
             if (currentLocation != null) {
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
@@ -134,6 +142,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
         }
+        Button listButton = (Button) findViewById(R.id.list_button);
+        if(listButton != null){
+            listButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent iList = new Intent(getApplicationContext(), MemoryListActivity.class);
+                    if(resultJSON != null) {
+                        MemoryListActivity m = new MemoryListActivity();
+                        m.setJsonArray(resultJSON);
+                    }
+                    startActivity(iList);
+                }
+            });
+        }
         ToggleButton toggle = (ToggleButton) findViewById(R.id.scope_toggle_button);
         if(toggle != null){
             toggle.setOnClickListener(new OnClickListener() {
@@ -157,7 +179,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         public List<List<String>> downloadList() {
                             DownloadMemoryList dml = new DownloadMemoryList();
                             dml.execute(scope);
-                            dml.setMap(mMap, markersList);
+                            dml.setMap(mMap, mClusterManager, markersList);
                             return null;
                         }
                     };
@@ -165,11 +187,40 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
         }
+
     }
     /////////////////////////////////////////////////////////////////////////////
     //clustermanager work
-
-    
+    public class MarkerItems implements ClusterItem {
+        private final LatLng mPosition;
+        MarkerItems(LatLng position) {
+            mPosition = position;
+        }
+        @Override
+        public LatLng getPosition() {
+            return mPosition;
+        }
+    }
+    private void setUpCluster(GoogleMap map) {
+        Log.d(null, "setupcluster");
+//        map.moveCamera(CameraUpdateFactory.newLatLngZoom(getLocation(), 18));
+//        mClusterManager = new ClusterManager<>(this, map);
+//        map.setOnCameraIdleListener((GoogleMap.OnCameraIdleListener) mClusterManager);
+    }
+    /////////////////////////////////////////////////////////////////////////////
+    public void setMemoryJSON(JSONArray array){
+        this.resultJSON = array;
+        MemoryListActivity m = new MemoryListActivity();
+        m.setJsonArray(resultJSON);
+    }
+    public JSONArray getJsonArray(){
+        if(resultJSON != null) {
+            return resultJSON;
+        } else {
+            Log.d(null, "null json, maps");
+            return null;
+        }
+    }
     public void addMarkerToList(String location, String s) {
         resultList = new ArrayList<>();
         List<String> result = new ArrayList<>();
@@ -197,6 +248,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     markersList.add(marker);
                     MemoryListActivity mla = new MemoryListActivity();
                     mla.setJsonArray(downloadArray);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -206,13 +258,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         return markersList;
     }
-    public void revealMarkers(GoogleMap map, ArrayList<Marker> markersList) {
+    public void revealMarkers(GoogleMap map, ClusterManager clusterManager, ArrayList<Marker> markersList) {
         this.markersList = markersList;
         for (int n = 0; n < markersList.size(); n++) {
             Marker currentMarker = markersList.get(n);
-            String markerId = currentMarker.getTitle();
-            LatLng position = currentMarker.getPosition();
-            map.addMarker(new MarkerOptions().position(position).title(markerId));
+//            map.addMarker(new MarkerOptions().position(currentMarker.getPosition()).title(currentMarker.getTitle()));
+            if(clusterManager != null) {
+                this.mClusterManager = clusterManager;
+                Log.d(null, "addtoClusterManager: " + currentMarker.getPosition());
+                mClusterManager.addItem(new MarkerItems(currentMarker.getPosition()));
+            }else{Log.d(null, "clustermanager null");}
+//            if(clusterManager != null) {
+//                clusterManager.addItem(new MarkerItems(currentMarker.getPosition()));
+//            }else{Log.d(null, "clustermanager null");}
         }
         Log.d(null, "full map");
     }
@@ -260,10 +318,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_settings:
-                Intent iSettings = new Intent(getApplicationContext(), SettingsActivity.class);
-                startActivity(iSettings);
-                return true;
+//            case R.id.action_settings:
+//                Intent iSettings = new Intent(getApplicationContext(), SettingsActivity.class);
+//                startActivity(iSettings);
+//                return true;
             case R.id.action_sync:
                 mMap.clear();
                 try {
@@ -276,19 +334,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     public List<List<String>> downloadList() {
                         DownloadMemoryList dml = new DownloadMemoryList();
                         dml.execute("public");
-                        dml.setMap(mMap, markersList);
+                        dml.setMap(mMap, mClusterManager, markersList);
                         Log.d(null, "downloadList");
                         return null;
                     }
                 };
                 loadList.downloadList();
+                //            setUpCluster(mMap);
                 return true;
-            case R.id.action_list:
-                //open list activity
-                Intent iList = new Intent(getApplicationContext(), MemoryListActivity.class);
-//                iList.putExtra();
-                startActivity(iList);
-                return true;
+//            case R.id.action_list:
+//                //open list activity
+//                Intent iList = new Intent(getApplicationContext(), MemoryListActivity.class);
+//                if(resultJSON != null) {
+//                    MemoryListActivity m = new MemoryListActivity();
+//                    m.setJsonArray(resultJSON);
+//                }
+//
+//                startActivity(iList);
+//                return true;
             case R.id.action_about:
                 //open about activity
                 Intent about = new Intent(getApplicationContext(), AboutActivity.class);
@@ -307,7 +370,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     public void onLocationChanged(Location location) {
         Toast.makeText(null, "location :"+location.getLatitude()+" , "+location.getLongitude(), Toast.LENGTH_SHORT).show();
-        //TODO, update map latlng position
+        LatLng currentLocation = getLocation();
+        if (currentLocation != null && mMap != null) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
+        }
     }
     @Override
     public void onConnectionSuspended(int i) {

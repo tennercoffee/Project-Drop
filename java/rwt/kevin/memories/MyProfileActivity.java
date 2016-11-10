@@ -1,6 +1,8 @@
 package rwt.kevin.memories;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -37,7 +39,29 @@ public class MyProfileActivity extends AppCompatActivity {
             logoutButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent i = new Intent(getApplicationContext(), MainActivity.class);
+//                    Intent i = new Intent(getApplicationContext(), MainActivity.class);
+//                    startActivity(i);
+                    new AlertDialog.Builder(getApplicationContext())
+							.setTitle("Confirm")
+							.setMessage("Do you really want to logout?")
+							.setIcon(android.R.drawable.ic_dialog_alert)
+							.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int whichButton) {
+									//Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                                    //startActivity(i);
+                                    //TODO: send api call to logout of user
+								}
+							})
+							.setNegativeButton(android.R.string.no, null).show();
+                }
+            });
+        }
+        Button settingsButton = (Button) findViewById(R.id.settings_button);
+        if(settingsButton != null){
+            settingsButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
                     startActivity(i);
                 }
             });
