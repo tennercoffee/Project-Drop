@@ -141,6 +141,9 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 		String scope = params[0];
 		String s;
 		try {
+
+
+
 			JSONObject filterObject = new JSONObject();
 			JSONObject idfilterObject = new JSONObject().put("combine", "AND").put("field", "pageTypesId").put("option","EQUALS").put("value","30");
 			JSONObject scopeFilterObject = new JSONObject().put("combine", "AND").put("field", "scope").put("option","EQUALS").put("value",scope);
@@ -149,25 +152,35 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 			String data = "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8")
 					+ "&" + URLEncoder.encode("limit", "UTF-8") + "=" + URLEncoder.encode("100", "UTF-8")
 					+ "&" + URLEncoder.encode("filters", "UTF-8") + "=" + URLEncoder.encode(filterObject.toString(),"UTF-8");
-			URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=listPages" + data);
-			Log.d(null, url.toString());
-			final URLConnection conn = url.openConnection();
-			final BufferedReader[] in = new BufferedReader[1];
-			InputReader reader = new InputReader() {
-				@Override
-				public String getInput() {
-					try {
-						in[0] = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-					} catch (IOException e) {
-						e.printStackTrace();
+
+			String offset = "0";
+
+			do{
+				URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=listPages" + data + "&" + URLEncoder.encode("offset", "UTF-8") + "=" + URLEncoder.encode(offset, "UTF-8"));
+				Log.d(null, url.toString());
+				final URLConnection conn = url.openConnection();
+				final BufferedReader[] in = new BufferedReader[1];
+				InputReader reader = new InputReader() {
+					@Override
+					public String getInput() {
+						try {
+							in[0] = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						return null;
 					}
-					return null;
+				};
+				reader.getInput();
+				while ((s = in[0].readLine()) != null) {
+					jsonArray = new JSONArray(s);
 				}
-			};
-			reader.getInput();
-			while ((s = in[0].readLine()) != null) {
-				jsonArray = new JSONArray(s);
-			}
+				offset += 100;
+			 } while (jsonArray != null);
+
+
+
+
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			Log.d(null, "malformed url");

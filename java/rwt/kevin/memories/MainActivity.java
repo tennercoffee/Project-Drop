@@ -77,12 +77,4 @@ public class MainActivity extends FragmentActivity {
         super.attachBaseContext(newBase);
         MultiDex.install(this);
     }
-    public boolean loggedIn(){
-        //design api calls here to check if username is logged in
-        //save username and password in shared preferences
-            //http://stackoverflow.com/questions/22526950/how-to-check-if-current-user-is-logged-in-android
-        return true;
-    }
-    public void loading(){
-    }
 }
