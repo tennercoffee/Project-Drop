@@ -8,6 +8,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.gson.JsonObject;
+import com.google.maps.android.clustering.ClusterManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -124,9 +125,10 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class DownloadMemoryList extends AsyncTask<String, String, Void> {
+	private ArrayList<JSONArray> arrayList = new ArrayList<>();
 	private JSONArray jsonArray;
 	private GoogleMap mMap;
-	private ArrayList<Marker> list;
+	private ClusterManager cluster;
 	private String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
 
 	interface InputReader{
@@ -139,6 +141,7 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 	protected Void doInBackground(String... params) {
 		String scope = params[0];
 		String s;
+		int offset = 0;
 		try {
 			JSONObject filterObject = new JSONObject();
 			JSONObject idfilterObject = new JSONObject().put("combine", "AND").put("field", "pageTypesId").put("option","EQUALS").put("value","30");
@@ -148,26 +151,29 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 			String data = "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8")
 					+ "&" + URLEncoder.encode("limit", "UTF-8") + "=" + URLEncoder.encode("100", "UTF-8")
 					+ "&" + URLEncoder.encode("filters", "UTF-8") + "=" + URLEncoder.encode(filterObject.toString(),"UTF-8");
-			URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=listPages" + data);
-			Log.d(null, url.toString());
-			final URLConnection conn = url.openConnection();
-			final BufferedReader[] in = new BufferedReader[1];
-			InputReader reader = new InputReader() {
-				@Override
-				public String getInput() {
-					try {
-						in[0] = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-					} catch (IOException e) {
-						e.printStackTrace();
+//			do{
+				URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=listPages" + data + "&" + URLEncoder.encode("offset", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(offset), "UTF-8"));
+				Log.d(null, url.toString());
+				final URLConnection conn = url.openConnection();
+				final BufferedReader[] in = new BufferedReader[1];
+				InputReader reader = new InputReader() {
+					@Override
+					public String getInput() {
+						try {
+							in[0] = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						return null;
 					}
-					return null;
+				};
+				reader.getInput();
+				while ((s = in[0].readLine()) != null) {
+					jsonArray = new JSONArray(s);
+//					arrayList.add(jsonArray);
 				}
-			};
-			reader.getInput();
-			while ((s = in[0].readLine()) != null) {
-				jsonArray = new JSONArray(s);
-				Log.d(null, jsonArray.toString());
-			}
+//				offset += 100;
+//			 } while (jsonArray != null);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			Log.d(null, "malformed url");
@@ -184,33 +190,38 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 		Log.d(null, "postExecute");
 		try {
 			JSONArray downloadArray = new JSONArray();
+			JSONArray listArray = new JSONArray();
 			for (int n = 0; n < jsonArray.length(); n++) {
 				JSONObject j = jsonArray.getJSONObject(n);
-				String locationValue = null;
+				String locationValue;
 				int idObject = j.getInt("id");
+				String titleObject = j.getString("title");
 				JSONArray attrArray = j.getJSONArray("pageTypeValues");
 				for (int i = 0; i < attrArray.length(); i++) {
 					JSONObject attrObject = (JSONObject) attrArray.get(i);
 					String title = attrObject.getString("title");
 					if (title.equals("Location")) {
 						locationValue = (String) attrObject.get("value");
-						JSONObject downloadObject = new JSONObject();
-						downloadObject.put("title", idObject);
-						downloadObject.put("location", locationValue);
-						downloadArray.put(downloadObject);
+						JSONObject markerObject = new JSONObject();
+						markerObject.put("title", idObject).put("location", locationValue);
+						downloadArray.put(markerObject);
+						JSONObject listObject = new JSONObject();
+						listObject.put("title", titleObject).put("location", locationValue);
+						listArray.put(listObject);
 					}
 				}
 			}
 			MapsActivity m = new MapsActivity();
-			Log.d(null, downloadArray.toString());
 			ArrayList<Marker> list = m.addMarkersToMap(downloadArray, mMap);
-			m.revealMarkers(mMap, list);
+			m.revealMarkers(mMap, cluster, list);
+			m.setMemoryJSON(listArray);
 		} catch (JSONException e1) {
 			e1.printStackTrace();
 		}
 	}
-	void setMap(GoogleMap map, ArrayList<Marker> list){
-		this.list = list;
+	void setMap(GoogleMap map, ClusterManager clusterManager, ArrayList<Marker> list){
+//		ArrayList<Marker> list1 = list;
 		this.mMap = map;
+		this.cluster = clusterManager;
 	}
 }

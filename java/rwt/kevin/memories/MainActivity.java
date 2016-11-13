@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.multidex.MultiDex;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -25,45 +26,52 @@ public class MainActivity extends FragmentActivity {
         if (toolbar != null) {
             toolbar.setTitle("Main");
         }
-        Button aboutButton = (Button) findViewById(R.id.aboutButton);
-        if (aboutButton != null) {
-            aboutButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent i = new Intent(getApplicationContext(), AboutActivity.class);
-                    startActivity(i);
-                }
-            });
-        }
-        Button noLoginButton = (Button) findViewById(R.id.noLoginButton);
-        if (noLoginButton != null) {
-            noLoginButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent i = new Intent(getApplicationContext(), MapsActivity.class);
-                    startActivity(i);
-                }
-            });
-        }
-        Button signinButton = (Button) findViewById(R.id.login_button);
-        if(signinButton != null){
-            signinButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent i = new Intent(getApplicationContext(), LoginActivity.class);
-                    startActivity(i);
-                }
-            });
-        }
-        Button signupButton = (Button) findViewById(R.id.signupButton);
-        if(signupButton != null){
-            signupButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent i = new Intent(getApplicationContext(), SignUpActivity.class);
-                    startActivity(i);
-                }
-            });
+        LoginActivity l = new LoginActivity();
+        if(!l.isLoggedIn()){
+            Button aboutButton = (Button) findViewById(R.id.aboutButton);
+            if (aboutButton != null) {
+                aboutButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent i = new Intent(getApplicationContext(), AboutActivity.class);
+                        startActivity(i);
+                    }
+                });
+            }
+            Button noLoginButton = (Button) findViewById(R.id.noLoginButton);
+            if (noLoginButton != null) {
+                noLoginButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+                        startActivity(i);
+                    }
+                });
+            }
+            Button signinButton = (Button) findViewById(R.id.login_button);
+            if(signinButton != null){
+                signinButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent i = new Intent(getApplicationContext(), LoginActivity.class);
+                        startActivity(i);
+                    }
+                });
+            }
+            Button signupButton = (Button) findViewById(R.id.signupButton);
+            if(signupButton != null){
+                signupButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent i = new Intent(getApplicationContext(), SignUpActivity.class);
+                        startActivity(i);
+                    }
+                });
+            }
+        } else {
+            Log.d(null, "loggedin, proceed to maps");
+            Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+            startActivity(i);
         }
     }
     @Override
@@ -76,13 +84,5 @@ public class MainActivity extends FragmentActivity {
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(newBase);
         MultiDex.install(this);
-    }
-    public boolean loggedIn(){
-        //design api calls here to check if username is logged in
-        //save username and password in shared preferences
-            //http://stackoverflow.com/questions/22526950/how-to-check-if-current-user-is-logged-in-android
-        return true;
-    }
-    public void loading(){
     }
 }

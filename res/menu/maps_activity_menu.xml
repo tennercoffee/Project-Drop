@@ -6,18 +6,18 @@
         android:icon="@drawable/ic_sync_black_24dp"
         android:title="Sync"
         app:showAsAction="ifRoom"/>
-    <item
-        android:id="@+id/action_list"
-        android:title="View List"
-        app:showAsAction="never" />
+    <!--<item-->
+        <!--android:id="@+id/action_list"-->
+        <!--android:title="View List"-->
+        <!--app:showAsAction="never" />-->
     <item
         android:id="@+id/action_about"
         android:title="About"
         android:icon="@drawable/ic_setting_dark"
         app:showAsAction="never" />
     <!-- Settings, should always be in the overflow -->
-    <item android:id="@+id/action_settings"
-        android:icon="@drawable/ic_setting_light"
-        android:title="Settings"
-        app:showAsAction="never"/>
+    <!--<item android:id="@+id/action_settings"-->
+        <!--android:icon="@drawable/ic_setting_light"-->
+        <!--android:title="Settings"-->
+        <!--app:showAsAction="never"/>-->
 </menu>

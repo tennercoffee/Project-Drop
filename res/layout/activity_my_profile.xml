@@ -86,4 +86,13 @@
         android:layout_alignEnd="@+id/profile_imageview"
         android:id="@+id/logout_button" />
 
+    <Button
+        android:text="Settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/backbutton"
+        android:layout_alignRight="@+id/logout_button"
+        android:layout_alignEnd="@+id/logout_button"
+        android:id="@+id/settings_button" />
+
 </RelativeLayout>

@@ -33,14 +33,12 @@ public class SignUpActivity extends MainActivity {
             email = emailText.getText().toString();
             if(passText1 == passText2){
                 password = passText1.getText().toString();
-                
                 //call to server
             }else{
-                //failMessage("Passwords must match");
+                Log.d(null, "signup error");
             }
         }else{
-            //error, null values
-            //failMessage("ERROR!");
+            Log.d(null, "signup error");
         }
 
         Button cancelButton = (Button) findViewById(R.id.cancelButton);
