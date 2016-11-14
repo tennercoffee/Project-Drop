@@ -47,7 +47,6 @@ public class ViewMemoryActivity extends MapsActivity {
 		if (id == null) {
 			Intent intent = getIntent();
 			id = intent.getStringExtra("id");
-			Log.d(null, id);
 			loadMemory(id);
 		} else {
 			Log.d(null, "null id");

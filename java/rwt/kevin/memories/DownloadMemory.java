@@ -23,6 +23,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Kevin on 8/22/2016.
@@ -130,6 +131,7 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 	private GoogleMap mMap;
 	private ClusterManager cluster;
 	private String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
+	private String result;
 
 	interface InputReader{
 		String getInput();
@@ -140,6 +142,7 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 	@Override
 	protected Void doInBackground(String... params) {
 		String scope = params[0];
+		result = params[1];
 		String s;
 		int offset = 0;
 		try {
@@ -211,10 +214,14 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 					}
 				}
 			}
-			MapsActivity m = new MapsActivity();
-			ArrayList<Marker> list = m.addMarkersToMap(downloadArray, mMap);
-			m.revealMarkers(mMap, cluster, list);
-			m.setMemoryJSON(listArray);
+			if(result.equals("1")) {
+				MapsActivity m = new MapsActivity();
+				ArrayList<Marker> list = m.addMarkersToMap(downloadArray, mMap);
+				m.revealMarkers(mMap, cluster, list);
+			} else if (result.equals("0")) {
+				MemoryListActivity m = new MemoryListActivity();
+				m.setJsonArray(listArray);
+			}
 		} catch (JSONException e1) {
 			e1.printStackTrace();
 		}
@@ -223,5 +230,8 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 //		ArrayList<Marker> list1 = list;
 		this.mMap = map;
 		this.cluster = clusterManager;
+	}
+	void setList(List<List<String>> memList) {
+//		this.memList = memList;
 	}
 }

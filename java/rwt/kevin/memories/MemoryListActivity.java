@@ -11,16 +11,21 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.model.Marker;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MemoryListActivity extends MapsActivity {
     ListView listView;
     public JSONArray jsonArray;
+    ArrayList<Marker> markerList;
+    List<List<String>> memList= new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,64 +40,63 @@ public class MemoryListActivity extends MapsActivity {
         setMemoryList();
     }
     private void setMemoryList(){
-        Intent i = getIntent();
-        String jsonString = i.getStringExtra("json");
-        if(jsonString != null){
+        DownloadList loadList = new DownloadList() {
+            @Override
+            public List<List<String>> downloadList() {
+                DownloadMemoryList dml = new DownloadMemoryList();
+                dml.execute("public", "0");
+                dml.setList(memList);
+//                dml.setMap(mMap, mClusterManager, markersList);
+                return null;
+            }
+        };
+        loadList.downloadList();
+
+        if(jsonArray != null){
+            Log.d(null, "memlist json: " + jsonArray.toString());
+
             try {
                 List<String> slist = new ArrayList<>();
-                JSONArray array = new JSONArray(jsonString);
+
                 String title = null;
                 String location = null;
-                for (int n = 0; n < array.length(); n++) {
-                    try {
-                        JSONObject object = array.getJSONObject(n);
-                        title = object.getString("title");
-                        location = object.getString("location");
-    //                    slist.add("title",title);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                slist.add(title);
-                slist.add(location);
-                Log.d(null, slist.toString());
+                for (int n = 0; n < jsonArray.length(); n++) {
+                    JSONObject object = jsonArray.getJSONObject(n);
+                    title = object.getString("title");
+                    location = object.getString("location");
+                    slist.add(title);
+                    slist.add(location);
 
-                //define adapter
-                //        String[] mobileArray = {"Android","IPhone","WindowsMobile","Blackberry",
-                //                "WebOS","Ubuntu","Windows7","Max OS X"};
-    //            ArrayAdapter adapter = new ArrayAdapter<>(this,
-    //                    R.layout.activity_memory_list, R.id.momentList, slist);
-    //            if(listView != null){
-    //                Log.d(null, "listview is good");
-    //                listView.setAdapter(adapter);
-    //                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-    //                    public void onItemClick(AdapterView<?> arg0, View v, int position, long arg3) {
-    //    //                    String selectedMemory = listView.get(position);
-    //    //                    String selectedMemory
-    //                        Toast.makeText(getApplicationContext(), "Opening Moment", Toast.LENGTH_LONG).show();
-    //    //                    ViewMemoryActivity view = new ViewMemoryActivity();
-    //    //                    view.setId(listView.getSelectedItem().toString());
-    //                        Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
-    //                        startActivity(i);
-    //                    }
-    //                });
-    //            }else{
-    //                Toast.makeText(null, "There are no Moments!", Toast.LENGTH_LONG).show();
-    //            }
+                    Log.d(null, slist.toString());
+//
+//                //define adapter
+//                //        String[] mobileArray = {"Android","IPhone","WindowsMobile","Blackberry",
+//                //                "WebOS","Ubuntu","Windows7","Max OS X"};
+//    //            ArrayAdapter adapter = new ArrayAdapter<>(this,
+//    //                    R.layout.activity_memory_list, R.id.momentList, slist);
+//    //            if(listView != null){
+//    //                Log.d(null, "listview is good");
+//    //                listView.setAdapter(adapter);
+//    //                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//    //                    public void onItemClick(AdapterView<?> arg0, View v, int position, long arg3) {
+//    //    //                    String selectedMemory = listView.get(position);
+//    //    //                    String selectedMemory
+//    //                        Toast.makeText(getApplicationContext(), "Opening Moment", Toast.LENGTH_LONG).show();
+//    //    //                    ViewMemoryActivity view = new ViewMemoryActivity();
+//    //    //                    view.setId(listView.getSelectedItem().toString());
+//    //                        Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
+//    //                        startActivity(i);
+//    //                    }
+//    //                });
+//    //            }else{
+//    //                Toast.makeText(null, "There are no Moments!", Toast.LENGTH_LONG).show();
+//    //            }
+                }
             } catch (JSONException e) {
             e.printStackTrace();
             }
         } else {
             Log.d(null, "null json");
-//            MapsActivity m = new MapsActivity();
-//            try {
-//                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-//                    JSONArray jsonArray = new JSONArray(m.getJsonArray());
-//                    Log.d(null, jsonArray.toString());
-//                }
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
         }
         Button backButton = (Button) findViewById(R.id.backButton);
         if(backButton != null) {
@@ -104,8 +108,8 @@ public class MemoryListActivity extends MapsActivity {
             });
         }
     }
-    public void setJsonArray(JSONArray array){
-        this.jsonArray = array;
+    public void setJsonArray(JSONArray markerList){
+        this.jsonArray = markerList;
+        Log.d(null, "setJsonArray: " + jsonArray.toString());
     }
-
 }
