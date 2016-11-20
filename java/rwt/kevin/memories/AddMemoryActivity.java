@@ -97,8 +97,12 @@ public class AddMemoryActivity extends MapsActivity {
                         GetResultId getId = new GetResultId() {
                             @Override
                             public String getResultId() {
-                                AddMemory addmem = new AddMemory();
-                                addmem.execute(location, scope, memoryString);
+                                LoginActivity l = new LoginActivity();
+                                if(l.isLoggedIn()) {
+                                    Log.d(null, "loggedin, proceed to addmem");
+                                    AddMemory addmem = new AddMemory();
+                                    addmem.execute(location, scope, memoryString);
+                                }
                                 return null;
                             }
                         };
@@ -115,13 +119,8 @@ public class AddMemoryActivity extends MapsActivity {
         //setupSnapshot();
     }
     private void setupSnapshot() throws MalformedURLException, UnsupportedEncodingException {
-        TextScanner scan = new TextScanner();
-        String locationString = scan.descSplitter(location,0,0);
-        URL url = new URL("https://maps.googleapis.com/maps/api/staticmap?");
-        String data = URLEncoder.encode("center", "UTF-8") + "=" + URLEncoder.encode(locationString, "UTF-8")
-                + "&" + URLEncoder.encode("zoom", "UTF-8") + "=" + URLEncoder.encode("18", "UTF-8")
-                + "&" + URLEncoder.encode("size", "UTF-8") + "=" + URLEncoder.encode("50x50", "UTF-8");
-        Log.d(null, "snapshot url" + url.toString() + data);
+        //build async task
+        //or just pull when you download mem
     }
     private final TextWatcher mTextEditorWatcher = new TextWatcher() {
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -153,8 +152,8 @@ class AddMemory extends AsyncTask<String, String, Void> {
     }
     @Override
     protected Void doInBackground(String... params) {
-        String scope = params[1];
         String location = params[0];
+        String scope = params[1];
         String memoryString = params[2];
         String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
         //old key--a76c33b2-4c76-11e6-8c59-e0cb4ea6dd17

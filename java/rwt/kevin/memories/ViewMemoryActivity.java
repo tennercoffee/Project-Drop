@@ -47,7 +47,6 @@ public class ViewMemoryActivity extends MapsActivity {
 		if (id == null) {
 			Intent intent = getIntent();
 			id = intent.getStringExtra("id");
-			Log.d(null, id);
 			loadMemory(id);
 		} else {
 			Log.d(null, "null id");
@@ -143,7 +142,7 @@ public class ViewMemoryActivity extends MapsActivity {
 		if(locationTextView != null && location != null) {
 			locationTextView.setText(location.toString());
 			Log.d(null, location + " set");
-		} else if (location == null) {
+		} else if (location == null && locationTextView != null) {
 			locationTextView.setText("error getting location");
 		} else if (locationTextView == null) {
 			Log.d(null, "textview null");

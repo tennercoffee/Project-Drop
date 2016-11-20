@@ -87,16 +87,16 @@
         android:layout_above="@+id/memoryTextView"
         android:layout_centerHorizontal="true" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/removeButton"
-        android:layout_gravity="left"
-        android:text="Remove"
-        android:layout_alignBaseline="@+id/backButton"
-        android:layout_alignBottom="@+id/backButton"
-        android:layout_alignLeft="@+id/memoryTextView"
-        android:layout_alignStart="@+id/memoryTextView" />
+    <!--<Button-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/removeButton"-->
+        <!--android:layout_gravity="left"-->
+        <!--android:text="Remove"-->
+        <!--android:layout_alignBaseline="@+id/backButton"-->
+        <!--android:layout_alignBottom="@+id/backButton"-->
+        <!--android:layout_alignLeft="@+id/memoryTextView"-->
+        <!--android:layout_alignStart="@+id/memoryTextView" />-->
     <!--<ImageView
         android:layout_width="400dp"
         android:layout_height="150dp"

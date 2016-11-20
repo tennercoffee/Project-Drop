@@ -82,10 +82,6 @@
         <activity android:name=".MemoryListActivity"
             android:label="Moment List"
             android:parentActivityName=".MapsActivity"/>
-        <activity
-            android:name=".UserProfileActivity"
-            android:label="@string/title_activity_user_profile"
-            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".MyProfileActivity"></activity>
     </application>
 
