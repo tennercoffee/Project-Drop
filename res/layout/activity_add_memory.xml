@@ -55,18 +55,21 @@
             android:layout_margin="15dp" />
         <EditText
             android:layout_width="match_parent"
-            android:layout_height="200dp"
             android:id="@+id/editInp"
-            android:hint=" Input your moment here, then Submit. "
-            android:singleLine="false"
-            android:inputType="text"
+            android:hint=" Input your moment here, then click \n 'Submit' to make your mark on the map. "
+            android:inputType="text|textCapSentences|textMultiLine"
             android:gravity="top|left"
             android:background="@drawable/edittextstyle"
             android:layout_below="@+id/charCountTextView"
             android:layout_centerHorizontal="true"
-            android:layout_margin="10dp"
             android:focusable="true"
-            android:padding="10dp" />
+            android:padding="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            android:singleLine="true"
+            android:nestedScrollingEnabled="true"
+            android:layout_height="200dp" />
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

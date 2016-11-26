@@ -1,6 +1,7 @@
 package rwt.kevin.memories;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 
 import android.os.Build;
@@ -19,6 +20,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,19 +84,83 @@ public class LoginActivity extends MainActivity{
             });
         }
     }
+    public boolean isLoggedIn(){
+        //return true in order to simplify for now
+        return false;
+    }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class LoginUser extends AsyncTask<String, String, Void> {
+    URL url = null;
     protected void onPreExecute() {
         Log.d(null, "logging in");
     }
     @Override
     protected Void doInBackground(String... params) {
+//        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://atlas.webapps.centennialarts.com/authorize.html"));
+//        startActivity(browserIntent);
 
-        String email = params[0];
-        String password = params[1];
-        Log.d(null, "doInBackground for:" + email + password);
-        String url = null;
+        //once user has logged in
+        //add app
+        URLConnection conn;
+//        try {
+//            String appId = "201";
+//            String appToken = "6mq8e4banlvlsvdpn63bta33h4";
+//            String authGoto = "http://www.google.com";
+//
+//            url = new URL("http://atlas.webapps.centennialarts.com/authorize.html?appId=" + appId + "&appToken=" + appToken + "&authGoto=" + authGoto);
+//
+//            Log.d(null, url.toString());
+////            conn = url.openConnection();
+//            Thread.sleep(3000);
+//            //http://atlas.webapps.centennialarts.com/authorize.html?
+//            //    appId=228&appToken=0fe12ace-af84-11e6-9298-e0cb4ea6daff&authorizationGoto=http://www.centennialarts.com/
+//
+//
+//            String data = URLEncoder.encode("appId", "UTF-8") + "=" + URLEncoder.encode(appId, "UTF-8")
+//                            + "&" + URLEncoder.encode("appToken", "UTF-8") + "=" + URLEncoder.encode(appToken, "UTF-8")
+//                            + "&" + URLEncoder.encode("authorizationGoto", "UTF-8") + "=" + URLEncoder.encode(authGoto, "UTF-8");
+//            URL newUrl = new URL(url + data);
+//            conn = newUrl.openConnection();
+//            Log.d(null, conn.getURL().toString());
+
+
+
+//            URL newUrl = conn.getURL();
+//            Thread.sleep(1000);
+
+
+//            Log.d(null, newUrl.toString());
+
+
+
+
+//
+//
+//
+//        } catch (MalformedURLException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        /***********************************************************
+         *
+         * create async task
+         * login screen
+         *  -login user,
+         *      -add app, get id from json return
+         *          -call list pages, find jsonobject with this.id
+         *              -get(from jsonobject) accesskey
+         *                  -finally authorize with app id and accesskey
+         *
+         */
+//        String email = params[0];
+//        String password = params[1];
+//        Log.d(null, "doInBackground for:" + email + password);
+//        String url = null;
+
 
         return null;
     }

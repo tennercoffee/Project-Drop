@@ -91,4 +91,6 @@
     <string name="about_text">This application is at it\'s most simplest stage. All you do is click on the pink button, and then type in some text on the next screen. This is now accessible through finding that pin marker on the map. \n \n If you wish to clear all the markers off the map, click the \"Clear All\" button(above), and then restart the application. \n\n If you\'re not seeing the markers, wait a second before hitting refresh, after submitting your moment.</string>
     <string name="about_title">Help Section</string>
     <string name="title_activity_user_profile">User Profile</string>
+    <string name="privacy_text">Privacy</string>
+    <string name="google_string">https://www.google.com/?</string>
 </resources>

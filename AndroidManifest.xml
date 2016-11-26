@@ -42,6 +42,14 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="rwt.kevin.memories" android:host="http" >rwt.kevin.memories</data>
+            </intent-filter>
+
+
         </activity>
         <activity
             android:name=".MapsActivity"
@@ -82,10 +90,6 @@
         <activity android:name=".MemoryListActivity"
             android:label="Moment List"
             android:parentActivityName=".MapsActivity"/>
-        <activity
-            android:name=".UserProfileActivity"
-            android:label="@string/title_activity_user_profile"
-            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".MyProfileActivity"></activity>
     </application>
 
