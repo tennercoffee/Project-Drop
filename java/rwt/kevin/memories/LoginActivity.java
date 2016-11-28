@@ -14,6 +14,9 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -27,6 +30,7 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -97,70 +101,49 @@ class LoginUser extends AsyncTask<String, String, Void> {
     }
     @Override
     protected Void doInBackground(String... params) {
-//        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://atlas.webapps.centennialarts.com/authorize.html"));
-//        startActivity(browserIntent);
-
-        //once user has logged in
-        //add app
-        URLConnection conn;
 //        try {
-//            String appId = "201";
-//            String appToken = "6mq8e4banlvlsvdpn63bta33h4";
+//            URL sendUrl = null;
+//
+//            String appId = "450";
+//            String appToken = "7028c8f4-b385-11e6-9298-e0cb4ea6daff";
 //            String authGoto = "http://www.google.com";
+//            sendUrl = new URL("http://atlas.webapps.centennialarts.com/authorize.html?"
+//                    + "appId=" + appId + "&appToken=" + appToken + "&authorizationGoto=" + authGoto);
+//            Log.d(null, "call: " + sendUrl.toString());
 //
-//            url = new URL("http://atlas.webapps.centennialarts.com/authorize.html?appId=" + appId + "&appToken=" + appToken + "&authGoto=" + authGoto);
+//            if(aboutButton != null && noLoginButton != null) {
+//                TextView textView = (TextView) findViewById(R.id.textView);
+//                TextView textView2 = (TextView) findViewById(R.id.textView2);
+//                textView.setVisibility(View.INVISIBLE);
+//                textView2.setVisibility(View.INVISIBLE);
+//                aboutButton.setVisibility(View.INVISIBLE);
+//                signinButton.setVisibility(View.INVISIBLE);
+//                noLoginButton.setVisibility(View.INVISIBLE);
+//            }
+//            webView.setVisibility(View.VISIBLE);
+//            webView.loadUrl(sendUrl.toString());
 //
-//            Log.d(null, url.toString());
-////            conn = url.openConnection();
-//            Thread.sleep(3000);
-//            //http://atlas.webapps.centennialarts.com/authorize.html?
-//            //    appId=228&appToken=0fe12ace-af84-11e6-9298-e0cb4ea6daff&authorizationGoto=http://www.centennialarts.com/
+//            WebSettings settings = webView.getSettings();
+//            settings.setJavaScriptEnabled(true);
 //
+//            webView.setWebViewClient(new WebViewClient() {
+//                @Override
+//                public boolean shouldOverrideUrlLoading(WebView view, String url) {
+//                    Map<String,String> urlMap = getURLMap(url);
+//                    String username = urlMap.get("username");
+//                    String accessKey = urlMap.get("accessKey");
+//                    String id = urlMap.get("rwt.kevin.memories://returnApp?/?userId");
+//                    Log.d(null, id + " " + username + " " + accessKey);
 //
-//            String data = URLEncoder.encode("appId", "UTF-8") + "=" + URLEncoder.encode(appId, "UTF-8")
-//                            + "&" + URLEncoder.encode("appToken", "UTF-8") + "=" + URLEncoder.encode(appToken, "UTF-8")
-//                            + "&" + URLEncoder.encode("authorizationGoto", "UTF-8") + "=" + URLEncoder.encode(authGoto, "UTF-8");
-//            URL newUrl = new URL(url + data);
-//            conn = newUrl.openConnection();
-//            Log.d(null, conn.getURL().toString());
-
-
-
-//            URL newUrl = conn.getURL();
-//            Thread.sleep(1000);
-
-
-//            Log.d(null, newUrl.toString());
-
-
-
-
-//
-//
-//
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } catch (InterruptedException e) {
+//                    Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+//                    startActivity(i);
+//                    // return true if you want to block redirection, false otherwise
+//                    return false;
+//                }
+//            });
+//        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
-        /***********************************************************
-         *
-         * create async task
-         * login screen
-         *  -login user,
-         *      -add app, get id from json return
-         *          -call list pages, find jsonobject with this.id
-         *              -get(from jsonobject) accesskey
-         *                  -finally authorize with app id and accesskey
-         *
-         */
-//        String email = params[0];
-//        String password = params[1];
-//        Log.d(null, "doInBackground for:" + email + password);
-//        String url = null;
-
 
         return null;
     }

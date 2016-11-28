@@ -93,19 +93,6 @@ class LoadUser extends AsyncTask<String, String, Void> {
     @Override
     protected Void doInBackground(String... params) {
         try {
-//            JSONObject pageValuesObject = new JSONObject();
-//            JSONObject regionObject = new JSONObject().put("pageTypeStringAttributesId", "54").put("value", regionCode);
-//            JSONObject titleObject = new JSONObject().put("pageTypeStringAttributesId", "48").put("value", memoryString);
-//            JSONObject coorObject = new JSONObject().put("pageTypeStringAttributesId", "51").put("value", coordinates);
-//            JSONObject timestampObject = new JSONObject().put("pageTypeStringAttributesId", "57").put("value", timestampString);
-//            pageValuesObject.put("0", regionObject).put("1", titleObject).put("2", coorObject).put("3", timestampObject);
-//            Log.d(null, pageValuesObject.toString());
-//            String dataString = URLEncoder.encode("description", "UTF-8") + "=" + URLEncoder.encode("", "UTF-8")
-//                    + "&" + URLEncoder.encode("title", "UTF-8") + "=" + URLEncoder.encode(memoryString, "UTF-8")
-//                    + "&" + URLEncoder.encode("scope", "UTF-8") + "=" + URLEncoder.encode(scope, "UTF-8")
-//                    + "&" + URLEncoder.encode("pageTypeId", "UTF-8") + "=" + URLEncoder.encode("30", "UTF-8")
-//                    + "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8")
-//                    + "&" + URLEncoder.encode("pageValues", "UTF-8") + "=" + URLEncoder.encode(pageValuesObject.toString(),"UTF-8");
             URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=addPage&");
             Log.d(null, url.toString());
             final URLConnection conn= url.openConnection();

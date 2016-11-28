@@ -141,9 +141,6 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 	JSONObject listObject;
 	private ClusterManager cluster;
 	private String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
-	private String result = null;
-
-
 
 	interface InputReader{
 		String getInput();
@@ -252,10 +249,6 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 		this.mMap = map;
 		this.cluster = clusterManager;
 	}
-	JSONArray getListArray(){
-		Log.d(null, "return array: " + this.listArray);
-		return this.listArray;
-	}
 	void setAdapter(ArrayAdapter adapter){
 		if(adapter !=  null) {
 			this.adapter = adapter;
@@ -264,5 +257,4 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
 	void setListView(ListView listView){
 		this.listView = listView;
 	}
-
 }

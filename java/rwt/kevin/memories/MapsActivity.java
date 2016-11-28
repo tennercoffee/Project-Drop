@@ -3,8 +3,6 @@ package rwt.kevin.memories;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -13,20 +11,17 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -38,21 +33,14 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.maps.android.MarkerManager;
-import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterItem;
 import com.google.maps.android.clustering.ClusterManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Scanner;
-import java.util.TimeZone;
-import java.util.regex.Pattern;
 
 import static android.view.View.OnClickListener;
 import static com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
@@ -66,16 +54,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public ArrayList<ArrayList> arrayList = new ArrayList<>();
     public SupportMapFragment mapFragment = null;
     Toolbar toolbar;
-    List<List<String>> resultList;
     ClusterManager<MarkerItems> mClusterManager;
     JSONArray resultJSON;
     String scope;
 
     public interface DownloadMap {
         List<List<String>> downloadMap();
-    }
-    public interface GetList {
-        JSONArray getList();
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +80,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     @Override
     public void onMapReady(GoogleMap map) {
+//        ContextCompat.checkSelfPermission(this,
+//                android.Manifest.permission.ACCESS_FINE_LOCATION);
+//        int i = ContextCompat.checkSelfPermission(this,
+//                Manifest.permission.INTERNET);
+//        Log.d(null, String.valueOf(i));
         if (client == null) {
             buildClient();
         }
@@ -111,9 +100,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.setMaxZoomPreference(20);
 //            mClusterManager = new ClusterManager<>(this, map);
 //            mMap.setOnMarkerClickListener(mClusterManager);
-
-
-
 
             LatLng currentLocation = getLocation();
             if (currentLocation != null) {
@@ -239,7 +225,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         };
         loadMap.downloadMap();
     }
-
     private int getRegionCode(String id) {
         int regionCode;
         if(id.equals("America/Chicago")){
@@ -249,11 +234,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         return 0000;
     }
-
-    //    public void setResultJSON(JSONArray array){
-//        this.resultJSON = array;
-//        Log.d(null, "json set: " + resultJSON);
-//    }
     public boolean isMarkerClose(LatLng markerLocation){
         if(markerLocation.latitude <= getLocation().latitude && markerLocation.longitude <= getLocation().longitude) {
             //do this calculation
@@ -320,19 +300,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //        mClusterManager.clearItems();
         for (int n = 0; n < arrayList.size(); n++) {
 
-
-
-            /******************************************************
-            //split arraylist to get individual markerlists
-            */
-
-
-
-
-
-
-
-
             for(int i = 0; i < markersList.size(); i++) {
 //                Marker currentMarker = markersList.get(i);
 //            mClusterManager.addItem(new MarkerItems(currentMarker.getPosition()));
@@ -343,6 +310,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.d(null, "full map");
     }
     private void enableMyLocation() {
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             // Permission to access the location is missing.
@@ -473,5 +441,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onStop() {
         client.disconnect();
         super.onStop();
+//        Intent i = new Intent(getApplicationContext(), MainActivity.class);
+//        startActivity(i);
+    }
+    @Override
+    public void onPause() {
+        super.onPause();  // Always call the superclass method first
+        client.disconnect();
+//        Intent i = new Intent(getApplicationContext(), MainActivity.class);
+//        startActivity(i);
+        // Release anything we don't need when paused
+    }
+    @Override
+    public void onResume() {
+        super.onResume();  // Always call the superclass method first
+        client.connect();
+        // resetactivity
     }
 }

@@ -2,29 +2,25 @@ package rwt.kevin.memories;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.multidex.MultiDex;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 import io.fabric.sdk.android.Fabric;
 
@@ -36,10 +32,6 @@ public class MainActivity extends FragmentActivity {
     Button noLoginButton;
     WebView webView;
 
-    public interface GetUrl {
-        List<List<String>> getUrl();
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,9 +39,6 @@ public class MainActivity extends FragmentActivity {
         setContentView(R.layout.activity_main);
 
         webView = (WebView) findViewById(R.id.webview);
-        WebSettings settings = webView.getSettings();
-        settings.setJavaScriptEnabled(true);
-
         aboutButton = (Button) findViewById(R.id.aboutButton);
         signinButton = (Button) findViewById(R.id.login_button);
         noLoginButton = (Button) findViewById(R.id.noLoginButton);
@@ -59,24 +48,6 @@ public class MainActivity extends FragmentActivity {
             toolbar.setTitle("Main");
         }
 
-        final GetUrl getUrl = new GetUrl() {
-            @Override
-            public List<List<String>> getUrl() {
-                webView.setWebViewClient(new WebViewClient() {
-                    @Override
-                    public void onPageFinished(WebView view, String url) {
-                        try {
-                            Thread.sleep(200);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        Log.d(null, "pagefinished2: " + webView.getUrl());
-                        // pagefinished: https://www.google.com/?userId=2661&username=kbilleaud&accessKey=ca5a9047-b346-11e6-9298-e0cb4ea6daff&gws_rd=ssl
-                    }
-                });
-                return null;
-            }
-        };
         LoginActivity l = new LoginActivity();
         if(!l.isLoggedIn()){
             if (aboutButton != null) {
@@ -113,12 +84,14 @@ public class MainActivity extends FragmentActivity {
     }
     public void signIn() {
         try {
-            String appId = "450";
-            String appToken = "7028c8f4-b385-11e6-9298-e0cb4ea6daff";
+            String appId = "468";
+            String appToken = "9be3b84e-b526-11e6-9298-e0cb4ea6daff";
             String authGoto = "rwt.kevin.memories://returnApp?/";
             sendUrl = new URL("http://atlas.webapps.centennialarts.com/authorize.html?"
                     + "appId=" + appId + "&appToken=" + appToken + "&authorizationGoto=" + authGoto);
             Log.d(null, "call: " + sendUrl.toString());
+            webView.setVisibility(View.VISIBLE);
+            webView.loadUrl(sendUrl.toString());
 
             if(aboutButton != null && noLoginButton != null) {
                 TextView textView = (TextView) findViewById(R.id.textView);
@@ -129,8 +102,10 @@ public class MainActivity extends FragmentActivity {
                 signinButton.setVisibility(View.INVISIBLE);
                 noLoginButton.setVisibility(View.INVISIBLE);
             }
-            webView.setVisibility(View.VISIBLE);
-            webView.loadUrl(sendUrl.toString());
+
+            WebSettings settings = webView.getSettings();
+            settings.setJavaScriptEnabled(true);
+
             webView.setWebViewClient(new WebViewClient() {
                 @Override
                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -140,10 +115,21 @@ public class MainActivity extends FragmentActivity {
                     String id = urlMap.get("rwt.kevin.memories://returnApp?/?userId");
                     Log.d(null, id + " " + username + " " + accessKey);
 
-                    Intent i = new Intent(getApplicationContext(), MapsActivity.class);
-                    startActivity(i);
+                    if(id != null && accessKey != null) {
+                        Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+                        Toast.makeText(getApplicationContext(), "signed in as: " + username, Toast.LENGTH_LONG).show();
+                        startActivity(i);
+                    } else {
+                        Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                        Toast.makeText(getApplicationContext(), "error signing in", Toast.LENGTH_LONG).show();
+                        startActivity(i);
+                    }
                     // return true if you want to block redirection, false otherwise
-                    return true;
+                    if(view.getUrl().equals(sendUrl.toString())){
+                        return false;
+                    } else {
+                        return true;
+                    }
                 }
             });
         } catch (Exception e) {
