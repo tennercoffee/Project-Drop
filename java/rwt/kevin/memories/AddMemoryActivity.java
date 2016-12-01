@@ -32,6 +32,7 @@ import java.util.Scanner;
 public class AddMemoryActivity extends MapsActivity {
     public TextView charCountTextView;
     public String location;
+    public String regionCode;
     Toolbar toolbar;
 
     interface GetResultId {
@@ -52,31 +53,34 @@ public class AddMemoryActivity extends MapsActivity {
         }
     }
     public void addMemoryActivity() throws MalformedURLException, UnsupportedEncodingException {
+        final Spinner scopeSpinner = (Spinner) findViewById(R.id.scopeList);
         final EditText memoryInput = (EditText) findViewById(R.id.editInp);
+        charCountTextView = (TextView) findViewById(R.id.charCountTextView);
+        TextView locationTextView = (TextView) findViewById(R.id.locationTextView);
+        Button cancelButton = (Button) findViewById(R.id.cancelMemoryButton);
+        Button submitButton = (Button) findViewById(R.id.submitMemoryButton);
+
         if(memoryInput != null){
             memoryInput.addTextChangedListener(mTextEditorWatcher);
         }
         Intent intent = getIntent();
         location = intent.getParcelableExtra("location").toString();
+//        regionCode = intent.getParcelableExtra("regionCode").toString();
         Scanner scanner = new Scanner(location);
         if (scanner.hasNext("lat/lng:")) {
             scanner.skip("lat/lng:");
         } else if (scanner.hasNext(" lat/lng:")) {
             scanner.skip(" lat/lng: ");
         }
-        TextView locationTextView = (TextView) findViewById(R.id.locationTextView);
         if(locationTextView != null) {
             locationTextView.setText(location);
         }
-        charCountTextView = (TextView) findViewById(R.id.charCountTextView);
-        final Spinner scopeSpinner = (Spinner) findViewById(R.id.scopeList);
         if(scopeSpinner != null) {
             ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                     R.array.scopeListArray, android.R.layout.simple_spinner_item);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             scopeSpinner.setAdapter(adapter);
         }
-        Button cancelButton = (Button) findViewById(R.id.cancelMemoryButton);
         if(cancelButton != null){
             cancelButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -85,7 +89,6 @@ public class AddMemoryActivity extends MapsActivity {
                 }
             });
         }
-        Button submitButton = (Button) findViewById(R.id.submitMemoryButton);
         if(submitButton != null){
             submitButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -155,8 +158,9 @@ class AddMemory extends AsyncTask<String, String, Void> {
         String location = params[0];
         String scope = params[1];
         String memoryString = params[2];
+        String regionCode = "0001";
         String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
-        //old key--a76c33b2-4c76-11e6-8c59-e0cb4ea6dd17
+
         Scanner scanner = new Scanner(location);
         if (scanner.hasNext("lat/lng:")) {
             scanner.skip("lat/lng:");
@@ -166,7 +170,6 @@ class AddMemory extends AsyncTask<String, String, Void> {
         String coordinates = scanner.next();
         coordinates = coordinates.startsWith("(") ? coordinates.substring(1) : coordinates;
         coordinates = coordinates.endsWith(")") ? coordinates.substring(0, coordinates.length() - 1) : coordinates;
-        String regionCode = "0001";
         try {
             JSONObject pageValuesObject = new JSONObject();
             JSONObject regionObject = new JSONObject().put("pageTypeStringAttributesId", "54").put("value", regionCode);

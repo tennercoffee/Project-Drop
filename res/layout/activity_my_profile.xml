@@ -56,11 +56,11 @@
         android:layout_alignStart="@+id/profile_imageview" />
 
     <TextView
-        android:text="myusername"
+        android:text=""
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/username_textview"
-        android:textSize="12sp"
+        android:textSize="24sp"
         tools:textSize="24sp"
         android:layout_above="@+id/edit_profilephoto_button"
         android:layout_alignLeft="@+id/stats_textview"

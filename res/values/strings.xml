@@ -92,4 +92,5 @@
     <string name="about_title">Help Section</string>
     <string name="title_activity_user_profile">User Profile</string>
     <string name="privacy_text">Privacy</string>
+    <string name="google_string">https://www.google.com/?</string>
 </resources>

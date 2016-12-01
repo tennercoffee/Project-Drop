@@ -3,7 +3,6 @@ package rwt.kevin.memories;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
@@ -13,20 +12,17 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -35,18 +31,17 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.maps.android.MarkerManager;
-import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterItem;
 import com.google.maps.android.clustering.ClusterManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,18 +54,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public GoogleMap mMap;
     public GoogleApiClient client;
     public ArrayList<Marker> markersList = new ArrayList<>();
+    public ArrayList<ArrayList> arrayList = new ArrayList<>();
     public SupportMapFragment mapFragment = null;
     Toolbar toolbar;
-    List<List<String>> resultList;
     ClusterManager<MarkerItems> mClusterManager;
     JSONArray resultJSON;
     String scope;
+    String username;
+    String userid;
+    String accessKey;
 
     public interface DownloadMap {
         List<List<String>> downloadMap();
-    }
-    public interface GetList {
-        JSONArray getList();
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +77,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             setSupportActionBar(toolbar);
         }
         client = buildClient();
+        Intent i = getIntent();
+        username = i.getStringExtra("username");
+        userid = i.getStringExtra("userid");
+        accessKey = i.getStringExtra("accessKey");
+
+        enableMyLocation();
+        //TODO:check for permissions(callback?)
     }
     public void loadMap(Bundle savedInstanceState) {
         setContentView(R.layout.activity_maps);
@@ -91,12 +93,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     @Override
     public void onMapReady(GoogleMap map) {
+        final TextView privacyTextView = (TextView) findViewById(R.id.privacy_textview);
+        final Switch simpleSwitch = (Switch) findViewById(R.id.privacy_switch);
+        FloatingActionButton addMemoryButton = (FloatingActionButton) findViewById(R.id.addMemoryButton);
+        ImageButton profileButton = (ImageButton) findViewById(R.id.profile_icon);
+        ImageButton listButton = (ImageButton) findViewById(R.id.list_icon);
+//        ContextCompat.checkSelfPermission(this,
+//                android.Manifest.permission.ACCESS_FINE_LOCATION);
+//        int i = ContextCompat.checkSelfPermission(this,
+//                Manifest.permission.INTERNET);
+//        Log.d(null, String.valueOf(i));
         if (client == null) {
             buildClient();
         }
         if (map != null) {
             mMap = map;
-            enableMyLocation();
             mMap.setOnMyLocationButtonClickListener(this);
             mMap.getUiSettings().setScrollGesturesEnabled(false);
             mMap.getUiSettings().setRotateGesturesEnabled(true);
@@ -127,24 +138,34 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 public boolean onMarkerClick(Marker marker) {
                     Log.d(null, "marker click");
                     Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
-                    if (marker.getTitle() != null) {
-                        String id = marker.getTitle();
-                        i.putExtra("id",id);
+                    if(isMarkerClose(marker.getPosition(), 100, getLocation())) {
+                        if (marker.getTitle() != null) {
+                            String id = marker.getTitle();
+                            i.putExtra("id", id);
+                            startActivity(i);
+                        } else {
+                            Log.d(null, "null marker");
+                        }
                     } else {
-                        Log.d(null, "null marker");
+                        Log.d(null, "too far");
                     }
-                    startActivity(i);
                     return false;
                 }
             });
         }
-        FloatingActionButton addMemoryButton = (FloatingActionButton) findViewById(R.id.addMemoryButton);
         if (addMemoryButton != null) {
             addMemoryButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     final LatLng myLocation = getLocation();
                     if (myLocation != null) {
+//                        Calendar cal = Calendar.getInstance();
+//                        TimeZone tz = cal.getTimeZone();
+//                        Log.d("Time zone","="+tz.getID());
+//                        Log.d(null, tz.toString());
+//
+//                        getRegionCode(tz.getID());
+
                         Intent i = new Intent(getApplicationContext(), AddMemoryActivity.class);
                         i.putExtra("location", myLocation);
                         startActivity(i);
@@ -154,17 +175,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
         }
-        ImageButton profileButton = (ImageButton) findViewById(R.id.profile_icon);
         if(profileButton != null){
             profileButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent i = new Intent(getApplicationContext(), MyProfileActivity.class);
-                    startActivity(i);
+                    Intent i = new Intent(getApplicationContext(), ProfileActivity.class);
+                    if(username != null) {
+                        i.putExtra("username", username);
+                        i.putExtra("userid", userid);
+                        i.putExtra("accessKey", accessKey);
+                        startActivity(i);
+                    }
                 }
             });
         }
-        ImageButton listButton = (ImageButton) findViewById(R.id.list_icon);
         if(listButton != null){
             listButton.setOnClickListener(new OnClickListener() {
                 @Override
@@ -176,8 +200,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
         }
-        final TextView privacyTextView = (TextView) findViewById(R.id.privacy_textview);
-        final Switch simpleSwitch = (Switch) findViewById(R.id.privacy_switch);
         if(simpleSwitch != null && privacyTextView != null) {
             simpleSwitch.setChecked(true);
             privacyTextView.setText("Public");
@@ -204,7 +226,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         public List<List<String>> downloadMap() {
                             DownloadMemoryList dml = new DownloadMemoryList();
                             dml.execute(scope);
-                            dml.setMap(mMap, mClusterManager, markersList);
+                            dml.setMap(mMap, mClusterManager, markersList, getLocation());
 //                            Log.d(null,"getmaparray:" + dml.getMapArray().toString());
                             return null;
                         }
@@ -218,16 +240,39 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             public List<List<String>> downloadMap() {
                 DownloadMemoryList dml = new DownloadMemoryList();
                 dml.execute(scope);
-                dml.setMap(mMap, mClusterManager, markersList);
+                dml.setMap(mMap, mClusterManager, markersList, getLocation());
                 return null;
             }
         };
         loadMap.downloadMap();
     }
-//    public void setResultJSON(JSONArray array){
-//        this.resultJSON = array;
-//        Log.d(null, "json set: " + resultJSON);
-//    }
+    private int getRegionCode(String id) {
+        int regionCode;
+        if(id.equals("America/Chicago")){
+            return 0001;
+        } else if(id.equals("")){
+            return 0000;
+        }
+        return 0000;
+    }
+    public boolean isMarkerClose(LatLng markerLocation, int rDistance, LatLng myLocation){
+        float[] distance = new float[2];
+        Circle circle = mMap.addCircle(new CircleOptions()
+                .center(myLocation)
+                .radius(rDistance)     //The radius of the circle, specified in meters. It should be zero or greater.
+                .strokeColor(Color.rgb(0, 136, 255))
+                .fillColor(Color.argb(20, 0, 136, 255)));
+
+        Location.distanceBetween(markerLocation.latitude, markerLocation.longitude,
+                circle.getCenter().latitude, circle.getCenter().longitude, distance);
+
+        if( distance[0] > circle.getRadius()  ){
+            Toast.makeText(getBaseContext(), "Too far away. Move closer.", Toast.LENGTH_LONG).show();
+            return false;
+        } else {
+            return true;
+        }
+    }
     public class MarkerItems implements ClusterItem {
         private final LatLng mPosition;
         MarkerItems(LatLng position) {
@@ -238,71 +283,60 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             return mPosition;
         }
     }
-    public ArrayList<Marker> addMarkersToMap(JSONArray downloadArray, GoogleMap mMap) {
+    public ArrayList<ArrayList> addMarkersToMap(ArrayList<JSONArray> downloadList, GoogleMap mMap, LatLng myLocation) {
         Log.d(null, "addmarkerstomap");
-        this.resultJSON = downloadArray;
-        markersList = new ArrayList<>();
-        if(downloadArray != null && mMap != null) {
-            for(int i = 0; i < downloadArray.length(); i++){
-                try {
-                    JSONObject downloadObject = (JSONObject) downloadArray.get(i);
-                    String coordinates = downloadObject.get("location").toString();
-                    String id = downloadObject.get("title").toString();
-                    String[] latlng = coordinates.split(",");
-                    double latitude = Double.parseDouble(latlng[0]);
-                    double longitude = Double.parseDouble(latlng[1]);
-                    LatLng latlngFinal = new LatLng(latitude, longitude);
-                    Marker marker = mMap.addMarker(new MarkerOptions().position(latlngFinal).title(id));
-                    markersList.add(marker);
-                } catch (Exception e) {
-                    e.printStackTrace();
+        for(int n = 0; n < downloadList.size(); n++) {
+            JSONArray downloadArray = downloadList.get(n);
+            this.resultJSON = downloadArray;
+            arrayList = new ArrayList<ArrayList>();
+//            Log.d("line291", arrayList.toString());
+            markersList = new ArrayList<>();
+//            Log.d("line293", markersList.toString());
+            if (downloadArray != null && mMap != null) {
+                for (int i = 0; i < downloadArray.length(); i++) {
+                    try {
+                        JSONObject downloadObject = (JSONObject) downloadArray.get(i);
+                        String coordinates = downloadObject.get("location").toString();
+                        String id = downloadObject.get("title").toString();
+                        String[] latlng = coordinates.split(",");
+                        double latitude = Double.parseDouble(latlng[0]);
+                        double longitude = Double.parseDouble(latlng[1]);
+                        LatLng latlngFinal = new LatLng(latitude, longitude);
+
+//                        if(isMarkerClose(myLocation, 500, getLocation())) {
+                            Marker marker = mMap.addMarker(new MarkerOptions().position(latlngFinal).title(id));
+                            markersList.add(marker);
+                            arrayList.add(markersList);
+//                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
+            } else {
+                Log.d(null, "resultlist null-addmarkerstomap");
             }
-        } else {
-            Log.d(null, "resultlist null-addmarkerstomap");
         }
-        return markersList;
+        return arrayList;
     }
-    public void revealMarkers(GoogleMap map, ClusterManager<MarkerItems> clusterManager, ArrayList<Marker> markersList) {
+    public void revealMarkers(GoogleMap map, ClusterManager<MarkerItems> clusterManager, ArrayList<ArrayList> list) {
         this.mClusterManager = clusterManager;
-        this.markersList = markersList;
+        this.arrayList = list;
+//        this.markersList = markersList;
         this.mMap = map;
-//        map.clear();//this removes the markers that should be in cluster, removes duplicates
+//        mMap.clear();//this removes the markers that should be in cluster, removes duplicates
 //        mClusterManager.clearItems();
-        for (int n = 0; n < markersList.size(); n++) {
-            Marker currentMarker = markersList.get(n);
-//            mClusterManager.addItem(new MarkerItems(currentMarker.getPosition()));
-//            mClusterManager.cluster();
-            mMap.addMarker(new MarkerOptions().position(currentMarker.getPosition()).title(currentMarker.getTitle()));
+        for (int n = 0; n < arrayList.size(); n++) {
+//            Log.d(null, arrayList.get(n).toString());
+//            ArrayList<Marker> markersList = new ArrayList<>(arrayList.get(n));
+//            for(int i = 0; i < markersList.size(); i++) {
+//                Log.d(null, markersList.get(i).toString());
+//                Marker currentMarker = markersList.get(i);
+//                mClusterManager.addItem(new MarkerItems(currentMarker.getPosition()));
+//                mClusterManager.cluster();
+//                mMap.addMarker(new MarkerOptions().position(currentMarker.getPosition()).title(currentMarker.getTitle()));
+//            }
         }
-//        MemoryListActivity m = new MemoryListActivity();
-//        m.setJsonArray(markersList);
         Log.d(null, "full map");
-    }
-    private void enableMyLocation() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Permission to access the location is missing.
-            PermissionUtils.requestPermission(this, LOCATION_PERMISSION_REQUEST_CODE,
-                    Manifest.permission.ACCESS_FINE_LOCATION, true);
-        } else if (mMap != null) {
-            // Access to the location has been granted to the app.
-            //should this be commented
-            mMap.setMyLocationEnabled(true);
-        }
-    }
-    public LatLng getLocation() {
-        Location location;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return null;
-        }else {
-            LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-            location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            if (location != null) {
-                return new LatLng(location.getLatitude(),location.getLongitude());
-            }
-        }
-        return null;
     }
     public GoogleApiClient buildClient() {
         return new GoogleApiClient.Builder(this)
@@ -338,7 +372,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     public List<List<String>> downloadMap() {
                         DownloadMemoryList dml = new DownloadMemoryList();
                         dml.execute(scope);
-                        dml.setMap(mMap, mClusterManager, markersList);
+                        dml.setMap(mMap, mClusterManager, markersList, getLocation());
 
                         return null;
                     }
@@ -375,6 +409,32 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.i("State", "Connection Failed");
     }
+    private void enableMyLocation() {
+        //check for permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Permission to access the location is missing. Ask for it
+            PermissionUtils.requestPermission(this, LOCATION_PERMISSION_REQUEST_CODE,
+                    Manifest.permission.ACCESS_FINE_LOCATION, true);
+        } else if (mMap != null) {
+            // Access to the location has been granted to the app.
+            mMap.setMyLocationEnabled(true);
+        }
+    }
+    public LatLng getLocation() {
+        Location location;
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return null;
+        }else {
+            LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+            location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (location != null) {
+                return new LatLng(location.getLatitude(),location.getLongitude());
+            }
+        }
+        return null;
+    }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         //check permissions to see if fine location is enabled
@@ -410,5 +470,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onStop() {
         client.disconnect();
         super.onStop();
+//        Intent i = new Intent(getApplicationContext(), MainActivity.class);
+//        startActivity(i);
+    }
+    @Override
+    public void onPause() {
+        super.onPause();  // Always call the superclass method first
+        client.disconnect();
+//        Intent i = new Intent(getApplicationContext(), MainActivity.class);
+//        startActivity(i);
+        // Release anything we don't need when paused
+    }
+    @Override
+    public void onResume() {
+        super.onResume();  // Always call the superclass method first
+        client.connect();
+        // resetactivity
     }
 }

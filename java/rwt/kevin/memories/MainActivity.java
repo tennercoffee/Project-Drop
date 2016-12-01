@@ -9,26 +9,39 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.crashlytics.android.Crashlytics;
+
+import java.net.URL;
 
 import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends FragmentActivity {
     Toolbar toolbar;
+    URL sendUrl = null;
+    Button aboutButton;
+    Button signinButton;
+    Button noLoginButton;
+//    WebView webView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
+
+        aboutButton = (Button) findViewById(R.id.aboutButton);
+        signinButton = (Button) findViewById(R.id.login_button);
+        noLoginButton = (Button) findViewById(R.id.noLoginButton);
+
         toolbar = (Toolbar) findViewById(R.id.login_toolbar);
         if (toolbar != null) {
             toolbar.setTitle("Main");
         }
+
         LoginActivity l = new LoginActivity();
         if(!l.isLoggedIn()){
-            Button aboutButton = (Button) findViewById(R.id.aboutButton);
             if (aboutButton != null) {
                 aboutButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -38,7 +51,6 @@ public class MainActivity extends FragmentActivity {
                     }
                 });
             }
-            Button noLoginButton = (Button) findViewById(R.id.noLoginButton);
             if (noLoginButton != null) {
                 noLoginButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -48,30 +60,34 @@ public class MainActivity extends FragmentActivity {
                     }
                 });
             }
-            Button signinButton = (Button) findViewById(R.id.login_button);
             if(signinButton != null){
                 signinButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        clearButtons();
                         Intent i = new Intent(getApplicationContext(), LoginActivity.class);
                         startActivity(i);
                     }
                 });
             }
-            Button signupButton = (Button) findViewById(R.id.signupButton);
-            if(signupButton != null){
-                signupButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Intent i = new Intent(getApplicationContext(), SignUpActivity.class);
-                        startActivity(i);
-                    }
-                });
-            }
+            //TODO:check for permissions/ask for permissions
+            MapsActivity m = new MapsActivity();
+
         } else {
             Log.d(null, "loggedin, proceed to maps");
             Intent i = new Intent(getApplicationContext(), MapsActivity.class);
             startActivity(i);
+        }
+    }
+    public void clearButtons() {
+        if(aboutButton != null && noLoginButton != null) {
+            TextView textView = (TextView) findViewById(R.id.textView);
+            TextView textView2 = (TextView) findViewById(R.id.textView2);
+            textView.setVisibility(View.INVISIBLE);
+            textView2.setVisibility(View.INVISIBLE);
+            aboutButton.setVisibility(View.INVISIBLE);
+            signinButton.setVisibility(View.INVISIBLE);
+            noLoginButton.setVisibility(View.INVISIBLE);
         }
     }
     @Override

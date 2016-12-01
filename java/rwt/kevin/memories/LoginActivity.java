@@ -1,122 +1,106 @@
 package rwt.kevin.memories;
 
 import android.content.Intent;
-import android.os.AsyncTask;
-
-import android.os.Build;
+import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
+import android.webkit.WebChromeClient;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
 
-import java.util.ArrayList;
+import com.crashlytics.android.Crashlytics;
+
+import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static android.Manifest.permission.READ_CONTACTS;
+import io.fabric.sdk.android.Fabric;
 
-/**
- * A login screen that offers login via email/password.
- */
 public class LoginActivity extends MainActivity{
-
+    WebView webView;
     Toolbar toolbar;
+    String username;
+    String id;
+    String accessKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.login_toolbar);
-        if (toolbar != null) {
-            toolbar.setTitle("Log In");
+        Fabric.with(this, new Crashlytics());
+        toolbar = (Toolbar) findViewById(R.id.login_toolbar);
+        if(toolbar != null){
+            toolbar.setTitle("Login");
         }
+        try {
+            webView = (WebView) findViewById(R.id.webview);
+            String appId = "504";
+            String appToken = "35616968-b609-11e6-9298-e0cb4ea6daff";
+            String authGoto = "rwt.kevin.memories://returnApp?/";
+            sendUrl = new URL("http://atlas.webapps.centennialarts.com/authorize.html?"
+                    + "appId=" + appId + "&appToken=" + appToken + "&authorizationGoto=" + authGoto);
+            Log.d(null, "call: " + sendUrl.toString());
+            webView.loadUrl(sendUrl.toString());
+            webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+            webView.setWebChromeClient(new WebChromeClient());
 
-        EditText emailText = (EditText) findViewById(R.id.emailText);
-        EditText passText1 = (EditText) findViewById(R.id.passText1);
-
-        String email = null;
-        String password = null;
-
-        if(emailText != null && passText1 != null){
-            email = emailText.getText().toString();
-            password = passText1.getText().toString();
-        }else{
-            //error, null values
-            //failMessage("ERROR!");
-            Log.d(null, "signin error");
-        }
-
-        Button cancelButton = (Button) findViewById(R.id.cancel_button);
-        if(cancelButton != null){
-            cancelButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    finish();
-                }
-            });
-        }
-        Button loginButton = (Button) findViewById(R.id.login_button);
-        if(loginButton != null){
-            final String finalEmail = email;
-            final String finalPassword = password;
-            loginButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    LoginUser user = new LoginUser();
-                    user.execute(finalEmail, finalPassword);
-                }
-            });
+//            webView.setWebViewClient(new WebViewClient() {
+//                @Override
+//                public void onPageStarted(WebView view, String url, Bitmap icon) {
+//                    Log.d(null, "url: " + url);
+//                    Log.d(null, "view.geturl: " + view.getUrl());
+//                }
+//                @Override
+//                public void onPageFinished(WebView view, final String url) {
+//                    webView.getSettings().setJavaScriptEnabled(true);
+//                }
+//                @Override
+//                public boolean shouldOverrideUrlLoading(WebView view, String url) {
+//                    Log.d(null, url);
+//                    Map<String, String> urlMap = getURLMap(url);
+//                    username = urlMap.get("username");
+//                    accessKey = urlMap.get("accessKey");
+//                    id = urlMap.get("rwt.kevin.memories://returnApp?/?userId");
+//                    Log.d(null, id + " " + username + " " + accessKey);
+//                    if (id != null && accessKey != null) {
+//                        Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+//                        Toast.makeText(getApplicationContext(), "signed in as: " + username, Toast.LENGTH_LONG).show();
+//                        startActivity(i);
+//                        return true;
+//                    } else {
+//                        Intent i = new Intent(getApplicationContext(), MainActivity.class);
+//                        Toast.makeText(getApplicationContext(), "error signing in", Toast.LENGTH_LONG).show();
+//                        startActivity(i);
+//                        return false;
+//                    }
+//                    // return true if you want to block redirection, false otherwise
+//                }
+//            });
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
+
+    private void setupWebview(WebView webView) {
+    }
+
     public boolean isLoggedIn(){
         //return true in order to simplify for now
         return true;
     }
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////
-class LoginUser extends AsyncTask<String, String, Void> {
-    protected void onPreExecute() {
-        Log.d(null, "logging in");
-    }
-    @Override
-    protected Void doInBackground(String... params) {
-
-        String email = params[0];
-        String password = params[1];
-        Log.d(null, "doInBackground for:" + email + password);
-        String url = null;
-
-        return null;
-    }
-    protected void onPostExecute(Void v) {
-        Log.d(null, "logged in");
-    }
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////
-class LogoutUser extends AsyncTask<String, String, Void> {
-
-    protected void onPreExecute() {
-        Log.d(null, "logging out");
-    }
-    @Override
-    protected Void doInBackground(String... params) {
-
-        String email = params[0];
-        String password = params[1];
-        String url = null;
-        return null;
-    }
-    protected void onPostExecute(Void v) {
-        Log.d(null, "logged out");
+    public static Map<String, String> getURLMap(String query) {
+        String[] params = query.split("&");
+        Map<String, String> map = new HashMap<>();
+        for (String param : params)
+        {
+            String name = param.split("=")[0];
+            String value = param.split("=")[1];
+            Log.d(null, "name: " + name + " value: " + value);
+            map.put(name, value);
+        }
+        return map;
     }
 }

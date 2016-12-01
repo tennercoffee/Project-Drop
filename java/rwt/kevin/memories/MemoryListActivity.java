@@ -154,7 +154,7 @@ public class MemoryListActivity extends MapsActivity {
                 /***************************************************
                  * getting info through this point. how to apply to list?
                  *
-                 * 
+                 *
                  */
 
 
@@ -166,20 +166,20 @@ public class MemoryListActivity extends MapsActivity {
         if(array != null) {
             if (listView != null && adapter != null) {
                 Log.d(null, "listview is not null");
-                listView.setAdapter(adapter);
-                Log.d(null, "adapter click listener");
-
-                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    public void onItemClick(AdapterView<?> arg0, View v, int position, long arg3) {
-                        Log.d(null, "yay");
-//                            String selectedMemory = listView.get(position);
-//                            Toast.makeText(getApplicationContext(), "Opening Moment", Toast.LENGTH_LONG).show();
-                        //                    ViewMemoryActivity view = new ViewMemoryActivity();
-                        //                    view.setId(listView.getSelectedItem().toString());
-                        Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
-                        startActivity(i);
-                    }
-                });
+//                listView.setAdapter(adapter);
+//                Log.d(null, "adapter click listener");
+//
+//                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//                    public void onItemClick(AdapterView<?> arg0, View v, int position, long arg3) {
+//                        Log.d(null, "yay");
+////                            String selectedMemory = listView.get(position);
+////                            Toast.makeText(getApplicationContext(), "Opening Moment", Toast.LENGTH_LONG).show();
+//                        //                    ViewMemoryActivity view = new ViewMemoryActivity();
+//                        //                    view.setId(listView.getSelectedItem().toString());
+//                        Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
+//                        startActivity(i);
+//                    }
+//                });
             } else {
                 Log.d(null, "null json");
             }
