@@ -78,6 +78,10 @@ public class LoginActivity extends MainActivity{
             });
         }
     }
+    public boolean isLoggedIn(){
+        //return true in order to simplify for now
+        return true;
+    }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class LoginUser extends AsyncTask<String, String, Void> {

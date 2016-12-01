@@ -1,5 +1,6 @@
 package rwt.kevin.memories;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -24,6 +25,16 @@ public class AboutActivity extends MapsActivity{
                 @Override
                 public void onClick(View view) {
                     finish();
+                }
+            });
+        }
+        Button tutorialButton = (Button) findViewById(R.id.tutorial_button);
+        if(tutorialButton != null) {
+            tutorialButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+//                    Intent i = new Intent(getApplicationContext(),TourActivity.class);
+//                    startActivity(i);
                 }
             });
         }

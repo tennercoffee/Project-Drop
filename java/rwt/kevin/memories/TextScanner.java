@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 
 class TextScanner {
     private String timestamp;
-    private String regionCode;
 
     public String descSplitter(String desc, int formatCode, int resultCode) {
         //if formatcode is 1, run timestamp scanner, then location scanner
@@ -22,7 +21,7 @@ class TextScanner {
         if(formatCode == 1) {
             timestamp = scanner.next();
             if(scanner.hasNextInt()) {
-                regionCode = scanner.next();
+                String regionCode = scanner.next();
             } else {
                 Log.d(null, "regioncode error");
             }
@@ -66,7 +65,7 @@ class TextScanner {
     }
     LatLng locationStringToLatLng(List<String> location) {
         Log.d(null, "locationStringToLatLng");
-        String locationString = new String(String.valueOf(location));
+        String locationString = String.valueOf(location);
         Scanner scanner = new Scanner(locationString);
         if (scanner.hasNext("lat/lng:")) {
             scanner.skip(Pattern.compile("lat/lng:"));
