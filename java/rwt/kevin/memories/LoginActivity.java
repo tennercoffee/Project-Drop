@@ -36,8 +36,8 @@ public class LoginActivity extends MainActivity{
         }
         try {
             webView = (WebView) findViewById(R.id.webview);
-            String appId = "513";
-            String appToken = "47b9267d-bc1b-11e6-9298-e0cb4ea6daff";
+            String appId = "525";
+            String appToken = "6512ac00-bcf1-11e6-9298-e0cb4ea6daff";
             String authGoto = "rwt.kevin.memories://returnApp?/";
             sendUrl = new URL("http://atlas.webapps.centennialarts.com/authorize.html?"
                     + "appId=" + appId + "&appToken=" + appToken + "&authorizationGoto=" + authGoto);
@@ -64,10 +64,10 @@ public class LoginActivity extends MainActivity{
                      if(url.contains("username")) {
                          Map<String, String> urlMap = getURLMap(url);
                          username = urlMap.get("username");
-                         accessKey = urlMap.get("tokenid");  //changed from accesskey..
+                         accessKey = urlMap.get("accessKey");
                          id = urlMap.get("rwt.kevin.memories://returnApp?/?userId");
                          Log.d(null, id + " " + username + " " + accessKey);
-                         if (id != null && accessKey != null) {
+                         if (username != null && accessKey != null) {
                              Intent i = new Intent(getApplicationContext(), MapsActivity.class);
                              Toast.makeText(getApplicationContext(), "signed in as: " + username, Toast.LENGTH_LONG).show();
                              startActivity(i);
