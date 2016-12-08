@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -32,7 +33,6 @@ import java.util.Scanner;
 public class AddMemoryActivity extends MapsActivity {
     public TextView charCountTextView;
     public String location;
-    public String regionCode;
     Toolbar toolbar;
 
     interface GetResultId {
@@ -55,6 +55,7 @@ public class AddMemoryActivity extends MapsActivity {
     public void addMemoryActivity() throws MalformedURLException, UnsupportedEncodingException {
         final Spinner scopeSpinner = (Spinner) findViewById(R.id.scopeList);
         final EditText memoryInput = (EditText) findViewById(R.id.editInp);
+        final CheckBox visibilityCheckbox = (CheckBox) findViewById(R.id.checkBox);
         charCountTextView = (TextView) findViewById(R.id.charCountTextView);
         TextView locationTextView = (TextView) findViewById(R.id.locationTextView);
         Button cancelButton = (Button) findViewById(R.id.cancelMemoryButton);
@@ -93,10 +94,17 @@ public class AddMemoryActivity extends MapsActivity {
             submitButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick (View view){
-                    if(memoryInput != null && location != null && scopeSpinner != null /*&& user.loggedIn()*/) {
+                    if(memoryInput != null && location != null && scopeSpinner != null) {
                         Log.d(null, location);
                         final String scope = scopeSpinner.getSelectedItem().toString();
                         final String memoryString = memoryInput.getText().toString();
+                        String visibility = null;
+                        if(visibilityCheckbox != null && visibilityCheckbox.isChecked()){
+                            visibility = "v";
+                        } else if (visibilityCheckbox != null && !visibilityCheckbox.isChecked()){
+                            visibility = "i";
+                        }
+                        final String finalVisibility = visibility;
                         GetResultId getId = new GetResultId() {
                             @Override
                             public String getResultId() {
@@ -104,13 +112,16 @@ public class AddMemoryActivity extends MapsActivity {
                                 if(l.isLoggedIn()) {
                                     Log.d(null, "loggedin, proceed to addmem");
                                     AddMemory addmem = new AddMemory();
-                                    addmem.execute(location, scope, memoryString);
+                                    addmem.execute(location, scope, finalVisibility, memoryString);
+                                    Toast.makeText(getApplicationContext(), "Adding Moment...", Toast.LENGTH_LONG).show();
                                 }
                                 return null;
                             }
                         };
                         getId.getResultId();
-                        Toast.makeText(getApplicationContext(), "Moment SuccessFully Added!", Toast.LENGTH_LONG).show();
+//                        Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+//                        i.putExtra("result", "positive");
+//                        startActivity(i);
                         finish();
                     }else {
                         Log.d(null, "error");
@@ -157,7 +168,8 @@ class AddMemory extends AsyncTask<String, String, Void> {
     protected Void doInBackground(String... params) {
         String location = params[0];
         String scope = params[1];
-        String memoryString = params[2];
+        String visibility = params[2];
+        String memoryString = params[3];
         String regionCode = "0001";
         String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
 
@@ -172,16 +184,16 @@ class AddMemory extends AsyncTask<String, String, Void> {
         coordinates = coordinates.endsWith(")") ? coordinates.substring(0, coordinates.length() - 1) : coordinates;
         try {
             JSONObject pageValuesObject = new JSONObject();
-            JSONObject regionObject = new JSONObject().put("pageTypeStringAttributesId", "54").put("value", regionCode);
-            JSONObject titleObject = new JSONObject().put("pageTypeStringAttributesId", "48").put("value", memoryString);
-            JSONObject coorObject = new JSONObject().put("pageTypeStringAttributesId", "51").put("value", coordinates);
-            JSONObject timestampObject = new JSONObject().put("pageTypeStringAttributesId", "57").put("value", timestampString);
+            JSONObject regionObject = new JSONObject().put("pageTypeStringAttributesId", "69").put("value", regionCode);
+            JSONObject titleObject = new JSONObject().put("pageTypeStringAttributesId", "63").put("value", memoryString);
+            JSONObject coorObject = new JSONObject().put("pageTypeStringAttributesId", "66").put("value", coordinates);
+            JSONObject timestampObject = new JSONObject().put("pageTypeStringAttributesId", "72").put("value", timestampString);
             pageValuesObject.put("0", regionObject).put("1", titleObject).put("2", coorObject).put("3", timestampObject);
             Log.d(null, pageValuesObject.toString());
-            String dataString = URLEncoder.encode("description", "UTF-8") + "=" + URLEncoder.encode("", "UTF-8")
+            String dataString = URLEncoder.encode("description", "UTF-8") + "=" + URLEncoder.encode(visibility, "UTF-8")
                     + "&" + URLEncoder.encode("title", "UTF-8") + "=" + URLEncoder.encode(memoryString, "UTF-8")
                     + "&" + URLEncoder.encode("scope", "UTF-8") + "=" + URLEncoder.encode(scope, "UTF-8")
-                    + "&" + URLEncoder.encode("pageTypeId", "UTF-8") + "=" + URLEncoder.encode("30", "UTF-8")
+                    + "&" + URLEncoder.encode("pageTypeId", "UTF-8") + "=" + URLEncoder.encode("36", "UTF-8")
                     + "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8")
                     + "&" + URLEncoder.encode("pageValues", "UTF-8") + "=" + URLEncoder.encode(pageValuesObject.toString(),"UTF-8");
             URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=addPage&" + dataString);

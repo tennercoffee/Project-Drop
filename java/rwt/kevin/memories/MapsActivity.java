@@ -76,11 +76,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             toolbar.setTitle("Moments");
             setSupportActionBar(toolbar);
         }
+
         client = buildClient();
+
         Intent i = getIntent();
         username = i.getStringExtra("username");
         userid = i.getStringExtra("userid");
         accessKey = i.getStringExtra("accessKey");
+        String result = i.getStringExtra("result");
+        Log.d(null, "marker added: " + result);
 
         enableMyLocation();
         //TODO:check for permissions(callback?)
@@ -159,13 +163,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 public void onClick(View view) {
                     final LatLng myLocation = getLocation();
                     if (myLocation != null) {
-//                        Calendar cal = Calendar.getInstance();
-//                        TimeZone tz = cal.getTimeZone();
-//                        Log.d("Time zone","="+tz.getID());
-//                        Log.d(null, tz.toString());
-//
-//                        getRegionCode(tz.getID());
-
                         Intent i = new Intent(getApplicationContext(), AddMemoryActivity.class);
                         i.putExtra("location", myLocation);
                         startActivity(i);
@@ -362,18 +359,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (currentLocation != null) {
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
                 }
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 DownloadMap loadMap = new DownloadMap() {
                     @Override
                     public List<List<String>> downloadMap() {
                         DownloadMemoryList dml = new DownloadMemoryList();
                         dml.execute(scope);
                         dml.setMap(mMap, mClusterManager, markersList, getLocation());
-
                         return null;
                     }
                 };
@@ -411,22 +402,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     private void enableMyLocation() {
         //check for permission
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
+            Toast.makeText(getApplicationContext(), "Enable Location Services", Toast.LENGTH_LONG).show();
+            Log.d(null, "enable-no permission");
             // Permission to access the location is missing. Ask for it
-            PermissionUtils.requestPermission(this, LOCATION_PERMISSION_REQUEST_CODE,
-                    Manifest.permission.ACCESS_FINE_LOCATION, true);
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
         } else if (mMap != null) {
+            Log.d(null, "enable-map is not null");
             // Access to the location has been granted to the app.
             mMap.setMyLocationEnabled(true);
         }
     }
     public LatLng getLocation() {
         Location location;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
+            Toast.makeText(getApplicationContext(), "Please press the 'Sync' button up top", Toast.LENGTH_LONG).show();
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
             return null;
-        }else {
+        } else {
             LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
             location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if (location != null) {
@@ -440,15 +435,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //check permissions to see if fine location is enabled
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
+            Log.d(null, "orpr- permission granted");
             mMap.setMyLocationEnabled(true);
         } else {
+            Log.d(null, "orpr-no permission for location");
             Log.d(null, "no permission");
+
+//            ActivityCompat.requestPermissions(MapsActivity.this,
+//                    new String[]{Manifest.permission.INTERNET}, 1);
         }
         // handles the result of the permission request by implementing the ActivityCompat.OnRequestPermissionsResultCallback
         if (requestCode == MY_LOCATION_REQUEST_CODE) {
             if (permissions.length == 1 &&
                     permissions[0] == Manifest.permission.ACCESS_FINE_LOCATION &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d(null, "orpr-everything is right");
                 mMap.setMyLocationEnabled(true);
             } else {
                 Log.d(null, "no permission");

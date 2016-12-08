@@ -133,6 +133,24 @@
             android:padding="10dp"
             android:layout_below="@+id/colorList"/>
 
+        <TextView
+            android:id="@+id/visibilityTextView"
+            android:text="Display Username:"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_alignBottom="@+id/checkBox"
+            android:layout_alignLeft="@+id/privacyTextView"
+            android:layout_alignStart="@+id/privacyTextView" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/checkBox"
+            android:layout_below="@+id/statusText"
+            android:layout_alignLeft="@+id/colorList"
+            android:layout_alignStart="@+id/colorList" />
+
         <!--<android.support.v7.widget.AppCompatButton-->
             <!--android:layout_width="wrap_content"-->
             <!--android:layout_height="wrap_content"-->
