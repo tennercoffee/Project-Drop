@@ -6,6 +6,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class AboutActivity extends MapsActivity{
 
@@ -33,6 +34,7 @@ public class AboutActivity extends MapsActivity{
             tutorialButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    Toast.makeText(getApplicationContext(), "Feature Coming Soon!", Toast.LENGTH_LONG).show();
 //                    Intent i = new Intent(getApplicationContext(),TourActivity.class);
 //                    startActivity(i);
                 }

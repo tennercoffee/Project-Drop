@@ -14,7 +14,6 @@ import com.crashlytics.android.Crashlytics;
 
 import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import io.fabric.sdk.android.Fabric;
@@ -37,59 +36,65 @@ public class LoginActivity extends MainActivity{
         }
         try {
             webView = (WebView) findViewById(R.id.webview);
-            String appId = "504";
-            String appToken = "35616968-b609-11e6-9298-e0cb4ea6daff";
+            String appId = "525";
+            String appToken = "6512ac00-bcf1-11e6-9298-e0cb4ea6daff";
             String authGoto = "rwt.kevin.memories://returnApp?/";
             sendUrl = new URL("http://atlas.webapps.centennialarts.com/authorize.html?"
                     + "appId=" + appId + "&appToken=" + appToken + "&authorizationGoto=" + authGoto);
             Log.d(null, "call: " + sendUrl.toString());
+            webView.setWebViewClient(new WebViewClient() {
+                 @Override
+                 public void onPageStarted(WebView view, String url, Bitmap icon) {
+                     Log.d(null, "url1: " + url);
+                     //this returns the middle url redirect, need what this returns
+                     Log.d(null, "view.geturl: " + view.getUrl());
+                     //not this. because it doesn't pull up a new page after clicking authorize
+                 }
+                 @Override
+                 public void onPageFinished(WebView view, final String url) {
+                     super.onPageFinished(view, url);
+                     Log.d(null, "url2: " + url);
+                     webView.setWebChromeClient(new WebChromeClient());
+                     webView.getSettings().setJavaScriptEnabled(true);
+                     webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true); //move to onpagefinished
+                 }
+                 @Override
+                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                     Log.d(null, url);
+                     if(url.contains("username")) {
+                         Map<String, String> urlMap = getURLMap(url);
+                         username = urlMap.get("username");
+                         accessKey = urlMap.get("accessKey");
+                         id = urlMap.get("rwt.kevin.memories://returnApp?/?userId");
+                         Log.d(null, id + " " + username + " " + accessKey);
+                         if (username != null && accessKey != null) {
+                             Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+                             Toast.makeText(getApplicationContext(), "signed in as: " + username, Toast.LENGTH_LONG).show();
+                             startActivity(i);
+                             return false;
+                         } else {
+                             Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                             Toast.makeText(getApplicationContext(), "error signing in", Toast.LENGTH_LONG).show();
+                             startActivity(i);
+                             return false;
+                         }
+                         // return true if you want to block redirection, false otherwise
+                     }
+                     return false;
+                 }
+             });
+//            webView.setWebViewClient(client);
             webView.loadUrl(sendUrl.toString());
-            webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
-            webView.setWebChromeClient(new WebChromeClient());
-
-//            webView.setWebViewClient(new WebViewClient() {
-//                @Override
-//                public void onPageStarted(WebView view, String url, Bitmap icon) {
-//                    Log.d(null, "url: " + url);
-//                    Log.d(null, "view.geturl: " + view.getUrl());
-//                }
-//                @Override
-//                public void onPageFinished(WebView view, final String url) {
-//                    webView.getSettings().setJavaScriptEnabled(true);
-//                }
-//                @Override
-//                public boolean shouldOverrideUrlLoading(WebView view, String url) {
-//                    Log.d(null, url);
-//                    Map<String, String> urlMap = getURLMap(url);
-//                    username = urlMap.get("username");
-//                    accessKey = urlMap.get("accessKey");
-//                    id = urlMap.get("rwt.kevin.memories://returnApp?/?userId");
-//                    Log.d(null, id + " " + username + " " + accessKey);
-//                    if (id != null && accessKey != null) {
-//                        Intent i = new Intent(getApplicationContext(), MapsActivity.class);
-//                        Toast.makeText(getApplicationContext(), "signed in as: " + username, Toast.LENGTH_LONG).show();
-//                        startActivity(i);
-//                        return true;
-//                    } else {
-//                        Intent i = new Intent(getApplicationContext(), MainActivity.class);
-//                        Toast.makeText(getApplicationContext(), "error signing in", Toast.LENGTH_LONG).show();
-//                        startActivity(i);
-//                        return false;
-//                    }
-//                    // return true if you want to block redirection, false otherwise
-//                }
-//            });
         } catch (Exception e) {
             e.printStackTrace();
         }
+//        LoginUser user = new LoginUser();
+//        user.setWebView(webView);
+//        user.execute();
     }
-
-    private void setupWebview(WebView webView) {
-    }
-
     public boolean isLoggedIn(){
         //return true in order to simplify for now
-        return true;
+        return false;
     }
     public static Map<String, String> getURLMap(String query) {
         String[] params = query.split("&");

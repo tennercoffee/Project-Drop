@@ -2,16 +2,10 @@ package rwt.kevin.memories;
 
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.gson.JsonObject;
-import com.google.maps.android.clustering.ClusterManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,12 +15,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Kevin on 8/22/2016.
@@ -86,11 +77,14 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 
 		try {
 			for(int n = 0; n < jsonArray.length(); n++) {
+				String visibility = null;
+				String ownerId = null;
 				JSONObject jsonObject = jsonArray.getJSONObject(n);
 				if (jsonObject != null) {
 					titleObject = jsonObject.getString("title");
+					visibility = jsonObject.getString("description");
+					ownerId = jsonObject.getString("ownerId");
 					Log.d(null, "title: " + titleObject);
-
 					JSONArray attrArray = jsonObject.getJSONArray("pageTypeValues");
 					for (int i = 0; i < attrArray.length(); i++) {
 						JSONObject attrObject = (JSONObject) attrArray.get(i);
@@ -110,7 +104,16 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 				} else {
 					Log.d(null, "error");
 				}
-				String username = "username";
+				String username = null;
+				if (visibility != null && visibility.equals("v")){
+					//TODO: getusername from ownerid
+					username = ownerId;
+					Log.d(null, "u" + username);
+				} else if (visibility != null && visibility.equals("i")){
+					username = "anonymous";
+					Log.d(null, "u" + username);
+				}
+
 				ViewMemoryActivity view = new ViewMemoryActivity();
 //				view.setId(id);
 				view.setMemory(timestamp, timestampTextView, latlngFinal, locationTextView, titleObject, memoryTextView, username, usernameTextView);

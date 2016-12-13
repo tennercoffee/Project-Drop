@@ -32,9 +32,6 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
     private JSONArray listArray = new JSONArray();
     private ArrayAdapter adapter;
     private ListView listView;
-
-    private JSONArray mapArray;
-    JSONObject listObject;
     private ClusterManager cluster;
     private String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
 
@@ -52,7 +49,7 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
         int offset = 0;
         try {
             JSONObject filterObject = new JSONObject();
-            JSONObject idfilterObject = new JSONObject().put("combine", "AND").put("field", "pageTypesId").put("option","EQUALS").put("value","30");
+            JSONObject idfilterObject = new JSONObject().put("combine", "AND").put("field", "pageTypesId").put("option","EQUALS").put("value","36");
             JSONObject scopeFilterObject = new JSONObject().put("combine", "AND").put("field", "scope").put("option","EQUALS").put("value",scope);
             filterObject.put("0",idfilterObject);
             filterObject.put("1",scopeFilterObject);
@@ -104,7 +101,7 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
             for(int a = 0; a < arrayList.size(); a++){
                 JSONArray array = arrayList.get(a);
                 Log.d(null, array.toString());
-                mapArray = new JSONArray();
+                JSONArray mapArray = new JSONArray();
                 for (int n = 0; n < array.length(); n++) {
                     JSONObject j = array.getJSONObject(n);
                     String locationValue;
@@ -121,7 +118,7 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
                             mapArray.put(markerObject);
 
                             //for memlist
-                            listObject = new JSONObject();
+                            JSONObject listObject = new JSONObject();
                             listObject.put("title", titleObject).put("location", locationValue);
                             listArray.put(listObject);
                         }
