@@ -1,11 +1,15 @@
 package rwt.kevin.memories;
 
-import android.*;
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.multidex.MultiDex;
 import android.support.v4.app.ActivityCompat;
@@ -15,26 +19,16 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
-import com.google.android.gms.maps.model.LatLng;
-
 import java.net.URL;
-import java.util.List;
-
 import io.fabric.sdk.android.Fabric;
 
-public class MainActivity extends FragmentActivity {
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1, MY_LOCATION_REQUEST_CODE = 1;
-
+public class MainActivity extends FragmentActivity implements View.OnClickListener{
+    private static final int MY_LOCATION_REQUEST_CODE = 0;
     Toolbar toolbar;
-    URL sendUrl = null;
-    Button aboutButton;
-    Button signinButton;
-    Button noLoginButton;
-//    WebView webView;
+    URL atlasAuthUrl = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,82 +36,44 @@ public class MainActivity extends FragmentActivity {
         Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
 
-        aboutButton = (Button) findViewById(R.id.aboutButton);
-        signinButton = (Button) findViewById(R.id.login_button);
-        noLoginButton = (Button) findViewById(R.id.noLoginButton);
+        int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.ACCESS_FINE_LOCATION);
+//        if (permissionCheck == 0) {
+            LoginActivity l = new LoginActivity();
+            if (!l.isLoggedIn(getApplicationContext())) {
+                toolbar = (Toolbar) findViewById(R.id.login_toolbar);
+                if (toolbar != null) {
+                    toolbar.setTitle("Welcome to Moments!");
+                }
 
-        toolbar = (Toolbar) findViewById(R.id.login_toolbar);
-        if (toolbar != null) {
-            toolbar.setTitle("Main");
-        }
+                Button aboutButton = (Button) findViewById(R.id.about_button);
+                Button signinButton = (Button) findViewById(R.id.login_button);
+                Button noLoginButton = (Button) findViewById(R.id.no_login_button);
 
-        LoginActivity l = new LoginActivity();
-        if(!l.isLoggedIn()){
-            if (aboutButton != null) {
-                aboutButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Intent i = new Intent(getApplicationContext(), AboutActivity.class);
-                        startActivity(i);
-                    }
-                });
+                aboutButton.setOnClickListener(this);
+                signinButton.setOnClickListener(this);
+                noLoginButton.setOnClickListener(this);
+            } else {
+                Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+                startActivity(i);
             }
-            if (noLoginButton != null) {
-                noLoginButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Intent i = new Intent(getApplicationContext(), MapsActivity.class);
-                        if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED
-                                && ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.INTERNET) == PackageManager.PERMISSION_DENIED) {
-                            Toast.makeText(getApplicationContext(), "Enable Location and Data Services", Toast.LENGTH_LONG).show();
-                            Log.d(null, "no permission for location/data");
-                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.INTERNET}, 0);
-//                            if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.INTERNET) == PackageManager.PERMISSION_DENIED) {
-//                                Toast.makeText(getApplicationContext(), "Enable Internet", Toast.LENGTH_LONG).show();
-//                                Log.d(null, "no permission for internet");
-//                                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.INTERNET}, 0);
-//                            } else {
-//                                Log.d(null, "data enabled");
-//                                Toast.makeText(getApplicationContext(), "Please enable an internet connection", Toast.LENGTH_LONG).show();
-//                            }
-//                            startActivity(i);
-                        } else {
-                            Log.d(null, "permission for location granted");
-                            startActivity(i);
-                        }
-                    }
-                });
-            }
-            if(signinButton != null){
-                signinButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        clearButtons();
-                        Intent i = new Intent(getApplicationContext(), LoginActivity.class);
-                        startActivity(i);
-                    }
-                });
-            }
-            //TODO:check for permissions/ask for permissions
-
-//            ActivityCompat.requestPermissions(MainActivity.this,
-//                    new String[]{Manifest.permission.INTERNET}, 1);
-        } else {
-            Log.d(null, "loggedin, proceed to maps");
-            Intent i = new Intent(getApplicationContext(), MapsActivity.class);
-            startActivity(i);
-        }
+//        }
     }
-    public void clearButtons() {
-        if(aboutButton != null && noLoginButton != null) {
-            TextView textView = (TextView) findViewById(R.id.textView);
-            TextView textView2 = (TextView) findViewById(R.id.textView2);
-            textView.setVisibility(View.INVISIBLE);
-            textView2.setVisibility(View.INVISIBLE);
-            aboutButton.setVisibility(View.INVISIBLE);
-            signinButton.setVisibility(View.INVISIBLE);
-            noLoginButton.setVisibility(View.INVISIBLE);
+    @Override
+    public void onClick(View view) {
+        Intent i = null;
+        switch (view.getId()) {
+            case R.id.login_button:
+                i = new Intent(getApplicationContext(), LoginActivity.class);
+                break;
+            case R.id.about_button:
+                i = new Intent(getApplicationContext(), AboutActivity.class);
+                break;
+            case R.id.no_login_button:
+                i = new Intent(getApplicationContext(), MapsActivity.class);
+                break;
         }
+        startActivity(i);
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -129,6 +85,33 @@ public class MainActivity extends FragmentActivity {
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(newBase);
         MultiDex.install(this);
+    }
+    public boolean checkPermissions() {
+        if (ContextCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                Toast.makeText(getApplicationContext(),"Moments is a GPS based application", Toast.LENGTH_LONG);
+                Toast.makeText(getApplicationContext(),"Please allow the correct permissions", Toast.LENGTH_LONG);
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_LOCATION_REQUEST_CODE);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
+        return false;
     }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -149,5 +132,8 @@ public class MainActivity extends FragmentActivity {
                 Log.d(null, "no permission");
             }
         }
+    }
+    private boolean isNetworkAvailable() {
+        return false;
     }
 }

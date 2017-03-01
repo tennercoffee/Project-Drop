@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        tools:context="rwt.kevin.memories.ViewMemoryActivity">
+        <android.support.design.widget.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/AppTheme.AppBarOverlay"
+            android:id="@+id/view2">
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/report_memory_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="?attr/colorPrimary"
+                android:elevation="4dp"
+                android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+        </android.support.design.widget.AppBarLayout>
+        <include layout="@layout/content_add_memory_layout" />
+        <android.support.v7.widget.AppCompatButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/submit_memory_report_button"
+            android:layout_gravity="left|bottom"
+            android:text="Submit"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="15dp" />
+        <android.support.v7.widget.AppCompatButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/cancel_button"
+            android:layout_gravity="left|bottom"
+            android:text="Cancel"
+            android:onClick="MapsActivity"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_margin="15dp" />
+        <EditText
+            android:layout_width="match_parent"
+            android:id="@+id/editInp"
+            android:hint=" Input the issue with this Moment, then click Submit "
+            android:inputType="text|textCapSentences|textMultiLine"
+            android:gravity="top|left"
+            android:background="@drawable/edittextstyle"
+            android:layout_below="@+id/charCountTextView"
+            android:layout_centerHorizontal="true"
+            android:focusable="true"
+            android:padding="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            android:singleLine="true"
+            android:nestedScrollingEnabled="true"
+            android:layout_height="200dp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/charCountTextView"
+            android:gravity="right"
+            android:layout_below="@+id/view2"
+            android:layout_margin="5dp"
+            android:text="" />
+
+        <TextView
+            android:text="TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/editInp"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/memory_id_text_view" />
+    </RelativeLayout>
+</android.support.design.widget.CoordinatorLayout>

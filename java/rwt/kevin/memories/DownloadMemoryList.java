@@ -4,16 +4,10 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.maps.android.clustering.ClusterManager;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -22,18 +16,15 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.List;
 
 class DownloadMemoryList extends AsyncTask<String, String, Void> {
     private ArrayList<JSONArray> arrayList = new ArrayList<>();
     private ArrayList<JSONArray> markerList = new ArrayList<>();
     private JSONArray jsonArray;
-    private GoogleMap mMap;
     private LatLng myLocation;
-    private JSONArray listArray = new JSONArray();
     private ArrayAdapter adapter;
     private ListView listView;
-    private ClusterManager cluster;
-    private String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
 
     interface InputReader{
         String getInput();
@@ -44,21 +35,27 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
     @Override
     protected Void doInBackground(String... params) {
         String scope = params[0];
-//		result = params[1];
+        String key = params[1];
+        String urlString = params[2];
         String s;
         int offset = 0;
+
         try {
-            JSONObject filterObject = new JSONObject();
-            JSONObject idfilterObject = new JSONObject().put("combine", "AND").put("field", "pageTypesId").put("option","EQUALS").put("value","36");
-            JSONObject scopeFilterObject = new JSONObject().put("combine", "AND").put("field", "scope").put("option","EQUALS").put("value",scope);
-            filterObject.put("0",idfilterObject);
-            filterObject.put("1",scopeFilterObject);
-            String data = "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8")
-                    + "&" + URLEncoder.encode("limit", "UTF-8") + "=" + URLEncoder.encode("100", "UTF-8")
-                    + "&" + URLEncoder.encode("filters", "UTF-8") + "=" + URLEncoder.encode(filterObject.toString(),"UTF-8");
             do{
-                URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=listPages" + data + "&" + URLEncoder.encode("offset", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(offset), "UTF-8"));
+                JSONObject filterObject = new JSONObject();
+                JSONObject idfilterObject = new JSONObject().put("combine", "AND").put("field", "pageTypesId").put("option","EQUALS").put("value","20");
+                JSONObject scopeFilterObject = new JSONObject().put("combine", "AND").put("field", "scopeString").put("option","EQUALS").put("value",scope);
+                filterObject.put("0",idfilterObject);
+                filterObject.put("1",scopeFilterObject);
+                String data = "&" + URLEncoder.encode("accessKeyString", "UTF-8") + "=" + URLEncoder.encode(key, "UTF-8")
+                    + "&" + URLEncoder.encode("limit", "UTF-8") + "=" + URLEncoder.encode("100", "UTF-8")
+                    + "&" + URLEncoder.encode("offset", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(offset), "UTF-8")
+                    + "&" + URLEncoder.encode("filters", "UTF-8") + "=" + URLEncoder.encode(filterObject.toString(),"UTF-8");
+                URL url = new URL(urlString + "/page.php?command=listPages" + data /*+ "&" */);
+//                        + URLEncoder.encode("offset", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(offset), "UTF-8"));
                 Log.d(null, url.toString());
+                Thread.sleep(100);
+
                 final URLConnection conn = url.openConnection();
                 final BufferedReader[] in = new BufferedReader[1];
                 InputReader reader = new InputReader() {
@@ -80,7 +77,6 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
                 offset += 100;
                 Thread.sleep(150);
             } while (jsonArray.length() >= 1);
-            Log.d(null, String.valueOf(arrayList.size()));
         } catch (MalformedURLException e) {
             e.printStackTrace();
             Log.d(null, "malformed url");
@@ -98,57 +94,55 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
     protected void onPostExecute(Void v) {
         Log.d(null, "postExecute");
         try {
-            for(int a = 0; a < arrayList.size(); a++){
+            JSONArray mapArray;
+            for (int a = 0; a < arrayList.size(); a++) {
                 JSONArray array = arrayList.get(a);
-                Log.d(null, array.toString());
-                JSONArray mapArray = new JSONArray();
+                mapArray = new JSONArray();
                 for (int n = 0; n < array.length(); n++) {
                     JSONObject j = array.getJSONObject(n);
-                    String locationValue;
-                    int idObject = j.getInt("id");
-                    String titleObject = j.getString("title");
+                    String latitudeValue = null;
+                    String longitudeValue = null;
+                    int idObject = j.getInt("idString");
                     JSONArray attrArray = j.getJSONArray("pageTypeValues");
                     for (int i = 0; i < attrArray.length(); i++) {
                         JSONObject attrObject = (JSONObject) attrArray.get(i);
-                        String title = attrObject.getString("title");
-                        if (title.equals("Location")) {
-                            locationValue = (String) attrObject.get("value");
-                            JSONObject markerObject = new JSONObject();
-                            markerObject.put("title", idObject).put("location", locationValue);
-                            mapArray.put(markerObject);
-
-                            //for memlist
-                            JSONObject listObject = new JSONObject();
-                            listObject.put("title", titleObject).put("location", locationValue);
-                            listArray.put(listObject);
+                        String title = attrObject.getString("titleString");
+                        if (title.equals("Latitude")) {
+                            latitudeValue = (String) attrObject.get("value");
                         }
+                        if (title.equals("Longitude")) {
+                            longitudeValue = (String) attrObject.get("value");
+                        }
+                    }
+                    if (latitudeValue != null && longitudeValue != null) {
+                        JSONObject markerObject = new JSONObject();
+                        markerObject.put("idString", idObject).put("latitude", latitudeValue).put("longitude", longitudeValue);
+                        mapArray.put(markerObject);
+                    } else {
+                        Log.d(null, "latitude and logitude-bad");
                     }
                 }
                 markerList.add(mapArray);
+                Log.d(null, "markerlist" + markerList.toString());
             }
-            MapsActivity map = new MapsActivity();
-            ArrayList<ArrayList> list = map.addMarkersToMap(markerList, mMap, myLocation);
-            map.revealMarkers(mMap, cluster, list);
-
-            MemoryListActivity mem = new MemoryListActivity();
-            if(listView != null && adapter != null) {
-                mem.setupList(listArray, listView, adapter);
-            }
-        } catch (JSONException e1) {
-            e1.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
-    }
-    void setMap(GoogleMap map, ClusterManager clusterManager, ArrayList<Marker> list, LatLng myLocation){
-        this.mMap = map;
-        this.cluster = clusterManager;
-        this.myLocation = myLocation;
+        //TODO:setup list here
+        MemoryListActivity m = new MemoryListActivity();
     }
     void setAdapter(ArrayAdapter adapter){
         if(adapter !=  null) {
             this.adapter = adapter;
         } else {Log.d(null, "null this.adapter");}
     }
+    void setMyLocation(LatLng location) {
+        this.myLocation = location;
+    }
     void setListView(ListView listView){
         this.listView = listView;
+    }
+    void setMapCorners(LatLng location) {
+        this.myLocation = location;
     }
 }

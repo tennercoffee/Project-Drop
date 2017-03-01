@@ -18,16 +18,51 @@
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
         </android.support.v7.widget.Toolbar>
     </android.support.design.widget.AppBarLayout>
-
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/noLoginButton"
+        android:id="@+id/no_login_button"
         android:gravity="center"
         android:text="Skip Login"
-        android:layout_below="@+id/aboutButton"
+        android:layout_below="@+id/about_button"
         android:layout_centerHorizontal="true"
         android:layout_margin="10dp" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Please enable Location and Data Services to enjoy this Application.\n You will find the Help/FAQ section by clicking on the 'About Moments' Button."
+        android:id="@+id/textView2"
+        android:gravity="center_horizontal"
+        android:layout_below="@+id/textView"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="50dp" />
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true" />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sign In"
+        android:id="@+id/login_button"
+        android:layout_below="@+id/no_login_button"
+        android:layout_alignLeft="@+id/no_login_button"
+        android:layout_alignStart="@+id/no_login_button"
+        android:layout_alignRight="@+id/no_login_button"
+        android:layout_alignEnd="@+id/no_login_button" />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/about_button"
+        android:gravity="center"
+        android:text="About Moments"
+        android:layout_marginTop="26dp"
+        android:layout_below="@+id/textView2"
+        android:layout_alignLeft="@+id/no_login_button"
+        android:layout_alignStart="@+id/no_login_button"
+        android:layout_alignRight="@+id/no_login_button"
+        android:layout_alignEnd="@+id/no_login_button" />
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -36,48 +71,8 @@
         android:id="@+id/textView"
         android:textSize="35sp"
         android:gravity="center_horizontal"
+        android:layout_marginTop="28dp"
         android:layout_below="@+id/view3"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="64dp" />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Please enable Location and Data Services to enjoy this Application."
-        android:id="@+id/textView2"
-        android:gravity="center_horizontal"
-        android:layout_below="@+id/textView"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="50dp" />
-    
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:indeterminate="true" />
-
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Sign In"
-        android:id="@+id/login_button"
-        android:layout_below="@+id/noLoginButton"
-        android:layout_alignLeft="@+id/noLoginButton"
-        android:layout_alignStart="@+id/noLoginButton"
-        android:layout_alignRight="@+id/noLoginButton"
-        android:layout_alignEnd="@+id/noLoginButton" />
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/aboutButton"
-        android:gravity="center"
-        android:text="About Moments"
-        android:layout_marginTop="26dp"
-        android:layout_below="@+id/textView2"
-        android:layout_alignLeft="@+id/noLoginButton"
-        android:layout_alignStart="@+id/noLoginButton"
-        android:layout_alignRight="@+id/noLoginButton"
-        android:layout_alignEnd="@+id/noLoginButton" />
+        android:layout_alignParentStart="true" />
 </RelativeLayout>

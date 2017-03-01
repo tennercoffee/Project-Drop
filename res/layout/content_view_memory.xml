@@ -23,70 +23,47 @@
         android:layout_width="match_parent"
         android:layout_height="175dp"
         android:text=""
-        android:id="@+id/memoryTextView"
+        android:id="@+id/memory_textview"
         android:gravity="center_horizontal"
         android:hint=""
         android:background="#d3d3d3"
         android:layout_below="@+id/timestamp_view"
         android:layout_centerHorizontal="true"
-        android:layout_margin="20dp" />
-    <Button
+        android:layout_margin="20dp"
+        android:editable="false" />
+    <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Back"
-        android:id="@+id/backButton"
-        android:layout_gravity="right"
-        android:onClick="MapsActivity"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="10dp" />
+        app:srcCompat="@color/common_google_signin_btn_text_dark_disabled"
+        android:layout_above="@+id/back_button"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/memory_image_view"
+        android:contentDescription="back button" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text=""
-        android:id="@+id/locationTextView"
+        android:id="@+id/location_textview"
         android:hint=""
-        android:layout_below="@+id/view"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp" />
+        android:layout_below="@+id/memory_textview"
+        android:layout_centerHorizontal="true" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/username_textview"
+        android:layout_above="@+id/memory_textview"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:textSize="20sp" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text=""
         android:id="@+id/timestamp_view"
-        android:layout_below="@+id/locationTextView"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="20dp" />
-    <!--<Button-->
-        <!--android:text="Dislike"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_above="@+id/backButton"-->
-        <!--android:layout_alignRight="@+id/timestamp_view"-->
-        <!--android:layout_alignEnd="@+id/timestamp_view"-->
-        <!--android:layout_marginBottom="101dp"-->
-        <!--android:id="@+id/dislikeButton" />-->
-    <!--<Button-->
-        <!--android:text="Like"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignBottom="@+id/dislikeButton"-->
-        <!--android:layout_toRightOf="@+id/dislikeButton"-->
-        <!--android:layout_toEndOf="@+id/dislikeButton"-->
-        <!--android:id="@+id/likeButton" />-->
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/usernameText"
-        android:text=""
-        android:layout_above="@+id/memoryTextView"
-        android:layout_centerHorizontal="true" />
-
+        android:layout_below="@+id/view"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
     <!--<Button-->
         <!--android:layout_width="wrap_content"-->
         <!--android:layout_height="wrap_content"-->
@@ -104,13 +81,5 @@
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
         android:layout_marginTop="300dp"
-        android:background="#d9d9d9" />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Moment Snapshots Are Coming Soon!"
-        android:id="@+id/textView8"
-        android:layout_below="@+id/snapshotView"
-        android:layout_centerHorizontal="true" />-->
+        android:background="#d9d9d9" />-->
 </RelativeLayout>

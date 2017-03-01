@@ -1,16 +1,19 @@
 package rwt.kevin.memories;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.SharedPreferencesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -23,7 +26,6 @@ import android.widget.ImageButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -31,38 +33,38 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.clustering.ClusterItem;
 import com.google.maps.android.clustering.ClusterManager;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import static android.view.View.OnClickListener;
 import static com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import static com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, OnMyLocationButtonClickListener, com.google.android.gms.location.LocationListener{
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1, MY_LOCATION_REQUEST_CODE = 1;
-    public GoogleMap mMap;
-    public GoogleApiClient client;
+public class MapsActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, OnMyLocationButtonClickListener, com.google.android.gms.location.LocationListener{
+    private static final int MY_LOCATION_REQUEST_CODE = 1;
+    public GoogleMap googleMap;
+    public GoogleApiClient googleApiClient;
     public ArrayList<Marker> markersList = new ArrayList<>();
     public ArrayList<ArrayList> arrayList = new ArrayList<>();
-    public SupportMapFragment mapFragment = null;
+    public SupportMapFragment supportMapFragment = null;
+    String usernameString, accessKeyString, scopeString, atlasIdNumberString;
+    List<String> titleStringList;
+    LatLng myLocationLatLng, neLatLng, swLatLng;
     Toolbar toolbar;
     ClusterManager<MarkerItems> mClusterManager;
-    JSONArray resultJSON;
-    String scope;
-    String username;
-    String userid;
-    String accessKey;
+    TextView privacyTextView;
+    Switch simpleSwitch;
+    FloatingActionButton addMemoryButton;
+    ImageButton profileImageButton, listImageButton;
 
     public interface DownloadMap {
         List<List<String>> downloadMap();
@@ -75,56 +77,61 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (toolbar != null) {
             toolbar.setTitle("Moments");
             setSupportActionBar(toolbar);
+            android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+            actionBar.setDisplayHomeAsUpEnabled(false);
         }
 
-        client = buildClient();
-
-        Intent i = getIntent();
-        username = i.getStringExtra("username");
-        userid = i.getStringExtra("userid");
-        accessKey = i.getStringExtra("accessKey");
-        String result = i.getStringExtra("result");
-        Log.d(null, "marker added: " + result);
-
+        googleApiClient = buildClient();
         enableMyLocation();
+        myLocationLatLng = getLocation(getApplicationContext());
         //TODO:check for permissions(callback?)
+
+        //setup views && buttons
+        privacyTextView = (TextView) findViewById(R.id.privacy_textview);
+        simpleSwitch = (Switch) findViewById(R.id.privacy_switch);
+        addMemoryButton = (FloatingActionButton) findViewById(R.id.add_memory_button);
+        profileImageButton = (ImageButton) findViewById(R.id.profile_icon_button);
+        listImageButton = (ImageButton) findViewById(R.id.list_icon_button);
+
+        addMemoryButton.setOnClickListener(this);
+        profileImageButton.setOnClickListener(this);
+        listImageButton.setOnClickListener(this);
     }
     public void loadMap(Bundle savedInstanceState) {
+        //loadmap fragment
         setContentView(R.layout.activity_maps);
-        mapFragment = (SupportMapFragment) getSupportFragmentManager()
+        supportMapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        supportMapFragment.getMapAsync(this);
     }
     @Override
     public void onMapReady(GoogleMap map) {
-        final TextView privacyTextView = (TextView) findViewById(R.id.privacy_textview);
-        final Switch simpleSwitch = (Switch) findViewById(R.id.privacy_switch);
-        FloatingActionButton addMemoryButton = (FloatingActionButton) findViewById(R.id.addMemoryButton);
-        ImageButton profileButton = (ImageButton) findViewById(R.id.profile_icon);
-        ImageButton listButton = (ImageButton) findViewById(R.id.list_icon);
-//        ContextCompat.checkSelfPermission(this,
-//                android.Manifest.permission.ACCESS_FINE_LOCATION);
-//        int i = ContextCompat.checkSelfPermission(this,
-//                Manifest.permission.INTERNET);
-//        Log.d(null, String.valueOf(i));
-        if (client == null) {
+        //get login information
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String atlasAccessKey = sharedPreferences.getString(getString(R.string.atlas_app_token), null);
+        usernameString = sharedPreferences.getString("usernameString", null);
+        String atlasIdString = sharedPreferences.getString("atlasIdNumberString", null);
+        Log.d(null, "logged in as: " + usernameString + " " + atlasIdString + " " + accessKeyString);
+
+        if (googleApiClient == null) {
+            //sign into maps
             buildClient();
         }
         if (map != null) {
-            mMap = map;
-            mMap.setOnMyLocationButtonClickListener(this);
-            mMap.getUiSettings().setScrollGesturesEnabled(false);
-            mMap.getUiSettings().setRotateGesturesEnabled(true);
-            mMap.getUiSettings().setCompassEnabled(true);
-            mMap.getUiSettings().setMapToolbarEnabled(false);
-            mMap.setMinZoomPreference(16);
-            mMap.setMaxZoomPreference(20);
+            //train maps onto mylocation && build settings
+            googleMap = map;
+            googleMap.setOnMyLocationButtonClickListener(this);
+            googleMap.getUiSettings().setScrollGesturesEnabled(false);
+            googleMap.getUiSettings().setRotateGesturesEnabled(true);
+            googleMap.getUiSettings().setCompassEnabled(true);
+            googleMap.getUiSettings().setMapToolbarEnabled(false);
+            googleMap.setMinZoomPreference(16);
+            googleMap.setMaxZoomPreference(20);
 //            mClusterManager = new ClusterManager<>(this, map);
-//            mMap.setOnMarkerClickListener(mClusterManager);
-
-            LatLng currentLocation = getLocation();
+//            googleMap.setOnMarkerClickListener(mClusterManager);
+            LatLng currentLocation = getLocation(getApplicationContext());
             if (currentLocation != null) {
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
             }
 //            mClusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<MarkerItems>() {
 //                @Override
@@ -137,15 +144,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                    return true;
 //                }
 //            });
-            mMap.setOnMarkerClickListener(new OnMarkerClickListener() {
+            //setup marker listener to load marker information
+            googleMap.setOnMarkerClickListener(new OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker) {
                     Log.d(null, "marker click");
                     Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
-                    if(isMarkerClose(marker.getPosition(), 100, getLocation())) {
+                    if(isMarkerClose(marker.getPosition(), 100, getLocation(getApplicationContext()), googleMap)) {
                         if (marker.getTitle() != null) {
                             String id = marker.getTitle();
-                            i.putExtra("id", id);
+                            String location = getLocation(getApplicationContext()).toString();
+                            if(id.equals("test")){
+                                i.putExtra("test","test").putExtra("location", location);
+                            }
+                            i.putExtra("idString", id);
+                            i.putExtra("usernameString", usernameString);
                             startActivity(i);
                         } else {
                             Log.d(null, "null marker");
@@ -157,154 +170,161 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
         }
-        if (addMemoryButton != null) {
-            addMemoryButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    final LatLng myLocation = getLocation();
-                    if (myLocation != null) {
-                        Intent i = new Intent(getApplicationContext(), AddMemoryActivity.class);
-                        i.putExtra("location", myLocation);
-                        startActivity(i);
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Please try again", Toast.LENGTH_LONG).show();
-                    }
-                }
-            });
-        }
-        if(profileButton != null){
-            profileButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent i = new Intent(getApplicationContext(), ProfileActivity.class);
-                    if(username != null) {
-                        i.putExtra("username", username);
-                        i.putExtra("userid", userid);
-                        i.putExtra("accessKey", accessKey);
-                        startActivity(i);
-                    }
-                }
-            });
-        }
-        if(listButton != null){
-            listButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent i = new Intent(getApplicationContext(), MemoryListActivity.class);
-//                    MemoryListActivity mem = new MemoryListActivity();
-//                    mem.setResultJSON(resultJSON);
-                    startActivity(i);
-                }
-            });
-        }
-        if(simpleSwitch != null && privacyTextView != null) {
+        //setup privacy switch
+        if (simpleSwitch != null && privacyTextView != null) {
             simpleSwitch.setChecked(true);
-            privacyTextView.setText("Public");
+            privacyTextView.setText(R.string.public_string);
             simpleSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if (simpleSwitch.isChecked()) {
-                        scope = "public";
-                        Log.d(null, "public");
-                        privacyTextView.setText("Public");
+                        scopeString = "public";
+                        privacyTextView.setText(R.string.public_string);
+                    } else if (!simpleSwitch.isChecked() && usernameString != null){
+                        scopeString = "private";
+                        privacyTextView.setText(R.string.private_string);
                     } else {
-                        scope = "private";
-                        Log.d(null, "private");
-                        privacyTextView.setText("Private");
+                        scopeString = "public";
+                        privacyTextView.setText(R.string.public_string);
+                        Toast.makeText(getApplicationContext(), "To See Private Moments, Login First", Toast.LENGTH_LONG).show();
+                        simpleSwitch.setChecked(true);
                     }
-                    mMap.clear();
+                    googleMap.clear();
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    DownloadMap loadMap = new DownloadMap() {
-                        @Override
-                        public List<List<String>> downloadMap() {
-                            DownloadMemoryList dml = new DownloadMemoryList();
-                            dml.execute(scope);
-                            dml.setMap(mMap, mClusterManager, markersList, getLocation());
-//                            Log.d(null,"getmaparray:" + dml.getMapArray().toString());
-                            return null;
-                        }
-                    };
-                    loadMap.downloadMap();
+                    callDownloadMap(neLatLng,swLatLng);
                 }
             });
         }
+        //get corners of screen for downloading just close by markers
+        LatLngBounds bounds = googleMap.getProjection().getVisibleRegion().latLngBounds;
+        neLatLng = bounds.northeast;
+        swLatLng = bounds.southwest;
+        callDownloadMap(neLatLng,swLatLng);
+    }
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.add_memory_button:
+                //load addmemactivity
+                final LatLng myLocation = getLocation(getApplicationContext());
+                if (myLocation != null) {
+                    Intent i = new Intent(getApplicationContext(), AddMemoryActivity.class);
+                    i.putExtra("location", myLocation);
+                    if(atlasIdNumberString != null) {
+                        Log.d(null, atlasIdNumberString + " adding mem");
+                        i.putExtra("atlasIdNumberString", atlasIdNumberString);
+                    } else {
+                        Log.d(null, "null user");
+                    }
+                    startActivity(i);
+                } else {
+                    Toast.makeText(getApplicationContext(), "Please try again", Toast.LENGTH_LONG).show();
+                }
+                break;
+            case R.id.profile_icon_button:
+                //load the user profile
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                String atlasAccessKey = sharedPreferences.getString(getString(R.string.atlas_app_token), null);
+                usernameString = sharedPreferences.getString("usernameString", null);
+                String atlasIdString = sharedPreferences.getString("atlasIdNumberString", null);
+                    Intent i = new Intent(getApplicationContext(), ProfileActivity.class);
+                    if (usernameString != null && atlasAccessKey != null) {
+                        i.putExtra("usernameString", usernameString);
+                        i.putExtra("accessKeyString", atlasAccessKey);
+                        startActivity(i);
+                    } else {
+                        Log.d(null, "no user logged in");
+                        Toast.makeText(getApplicationContext(), "Please Log In First", Toast.LENGTH_LONG).show();
+                    }
+
+                break;
+            case R.id.list_icon_button:
+                //load memlistactivity with markerList
+                Intent l = new Intent(getApplicationContext(), MemoryListActivity.class);
+                    //TODO:collect markers here...if markerslist is not null(good) send markerslist to memlistact
+                    //todo: remove first toast
+                Toast.makeText(getApplicationContext(), String.valueOf(markersList.size()), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), getString(R.string.newfeature), Toast.LENGTH_LONG).show();
+
+                break;
+        }
+    }
+    private void callDownloadMap(final LatLng neLatLng, final LatLng swLatLng) { //download markers in json format from server
         DownloadMap loadMap = new DownloadMap() {
             @Override
             public List<List<String>> downloadMap() {
-                DownloadMemoryList dml = new DownloadMemoryList();
-                dml.execute(scope);
-                dml.setMap(mMap, mClusterManager, markersList, getLocation());
+                DownloadMemoryMap dmm = new DownloadMemoryMap();
+                String webUrl = getString(R.string.ca_access_url);
+                dmm.execute(scopeString, String.valueOf(neLatLng.latitude), String.valueOf(neLatLng.longitude),
+                        String.valueOf(swLatLng.latitude), String.valueOf(swLatLng.longitude),
+                        getString(R.string.ca_access_key), webUrl);
+                dmm.setMap(googleMap, mClusterManager, markersList, getLocation(getApplicationContext()));
                 return null;
             }
         };
         loadMap.downloadMap();
     }
-    private int getRegionCode(String id) {
-        int regionCode;
-        if(id.equals("America/Chicago")){
-            return 0001;
-        } else if(id.equals("")){
-            return 0000;
-        }
-        return 0000;
-    }
-    public boolean isMarkerClose(LatLng markerLocation, int rDistance, LatLng myLocation){
+    public boolean isMarkerClose(LatLng markerLocation, int rDistance, LatLng myLocation, GoogleMap mMap){ //check to see if marker is close enough to view information
         float[] distance = new float[2];
         Circle circle = mMap.addCircle(new CircleOptions()
                 .center(myLocation)
                 .radius(rDistance)     //The radius of the circle, specified in meters. It should be zero or greater.
                 .strokeColor(Color.rgb(0, 136, 255))
                 .fillColor(Color.argb(20, 0, 136, 255)));
-
         Location.distanceBetween(markerLocation.latitude, markerLocation.longitude,
                 circle.getCenter().latitude, circle.getCenter().longitude, distance);
-
-        if( distance[0] > circle.getRadius()  ){
+        if( distance[0] > circle.getRadius()) {
             Toast.makeText(getBaseContext(), "Too far away. Move closer.", Toast.LENGTH_LONG).show();
             return false;
         } else {
             return true;
         }
     }
-    public class MarkerItems implements ClusterItem {
-        private final LatLng mPosition;
-        MarkerItems(LatLng position) {
-            mPosition = position;
-        }
-        @Override
-        public LatLng getPosition() {
-            return mPosition;
-        }
-    }
-    public ArrayList<ArrayList> addMarkersToMap(ArrayList<JSONArray> downloadList, GoogleMap mMap, LatLng myLocation) {
+    public ArrayList<ArrayList> addMarkersToMap(ArrayList<JSONArray> downloadList, GoogleMap mMap) { //read markers from json list, and add to markerslist
         Log.d(null, "addmarkerstomap");
         for(int n = 0; n < downloadList.size(); n++) {
             JSONArray downloadArray = downloadList.get(n);
-            this.resultJSON = downloadArray;
-            arrayList = new ArrayList<ArrayList>();
-//            Log.d("line291", arrayList.toString());
+            arrayList = new ArrayList<>();
             markersList = new ArrayList<>();
-//            Log.d("line293", markersList.toString());
             if (downloadArray != null && mMap != null) {
+                Log.d(null, "downloadarray: " + downloadArray.toString());
                 for (int i = 0; i < downloadArray.length(); i++) {
                     try {
+                        Marker marker;
+                        String latitude, longitude, id, color;
                         JSONObject downloadObject = (JSONObject) downloadArray.get(i);
-                        String coordinates = downloadObject.get("location").toString();
-                        String id = downloadObject.get("title").toString();
-                        String[] latlng = coordinates.split(",");
-                        double latitude = Double.parseDouble(latlng[0]);
-                        double longitude = Double.parseDouble(latlng[1]);
-                        LatLng latlngFinal = new LatLng(latitude, longitude);
+                        latitude = downloadObject.get("latitude").toString();
+                        longitude = downloadObject.get("longitude").toString();
+                        id = downloadObject.get("id").toString();
+                        color = downloadObject.get("color").toString();
+                        Log.d(null, "id:" + id + " color: " + color);
 
-//                        if(isMarkerClose(myLocation, 500, getLocation())) {
-                            Marker marker = mMap.addMarker(new MarkerOptions().position(latlngFinal).title(id));
-                            markersList.add(marker);
-                            arrayList.add(markersList);
-//                        }
+                        float hue;
+                        switch (color) {
+                            case "Red":
+                                hue = BitmapDescriptorFactory.HUE_RED;
+                                break;
+                            case "Blue":
+                                hue = BitmapDescriptorFactory.HUE_BLUE;
+                                break;
+                            case "Green":
+                                hue = BitmapDescriptorFactory.HUE_GREEN;
+                                break;
+                            default:
+                                hue = BitmapDescriptorFactory.HUE_RED;
+                                break;
+                        }
+                        marker = mMap.addMarker(new MarkerOptions()
+                                .position(new LatLng((Double.parseDouble(latitude)), Double.parseDouble(longitude)))
+                                .icon(BitmapDescriptorFactory.defaultMarker(hue))
+                                .title(id));
+
+                        markersList.add(marker);
+                        arrayList.add(markersList);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -315,27 +335,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         return arrayList;
     }
-    public void revealMarkers(GoogleMap map, ClusterManager<MarkerItems> clusterManager, ArrayList<ArrayList> list) {
+    public void revealMarkers(GoogleMap map, ClusterManager<MarkerItems> clusterManager, ArrayList<ArrayList> list) { //display markers on map
         this.mClusterManager = clusterManager;
         this.arrayList = list;
-//        this.markersList = markersList;
-        this.mMap = map;
-//        mMap.clear();//this removes the markers that should be in cluster, removes duplicates
-//        mClusterManager.clearItems();
+        this.googleMap = map;
+
         for (int n = 0; n < arrayList.size(); n++) {
-//            Log.d(null, arrayList.get(n).toString());
-//            ArrayList<Marker> markersList = new ArrayList<>(arrayList.get(n));
-//            for(int i = 0; i < markersList.size(); i++) {
-//                Log.d(null, markersList.get(i).toString());
-//                Marker currentMarker = markersList.get(i);
+            ArrayList<Marker> markersList = new ArrayList<>(arrayList.get(n));
+            for(int i = 0; i < markersList.size(); i++) {
+                Marker currentMarker = markersList.get(i);
 //                mClusterManager.addItem(new MarkerItems(currentMarker.getPosition()));
 //                mClusterManager.cluster();
-//                mMap.addMarker(new MarkerOptions().position(currentMarker.getPosition()).title(currentMarker.getTitle()));
-//            }
+                googleMap.addMarker(new MarkerOptions().position(currentMarker.getPosition()).title(currentMarker.getTitle()));
+            }
         }
         Log.d(null, "full map");
     }
-    public GoogleApiClient buildClient() {
+    public GoogleApiClient buildClient() { //load google map api
         return new GoogleApiClient.Builder(this)
             .enableAutoManage(this /* FragmentActivity */,
                     this /* OnConnectionFailedListener */)
@@ -345,7 +361,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             .build();
     }
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu) { //add menu to toolbar
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.maps_activity_menu, menu);
         return true;
@@ -354,28 +370,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_sync:
-                mMap.clear();
-                LatLng currentLocation = getLocation();
+                //refresh markers on map
+                googleMap.clear();
+                LatLng currentLocation = getLocation(getApplicationContext());
                 if (currentLocation != null) {
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
                 }
-                DownloadMap loadMap = new DownloadMap() {
-                    @Override
-                    public List<List<String>> downloadMap() {
-                        DownloadMemoryList dml = new DownloadMemoryList();
-                        dml.execute(scope);
-                        dml.setMap(mMap, mClusterManager, markersList, getLocation());
-                        return null;
-                    }
-                };
-                loadMap.downloadMap();
+                callDownloadMap(neLatLng,swLatLng);
                 return true;
             case R.id.action_about:
                 //open about activity
                 Intent about = new Intent(getApplicationContext(), AboutActivity.class);
-                Log.d(null, "about selected");
                 startActivity(about);
                 return true;
+            case R.id.action_add_test_marker:
+                //add test marker
+                googleMap.addMarker(new MarkerOptions().position(getLocation(getApplicationContext())).title("test"));
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
@@ -384,13 +394,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     @Override
     public void onConnected(Bundle connectionHint) {
-        getLocation();
+        getLocation(getApplicationContext());
     }
+    @Override
     public void onLocationChanged(Location location) {
-        Toast.makeText(null, "location :"+location.getLatitude()+" , "+location.getLongitude(), Toast.LENGTH_SHORT).show();
-        LatLng currentLocation = getLocation();
-        if (currentLocation != null && mMap != null) {
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
+        //update location--might be redundant
+        Toast.makeText(null, "location update:" + location.getLatitude()+ " , " + location.getLongitude(), Toast.LENGTH_SHORT).show();
+        LatLng currentLocation = getLocation(getApplicationContext());
+        if (currentLocation != null && googleMap != null) {
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
         }
     }
     @Override
@@ -408,25 +420,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             // Permission to access the location is missing. Ask for it
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
-        } else if (mMap != null) {
+        } else if (googleMap != null) {
             Log.d(null, "enable-map is not null");
             // Access to the location has been granted to the app.
-            mMap.setMyLocationEnabled(true);
+            googleMap.setMyLocationEnabled(true);
         }
     }
-    public LatLng getLocation() {
-        Location location;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
-            Toast.makeText(getApplicationContext(), "Please press the 'Sync' button up top", Toast.LENGTH_LONG).show();
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
-            return null;
+    public LatLng getLocation(Context context) {
+        //track location
+        GPSTracker gps = new GPSTracker(this);
+        if(gps.canGetLocation()) {
+            return new LatLng(gps.getLatitude(),gps.getLongitude());
         } else {
-            LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-            location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            if (location != null) {
-                return new LatLng(location.getLatitude(),location.getLongitude());
-            }
+            gps.showSettingsAlert(context);
         }
         return null;
     }
@@ -436,11 +442,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             Log.d(null, "orpr- permission granted");
-            mMap.setMyLocationEnabled(true);
+            googleMap.setMyLocationEnabled(true);
         } else {
             Log.d(null, "orpr-no permission for location");
-            Log.d(null, "no permission");
-
 //            ActivityCompat.requestPermissions(MapsActivity.this,
 //                    new String[]{Manifest.permission.INTERNET}, 1);
         }
@@ -450,7 +454,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     permissions[0] == Manifest.permission.ACCESS_FINE_LOCATION &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Log.d(null, "orpr-everything is right");
-                mMap.setMyLocationEnabled(true);
+                googleMap.setMyLocationEnabled(true);
             } else {
                 Log.d(null, "no permission");
             }
@@ -464,12 +468,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     @Override
     public void onStart() {
-        client.connect();
+        googleApiClient.connect();
         super.onStart();
     }
     @Override
     public void onStop() {
-        client.disconnect();
+        googleApiClient.disconnect();
+        GPSTracker gps = new GPSTracker(getApplicationContext());
+        gps.stopUsingGPS();
         super.onStop();
 //        Intent i = new Intent(getApplicationContext(), MainActivity.class);
 //        startActivity(i);
@@ -477,7 +483,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onPause() {
         super.onPause();  // Always call the superclass method first
-        client.disconnect();
+        GPSTracker gps = new GPSTracker(getApplicationContext());
+        gps.stopUsingGPS();
+        googleApiClient.disconnect();
 //        Intent i = new Intent(getApplicationContext(), MainActivity.class);
 //        startActivity(i);
         // Release anything we don't need when paused
@@ -485,7 +493,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onResume() {
         super.onResume();  // Always call the superclass method first
-        client.connect();
-        // resetactivity
+        googleApiClient.connect();
+        if(googleMap != null && getLocation(getApplicationContext()) != null) {
+            LatLng latLng = getLocation(getApplicationContext());
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
+        }
+    }
+    public class MarkerItems implements ClusterItem {
+        private final LatLng mPosition;
+        MarkerItems(LatLng position) {
+            mPosition = position;
+        }
+        @Override
+        public LatLng getPosition() {
+            return mPosition;
+        }
     }
 }

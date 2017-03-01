@@ -2,15 +2,13 @@ package rwt.kevin.memories;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.JsonObject;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -19,10 +17,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 
-/**
- * Created by Kevin on 8/22/2016.
- */
-
 class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
     private String titleObject;
 	private JSONArray jsonArray;
@@ -30,7 +24,8 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 	private TextView memoryTextView;
 	private TextView timestampTextView;
 	private TextView usernameTextView;
-	String id;
+	private ImageView memoryImageView;
+	String memoryId, caAccessKey, atlasAccessKey, atlasId, username, webUrlString, atlasUrlString;
 
 	protected void onPreExecute() {
         Log.d(null, "loading moment");
@@ -39,21 +34,36 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
     protected JsonObject doInBackground(String... params) {
         final URLConnection conn;
         URL nUrl;
-		id = params[0];
-        String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
+		memoryId = params[0];
+		caAccessKey = params[1];
+		webUrlString = params[2];
+		atlasAccessKey = params[3];
+		atlasUrlString = params[4];
+
 		try {
-			URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=getPage&");
-			String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(id, "UTF-8")
-				+ "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8");
-			Log.d(null, url.toString() + data);
+			URL url = new URL(webUrlString + "/page.php?command=getPage&");
+			String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(memoryId, "UTF-8")
+				+ "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caAccessKey, "UTF-8");
 			nUrl = new URL(url + data);
+			Log.d(null, nUrl.toString());
 			conn = nUrl.openConnection();
-			BufferedReader 	in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-			Thread.sleep(100);
+			final BufferedReader[] in = new BufferedReader[1];
+			DownloadMemoryList.InputReader reader = new DownloadMemoryList.InputReader() {
+				@Override
+				public String getInput() {
+					try {
+						in[0] = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return null;
+				}
+			};
+			reader.getInput();
 			String s;
-			while ((s = in.readLine()) != null) {
-				Log.d(null, "jArray" + s);
+			while ((s = in[0].readLine()) != null) {
 				jsonArray = new JSONArray(s);
+				Log.d(null, s);
 			}
 		} catch (UnsupportedEncodingException e1) {
 			Log.d(null, e1.toString());
@@ -72,61 +82,57 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
     protected void onPostExecute(JsonObject obj) {
 		Log.d(null, "postexecute");
 		String timestamp= null;
-		String location;
 		LatLng latlngFinal = null;
-
 		try {
 			for(int n = 0; n < jsonArray.length(); n++) {
 				String visibility = null;
-				String ownerId = null;
+				String latitudeValue = null;
+				String longitudeValue = null;
 				JSONObject jsonObject = jsonArray.getJSONObject(n);
 				if (jsonObject != null) {
 					titleObject = jsonObject.getString("title");
 					visibility = jsonObject.getString("description");
-					ownerId = jsonObject.getString("ownerId");
-					Log.d(null, "title: " + titleObject);
+					atlasId = jsonObject.getString("atlasId");
 					JSONArray attrArray = jsonObject.getJSONArray("pageTypeValues");
+					Log.d(null, attrArray.toString());
 					for (int i = 0; i < attrArray.length(); i++) {
 						JSONObject attrObject = (JSONObject) attrArray.get(i);
 						String title = attrObject.getString("title");
-						if (title.equals("Location")) {
-							location = (String) attrObject.get("value");
-							String[] latlngArray = location.split(",");
-							double latitude = Double.parseDouble(latlngArray[0]);
-							double longitude = Double.parseDouble(latlngArray[1]);
-							latlngFinal = new LatLng(latitude, longitude);
+						if (title.equals("latitude")) {
+							latitudeValue = (String) attrObject.get("value");
 						}
-						if (i == 3) {
+						if (title.equals("longitude")) {
+							longitudeValue = (String) attrObject.get("value");
+						}
+						if (title.equals("timeStamp")) {
 							timestamp = (String) attrObject.get("value");
-							Log.d(null, timestamp);
+						}
+						if (latitudeValue != null && longitudeValue != null) {
+							latlngFinal = new LatLng(Double.parseDouble(latitudeValue), Double.parseDouble(longitudeValue));
 						}
 					}
 				} else {
 					Log.d(null, "error");
 				}
-				String username = null;
+				username = null;
 				if (visibility != null && visibility.equals("v")){
-					//TODO: getusername from ownerid
-					username = ownerId;
-					Log.d(null, "u" + username);
+					username = atlasId;
 				} else if (visibility != null && visibility.equals("i")){
 					username = "anonymous";
-					Log.d(null, "u" + username);
 				}
-
 				ViewMemoryActivity view = new ViewMemoryActivity();
-//				view.setId(id);
-				view.setMemory(timestamp, timestampTextView, latlngFinal, locationTextView, titleObject, memoryTextView, username, usernameTextView);
+				view.setMemory(atlasAccessKey, atlasUrlString, timestamp, timestampTextView, latlngFinal, locationTextView, titleObject, memoryTextView, username, usernameTextView  /*,memoryImageView, memoryImageURI*/ );
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 		Log.d(null, "downloaded");
 	}
-	void setTextViews(TextView locationTextView, TextView memoryTextView, TextView timestampTextView, TextView usernameTextView){
+	void setViews(TextView locationTextView, TextView memoryTextView, TextView timestampTextView, TextView usernameTextView, ImageView memoryImageView){
 		this.locationTextView = locationTextView;
 		this.memoryTextView = memoryTextView;
 		this.timestampTextView = timestampTextView;
 		this.usernameTextView = usernameTextView;
+		this.memoryImageView = memoryImageView;
 	}
 }

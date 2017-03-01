@@ -1,39 +1,64 @@
 package rwt.kevin.memories;
 
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
+import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.provider.MediaStore;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Base64;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.google.android.gms.maps.model.LatLng;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
 import java.util.Calendar;
-import java.util.Scanner;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
-public class AddMemoryActivity extends MapsActivity {
-    public TextView charCountTextView;
-    public String location;
+public class AddMemoryActivity extends AppCompatActivity implements View.OnClickListener {
+    TextView charCountTextView, locationTextView;
+    Button submitButton, uploadButton, rotateRightButton, removeImageButton, rotateLeftButton;
+    ImageView previewView;
     Toolbar toolbar;
+    Spinner scopeSpinner, colorSpinner;
+    EditText memoryInput;
+    CheckBox visibilityCheckbox;
+    LatLng latlngString;
+    double latitude = 0, longitude = 0;
+    String id, atlasIdString, key, url, imagePath, imageName;
+    Matrix matrix;
+    Bitmap cameraImage;
+    Uri uploadedImage;
 
     interface GetResultId {
         String getResultId();
@@ -45,36 +70,46 @@ public class AddMemoryActivity extends MapsActivity {
         toolbar = (Toolbar) findViewById(R.id.add_memory_toolbar);
         if(toolbar != null) {
             toolbar.setTitle("Add New Moment");
+            setSupportActionBar(toolbar);
+            android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+            if(actionBar != null) {
+                actionBar.setDisplayHomeAsUpEnabled(true);
+            }
         }
-        try {
-            addMemoryActivity();
-        } catch (MalformedURLException | UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-    }
-    public void addMemoryActivity() throws MalformedURLException, UnsupportedEncodingException {
-        final Spinner scopeSpinner = (Spinner) findViewById(R.id.scopeList);
-        final EditText memoryInput = (EditText) findViewById(R.id.editInp);
-        final CheckBox visibilityCheckbox = (CheckBox) findViewById(R.id.checkBox);
+        memoryInput = (EditText) findViewById(R.id.editInp);
+        visibilityCheckbox = (CheckBox) findViewById(R.id.checkBox);
         charCountTextView = (TextView) findViewById(R.id.charCountTextView);
-        TextView locationTextView = (TextView) findViewById(R.id.locationTextView);
-        Button cancelButton = (Button) findViewById(R.id.cancelMemoryButton);
-        Button submitButton = (Button) findViewById(R.id.submitMemoryButton);
+        locationTextView = (TextView) findViewById(R.id.location_textview);
+        submitButton = (Button) findViewById(R.id.submit_button);
+        uploadButton = (Button) findViewById(R.id.uploadimage_button);
+        previewView = (ImageView) findViewById(R.id.image_preview);
+        scopeSpinner = (Spinner) findViewById(R.id.scope_list);
+        colorSpinner = (Spinner) findViewById(R.id.color_spinner);
+        previewView = (ImageView) findViewById(R.id.image_preview);
+        rotateRightButton = (Button) findViewById(R.id.rotate_right_button);
+        rotateLeftButton = (Button) findViewById(R.id.rotate_left_button);
+        removeImageButton = (Button) findViewById(R.id.remove_image_button);
+
+        uploadButton.setOnClickListener(this);
+        submitButton.setOnClickListener(this);
+
+        matrix = new Matrix();
+        previewView.setScaleType(ImageView.ScaleType.MATRIX);
+        previewView.setImageMatrix(matrix);
+
+        latlngString = getIntent().getParcelableExtra("location");
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        atlasIdString = sharedPreferences.getString("atlasIdNumberString", null);
+        key = getString(R.string.ca_access_key);
+        url = getString(R.string.ca_access_url);
 
         if(memoryInput != null){
             memoryInput.addTextChangedListener(mTextEditorWatcher);
         }
-        Intent intent = getIntent();
-        location = intent.getParcelableExtra("location").toString();
-//        regionCode = intent.getParcelableExtra("regionCode").toString();
-        Scanner scanner = new Scanner(location);
-        if (scanner.hasNext("lat/lng:")) {
-            scanner.skip("lat/lng:");
-        } else if (scanner.hasNext(" lat/lng:")) {
-            scanner.skip(" lat/lng: ");
-        }
-        if(locationTextView != null) {
-            locationTextView.setText(location);
+        if(locationTextView != null && latlngString != null) {
+            locationTextView.setText(latlngString.toString());
+            latitude = latlngString.latitude;
+            longitude = latlngString.longitude;
         }
         if(scopeSpinner != null) {
             ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -82,78 +117,130 @@ public class AddMemoryActivity extends MapsActivity {
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             scopeSpinner.setAdapter(adapter);
         }
-        if(cancelButton != null){
-            cancelButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    finish();
-                }
-            });
+        if(colorSpinner != null) {
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                    R.array.colorListArray, android.R.layout.simple_spinner_item);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            colorSpinner.setAdapter(adapter);
         }
-        if(submitButton != null){
-            submitButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick (View view){
-                    if(memoryInput != null && location != null && scopeSpinner != null) {
-                        Log.d(null, location);
-                        final String scope = scopeSpinner.getSelectedItem().toString();
-                        final String memoryString = memoryInput.getText().toString();
-                        String visibility = null;
-                        if(visibilityCheckbox != null && visibilityCheckbox.isChecked()){
-                            visibility = "v";
-                        } else if (visibilityCheckbox != null && !visibilityCheckbox.isChecked()){
-                            visibility = "i";
-                        }
+    }
+    @Override
+    public void onClick (View view){
+        Matrix matrix = new Matrix();
+        previewView.setScaleType(ImageView.ScaleType.MATRIX);
+        switch (view.getId()) {
+            case R.id.submit_button:
+                String visibility = null;
+                if(memoryInput != null && scopeSpinner != null && atlasIdString != null && colorSpinner != null) {
+                    final String scope = scopeSpinner.getSelectedItem().toString();
+                    final String color = colorSpinner.getSelectedItem().toString();
+                    final String memoryString = memoryInput.getText().toString();
+                    if (visibilityCheckbox != null && visibilityCheckbox.isChecked()) {
+                        visibility = "v";
+                    } else if (visibilityCheckbox != null && !visibilityCheckbox.isChecked()) {
+                        visibility = "i";
+                    }
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    String atlasAccessKey = sharedPreferences.getString(getString(R.string.atlas_app_token), null);
+                    final String usernameString = sharedPreferences.getString("usernameString", null);
+                    final String atlasIdString = sharedPreferences.getString("atlasIdNumberString", null);
+                    if (usernameString != null && atlasAccessKey != null) {
                         final String finalVisibility = visibility;
                         GetResultId getId = new GetResultId() {
                             @Override
                             public String getResultId() {
-                                LoginActivity l = new LoginActivity();
-                                if(l.isLoggedIn()) {
-                                    Log.d(null, "loggedin, proceed to addmem");
-                                    AddMemory addmem = new AddMemory();
-                                    addmem.execute(location, scope, finalVisibility, memoryString);
-                                    Toast.makeText(getApplicationContext(), "Adding Moment...", Toast.LENGTH_LONG).show();
-                                }
+                                String timeStamp = getTimeStamp();
+                                AddMemory addmem = new AddMemory();
+//                                    addmem.execute(atlasIdString, String.valueOf(latitude), String.valueOf(longitude),
+//                                            color, scope, finalVisibility, timeStamp, memoryString,
+//                                            key, url/*, imagePath, imageName*/);
+                                Toast.makeText(getApplicationContext(), "Adding Moment...", Toast.LENGTH_LONG).show();
                                 return null;
                             }
                         };
                         getId.getResultId();
-//                        Intent i = new Intent(getApplicationContext(), MapsActivity.class);
-//                        i.putExtra("result", "positive");
-//                        startActivity(i);
-                        finish();
-                    }else {
-                        Log.d(null, "error");
-                        Toast.makeText(getApplicationContext(), "error! oh no!", Toast.LENGTH_LONG).show();
+                        if (uploadedImage != null || cameraImage != null) {
+                            try {
+                                uploadImage(/*14483,"/storage/emulated/0/DCIM/Camera/20170218_081107_001.jpg"*/);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+//                        finish();
                     }
+                } else if(atlasIdString == null) {
+                    Toast.makeText(getApplicationContext(), "Please Login to Post Moments.", Toast.LENGTH_LONG).show();
+                } else {
+                    Log.d(null, "error");
+                    Toast.makeText(getApplicationContext(), "error! oh no!", Toast.LENGTH_LONG).show();
                 }
-            });
+                break;
+            case R.id.rotate_left_button:
+                //rotate image left
+                matrix.postRotate(-90f,previewView.getDrawable().getBounds().width()/2,previewView.getDrawable().getBounds().height()/2);
+                previewView.setScaleType(ImageView.ScaleType.MATRIX);
+                previewView.setImageMatrix(matrix);
+                break;
+            case R.id.rotate_right_button:
+                //rotate image right
+                matrix.postRotate(90f,previewView.getDrawable().getBounds().width()/2,previewView.getDrawable().getBounds().height()/2);
+                previewView.setScaleType(ImageView.ScaleType.MATRIX);
+                previewView.setImageMatrix(matrix);
+                break;
+            case R.id.uploadimage_button:
+                CharSequence options[] = new CharSequence[] {"Upload Image", "Take Photo", "Cancel"};
+                final AlertDialog.Builder builder = new AlertDialog.Builder(AddMemoryActivity.this);
+                builder.setTitle("Choose an Option");
+                builder.setItems(options, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(which == 0){
+                            //uploadimage
+                            Intent pickPhoto = new Intent(Intent.ACTION_PICK,
+                                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                            startActivityForResult(pickPhoto , 0);//one can be replaced with any action code
+                        } else if (which == 1){
+                            //take photo
+                            Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//                                Intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+                            startActivityForResult(takePicture, 0);//zero can be replaced with any action code
+                        } else {
+                            builder.setCancelable(true);
+                        }
+                    }
+                });
+                builder.show();
+                removeImageButton.setVisibility(View.VISIBLE);
+                removeImageButton.setOnClickListener(this);
+                uploadButton.setVisibility(View.INVISIBLE);
+                break;
+            case R.id.remove_image_button:
+                previewView.setImageURI(null);
+                uploadButton.setVisibility(View.VISIBLE);
+                uploadButton.setOnClickListener(this);
+                rotateLeftButton.setVisibility(View.INVISIBLE);
+                rotateRightButton.setVisibility(View.INVISIBLE);
+                removeImageButton.setVisibility(View.INVISIBLE);
+                break;
         }
-        //setupSnapshot();
     }
-    private void setupSnapshot() throws MalformedURLException, UnsupportedEncodingException {
-        //build async task
-        //or just pull when you download mem
+    void setId(String id){
+        this.id = id;
     }
     private final TextWatcher mTextEditorWatcher = new TextWatcher() {
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
         }
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-           //This sets a textview to the current length
            charCountTextView.setText(String.valueOf(140-s.length()));
         }
         public void afterTextChanged(Editable s) {
         }
     };
-}
-class AddMemory extends AsyncTask<String, String, Void> {
-    private JSONObject jsonObject;
-    private String timestampString;
-    String id;
-
-    protected void onPreExecute() {
-        Log.d(null, "adding memory");
+    String getTimeStamp(){
+        String timestampString;
         Calendar timestamp = Calendar.getInstance();
         String y = String.valueOf(timestamp.get(Calendar.YEAR));
         String m = String.valueOf(timestamp.get(Calendar.MONTH));
@@ -163,86 +250,123 @@ class AddMemory extends AsyncTask<String, String, Void> {
         String s1 = String.valueOf(timestamp.get(Calendar.SECOND));
         String m2 = String.valueOf(timestamp.get(Calendar.MILLISECOND));
         timestampString =  y + ":" + m + ":" + d + ":" + h + ":" + m1 + ":" + s1 + ":" + m2;
+        return timestampString;
     }
-    @Override
-    protected Void doInBackground(String... params) {
-        String location = params[0];
-        String scope = params[1];
-        String visibility = params[2];
-        String memoryString = params[3];
-        String regionCode = "0001";
-        String caccessKey = "c3b128b6-9890-11e6-9298-e0cb4ea6daff";
+    public void uploadImage(/*int id, final String path*/) throws IOException, InterruptedException {
+//        final String name = "IMG_20170227_024616_241.jpg";
+//        final String path = "/storage/emulated/0/Pictures/Instagram/";
+        final String caUrl = url + "/images.php";
+//        Log.d(null, "image upload for " + path + " by " + atlasIdString + " " + key);
 
-        Scanner scanner = new Scanner(location);
-        if (scanner.hasNext("lat/lng:")) {
-            scanner.skip("lat/lng:");
-        } else if (scanner.hasNext(" lat/lng: ")) {
-            scanner.skip(" lat/lng: ");
-        }
-        String coordinates = scanner.next();
-        coordinates = coordinates.startsWith("(") ? coordinates.substring(1) : coordinates;
-        coordinates = coordinates.endsWith(")") ? coordinates.substring(0, coordinates.length() - 1) : coordinates;
-        try {
-            JSONObject pageValuesObject = new JSONObject();
-            JSONObject regionObject = new JSONObject().put("pageTypeStringAttributesId", "69").put("value", regionCode);
-            JSONObject titleObject = new JSONObject().put("pageTypeStringAttributesId", "63").put("value", memoryString);
-            JSONObject coorObject = new JSONObject().put("pageTypeStringAttributesId", "66").put("value", coordinates);
-            JSONObject timestampObject = new JSONObject().put("pageTypeStringAttributesId", "72").put("value", timestampString);
-            pageValuesObject.put("0", regionObject).put("1", titleObject).put("2", coorObject).put("3", timestampObject);
-            Log.d(null, pageValuesObject.toString());
-            String dataString = URLEncoder.encode("description", "UTF-8") + "=" + URLEncoder.encode(visibility, "UTF-8")
-                    + "&" + URLEncoder.encode("title", "UTF-8") + "=" + URLEncoder.encode(memoryString, "UTF-8")
-                    + "&" + URLEncoder.encode("scope", "UTF-8") + "=" + URLEncoder.encode(scope, "UTF-8")
-                    + "&" + URLEncoder.encode("pageTypeId", "UTF-8") + "=" + URLEncoder.encode("36", "UTF-8")
-                    + "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caccessKey, "UTF-8")
-                    + "&" + URLEncoder.encode("pageValues", "UTF-8") + "=" + URLEncoder.encode(pageValuesObject.toString(),"UTF-8");
-            URL url = new URL("http://web.webapps.centennialarts.com/page.php?command=addPage&" + dataString);
-            Log.d(null, url.toString());
-            final URLConnection conn= url.openConnection();
-            Thread.sleep(1000);
-            final BufferedReader[] in = new BufferedReader[1];
-            DownloadMemoryList.InputReader reader = new DownloadMemoryList.InputReader() {
-                @Override
-                public String getInput() {
-                    try {
-                        in[0] = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    return String.valueOf(in[0]);
+        //get bitmap from file path
+        File image = new File(imagePath);
+        Log.d(null, "new file from " + imagePath);
+
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        final Bitmap bitmapImage = BitmapFactory.decodeFile(image.getAbsolutePath(),bmOptions);
+//        bitmapImage = Bitmap.createScaledBitmap(bitmapImage,parent.getWidth(),parent.getHeight(),true);
+        final String encodedImage = getStringImage(bitmapImage);
+
+        //volley image upload
+        final ProgressDialog loading = ProgressDialog.show(this,"Uploading...","Please wait...",false,false);
+        final StringRequest postRequest = new StringRequest(Request.Method.POST, caUrl, new Response.Listener<String>(){
+            @Override
+            public void onResponse(String response) {
+                try {
+                    Log.d(null, response);
+                    loading.dismiss();
+                } catch(Exception e) {
+                    e.printStackTrace();
                 }
-            };
-            String input = reader.getInput();
-                jsonObject = new JSONObject(input);
-                Log.d(null, jsonObject.toString());
-        } catch (UnsupportedEncodingException e1) {
-            Log.d(null, e1.toString());
-            e1.printStackTrace();
-        } catch (IllegalStateException e3) {
-            Log.d("IllegalStateException", e3.toString());
-            e3.printStackTrace();
-        } catch (IOException e4) {
-            Log.d("IOException", e4.toString());
-            e4.printStackTrace();
-        } catch (Exception e) {
-            Log.d(null, "StringBuilding & BufferedReader\", \"Error converting result ");
-        }
-        return null;
-    }
-    protected void onPostExecute(Void v) {
-        if(jsonObject != null){
-            try {
-                Log.d(null, jsonObject.toString());
-                int idObject = jsonObject.getInt("id");
-//                ViewMemoryActivity view = new ViewMemoryActivity();
-//                view.setId(String.valueOf(idObject));
-                String successObject = jsonObject.getString("success");
-                if (successObject.equals("true")) {
-                    Log.d(null, "success true...id: " + idObject);
-                }
-            } catch (JSONException j) {
-                j.printStackTrace();
             }
-        } else { Log.d(null, "null jsonobject");}
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                loading.dismiss();
+                error.printStackTrace();
+                Log.d(null, error.toString());
+            }
+        }
+        ) {
+            @Override
+            protected Map<String,String> getParams() {
+                    Map<String,String> params = new Hashtable<>();
+                    params.put("command", "addImage");
+                    params.put("accessKey", key);
+                    params.put("atlasId", atlasIdString);
+                    params.put("refAlbumId", "68126");
+                    params.put("ImageFile[]", /*"data:image/jpeg;base64,/" + */encodedImage);  //could be ImageFile[]
+                    Log.d(null, params.toString());
+                    return params;
+            }
+        };
+        Volley.newRequestQueue(AddMemoryActivity.this).add(postRequest);
+    }
+    //get encoded image string
+    public String getStringImage(Bitmap bmp) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] imageBytes = baos.toByteArray();
+        return Base64.encodeToString(imageBytes, Base64.DEFAULT);
+    }
+    //method to get the file path from uri
+    public String getPath(Uri uri) {
+        String path = null;
+        String document_id = null;
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        if(cursor != null) {
+            cursor.moveToFirst();
+            document_id = cursor.getString(0);
+            document_id = document_id.substring(document_id.lastIndexOf(":") + 1);
+            cursor.close();
+        }
+        cursor = getContentResolver().query(
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                null, MediaStore.Images.Media._ID + " = ? ", new String[]{document_id}, null);
+        if(cursor != null) {
+            cursor.moveToFirst();
+            path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+            cursor.close();
+        }
+        Log.d(null, "getpath- " + path);
+        return path;
+    }
+    public boolean onOptionsItemSelected(MenuItem item){
+        Intent myIntent = new Intent(getApplicationContext(), MapsActivity.class);
+        startActivityForResult(myIntent, 0);
+        return true;
+    }
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 0 && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            cameraImage = (Bitmap) extras.get("data");
+            ExifInterface exif = null;
+            try {
+                if (cameraImage != null) {
+                    previewView.setImageBitmap(cameraImage);
+                    //get photo orientation and rotate
+                    exif = new ExifInterface(cameraImage.toString());
+                }
+                uploadedImage = data.getData();
+                if (uploadedImage != null) {
+                    previewView.setImageURI(uploadedImage);
+                    //get photo orientation and rotate
+                    exif = new ExifInterface(uploadedImage.toString());
+                    imagePath = getPath(uploadedImage);
+                    Log.d(null, imagePath);
+                }
+                rotateLeftButton.setOnClickListener(this);
+                rotateRightButton.setOnClickListener(this);
+
+                rotateLeftButton.setVisibility(View.VISIBLE);
+                rotateRightButton.setVisibility(View.VISIBLE);
+                if(exif != null) {
+                    int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
+                    Log.d(null, "orientation value: " + String.valueOf(orientation));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

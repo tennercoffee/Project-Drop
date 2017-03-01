@@ -6,7 +6,6 @@ import android.view.View;
 import android.widget.Button;
 
 public class SettingsActivity extends MapsActivity{
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -14,8 +13,11 @@ public class SettingsActivity extends MapsActivity{
         Toolbar toolbar = (Toolbar) findViewById(R.id.settings_toolbar);
         if(toolbar != null){
             toolbar.setTitle("Settings");
+            setSupportActionBar(toolbar);
+            android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+            actionBar.setDisplayHomeAsUpEnabled(true);
         }
-        Button cancelButton = (Button) findViewById(R.id.cancelButton);
+        Button cancelButton = (Button) findViewById(R.id.cancel_button);
         if(cancelButton != null) {
             cancelButton.setOnClickListener(new View.OnClickListener() {
                 @Override

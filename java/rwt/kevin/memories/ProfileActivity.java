@@ -2,98 +2,105 @@ package rwt.kevin.memories;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends AppCompatActivity implements View.OnClickListener {
+    String usernameString, accessKeyString;
     TextView usernameTextView;
+    ImageView profileImageView;
     Toolbar toolbar;
-    String username;
-    String userid;
-    String accessKey;
-
-    interface LoadUser {
-        void loadUser();
-    }
+    String urlString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_profile);
-        ImageView profileImageView = (ImageView) findViewById(R.id.profile_imageview);
         toolbar = (Toolbar) findViewById(R.id.my_profile_toolbar);
         if (toolbar != null) {
             toolbar.setTitle("Profile");
             setSupportActionBar(toolbar);
+            android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+            actionBar.setDisplayHomeAsUpEnabled(true);
         }
+        //get user information
+        urlString = getString(R.string.atlas_access_url);
+        usernameString = getIntent().getStringExtra("usernameString");
+        accessKeyString = getString(R.string.atlas_app_token);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String atlasAccessKeyString = sharedPreferences.getString(getString(R.string.atlas_app_token), null);
+        Log.d(null, "user: " + usernameString + " " + accessKeyString);
 
-        Intent i = getIntent();
-        username = i.getStringExtra("username");
-        userid = i.getStringExtra("userid");
+        //load views
+        usernameTextView = (TextView) findViewById(R.id.username_textview);
+        profileImageView = (ImageView) findViewById(R.id.profile_imageview); //get img from profile info
 
-        Button backButton = (Button) findViewById(R.id.backbutton);
-        if(backButton != null){
-            backButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    finish();
-                }
-            });
-        }
+        //load buttons
         Button logoutButton = (Button) findViewById(R.id.logout_button);
-        if(logoutButton != null) {
-            logoutButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-//                    Intent i = new Intent(getApplicationContext(), MainActivity.class);
-//                    startActivity(i);
-                    new AlertDialog.Builder(getApplicationContext())
-							.setTitle("Confirm")
-							.setMessage("Do you really want to logout?")
-							.setIcon(android.R.drawable.ic_dialog_alert)
-							.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog, int whichButton) {
-									Intent i = new Intent(getApplicationContext(), MainActivity.class);
-                                    startActivity(i);
-                                    //TODO: send api call to logout of user
-								}
-							})
-							.setNegativeButton(android.R.string.no, null).show();
-                }
-            });
+        Button editProfileButton = (Button) findViewById(R.id.edit_profile_button);
+        if(logoutButton != null && editProfileButton != null) {
+            logoutButton.setOnClickListener(this);
+            editProfileButton.setOnClickListener(this);
         }
-//        Button settingsButton = (Button) findViewById(R.id.settings_button);
-//        if(settingsButton != null){
-//            settingsButton.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
-//                    startActivity(i);
-//                }
-//            });
-//        }
-        LoadUser loadUser = new LoadUser() {
-            @Override
-            public void loadUser(){
-                DownloadProfile dp = new DownloadProfile();
-                if(username != null && userid != null && accessKey != null) {
-                    dp.setUser(username, userid, accessKey);
-                    dp.execute();
-                }
-            }
-        };
-        loadUser.loadUser();
 
+        DownloadUser user = new DownloadUser();
+        user.setTextView(usernameTextView, profileImageView);
+        user.execute(usernameString, atlasAccessKeyString, urlString);
     }
-    public void setUser(String username, String userid, String accessKey) {
-        //set all user data here
-//        this.username = username;
+    @Override
+    public void onClick(View view) {
+        switch(view.getId()) {
+            case R.id.logout_button:
+                //logout of app
+                CharSequence options[] = new CharSequence[] {"Logout", "Cancel"};
+                final AlertDialog.Builder builder = new AlertDialog.Builder(ProfileActivity.this);
+                builder.setTitle("Do you want to Logout?");
+                builder.setItems(options, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // the user clicked on colors[which]
+                        if(which == 0){
+                            //call sharedprefs here, and delete usernameString and logintoken
+                            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                            Log.d(null,"logout for:" + usernameString);
+                            SharedPreferences.Editor editor = settings.edit();
+                            editor.clear().apply();
+
+                            Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                            startActivity(i);
+                            //TODO: send api call to logout of user
+                        } else {
+                            builder.setCancelable(true);
+                        }
+                    }
+                });
+                builder.show();
+                break;
+            case R.id.edit_profile_button:
+                //update user information
+                Toast.makeText(getApplicationContext(),"Feature Coming Soon", Toast.LENGTH_LONG).show();
+                break;
+        }
+    }
+    public void setUser(TextView usernameTextView, String username, ImageView profileImageView, String photoUrl) { //setup profile
+        //setup profile views
+        this.usernameTextView = usernameTextView;
+        this.profileImageView = profileImageView;
+        this.usernameString = username;
+
         usernameTextView.setText(username);
+        DownloadImage di = new DownloadImage();
+        di.setImageView(profileImageView);
+        di.execute(photoUrl);
     }
 }

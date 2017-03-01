@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!--<item-->
+    <!--android:id="@+id/action_list"-->
+    <!--android:titleString="View List"-->
+    <!--app:showAsAction="never" />-->
+    <item
+        android:id="@+id/report_memory"
+        android:title="Report Moment"
+        android:icon="@drawable/ic_setting_dark"
+        app:showAsAction="never" />
+    <!-- Settings, should always be in the overflow -->
+    <!--<item android:id="@+id/action_settings"-->
+    <!--android:icon="@drawable/ic_setting_light"-->
+    <!--android:titleString="Settings"-->
+    <!--app:showAsAction="never"/>-->
+</menu>
