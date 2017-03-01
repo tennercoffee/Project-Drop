@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
 
     <application
@@ -27,7 +28,6 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCL4rI1SFgQ0G6j43txIbIUAImR2l-1OVI" />
-        <!-- android:value="AIzaSyCkn4bcY4aN0mD5SkVPAZ3IgfUVBknlw04" /> -->
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="76128b89cf9e76ae15fd5b2f5c1d2e6599fd41ad" />
@@ -40,12 +40,18 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="rwt.kevin.memories" android:host="http" >rwt.kevin.memories</data>
+
+                <data
+                    android:host="app.moments"
+                    android:pathPrefix="/launch?" />
+                <data
+                    android:host="app.moments.com"
+                    android:pathPrefix="/launch?"
+                    android:scheme="http" />
             </intent-filter>
-
-
         </activity>
         <activity
             android:name=".MapsActivity"
@@ -67,6 +73,16 @@
             android:parentActivityName=".MapsActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
+            android:name=".FAQActivity"
+            android:label="Known Issues"
+            android:parentActivityName=".AboutActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".TourActivity"
+            android:label="Tutorial"
+            android:parentActivityName=".AboutActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
             android:parentActivityName=".MapsActivity">
@@ -74,7 +90,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="rwt.kevin.memories.MapsActivity" />
         </activity>
-        <activity android:name=".SignUpActivity" />
         <activity
             android:name=".LoginActivity"
             android:label="@string/title_activity_login"
@@ -83,9 +98,16 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="rwt.kevin.memories.MainActivity" />
         </activity>
-        <activity android:name=".MemoryListActivity"
+        <activity
+            android:name=".MemoryListActivity"
             android:label="Moment List"
-            android:parentActivityName=".MapsActivity"/>
-        <activity android:name=".ProfileActivity"></activity>
+            android:parentActivityName=".MapsActivity" />
+        <activity
+            android:name=".ProfileActivity"
+            android:label="Profile"
+            android:parentActivityName=".MapsActivity" />
+        <activity android:name=".ReportMemoryActivity" />
+        <activity android:name=".PrivacyPolicyActivity"></activity>
     </application>
+
 </manifest>

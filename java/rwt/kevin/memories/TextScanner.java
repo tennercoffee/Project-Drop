@@ -1,9 +1,7 @@
 package rwt.kevin.memories;
 
 import android.util.Log;
-
 import com.google.android.gms.maps.model.LatLng;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -13,10 +11,10 @@ class TextScanner {
     private String timestamp;
 
     public String descSplitter(String desc, int formatCode, int resultCode) {
-        //if formatcode is 1, run timestamp scanner, then location scanner
+        //if formatcode is 1, run timestampString scanner, then location scanner
         //if formatcode is 0, run just location scanner
         //if resultCode is 0, return location
-        //if 1, return timestamp
+        //if 1, return timestampString
         Scanner scanner = new Scanner(desc);
         if(formatCode == 1) {
             timestamp = scanner.next();
@@ -47,41 +45,48 @@ class TextScanner {
         Scanner scanner = new Scanner(location);
         if (scanner.hasNext("lat/lng:")) {
             scanner.skip(Pattern.compile("lat/lng:"));
-        } else if (scanner.hasNext(" lat/lng")) {
+        } else if (scanner.hasNext(" lat/lng:")) {
             scanner.skip(Pattern.compile(" lat/lng: "));
         }
+        if(location.startsWith("(")) {
+            location = location.startsWith("(") ? location.substring(1) : location;
+            location = location.endsWith(")") ? location.substring(0, location.length() - 1) : location;
 
+            Log.d(null, "locationsplit " + location);
+            return location;
+        } else {
+            Scanner s = new Scanner(location);
+            if (s.hasNext("lat/lng:")) {
+                s.skip(Pattern.compile("lat/lng:"));
+            } else if (s.hasNext(" lat/lng:")) {
+                s.skip(Pattern.compile(" lat/lng: "));
+            }
+            location = location.startsWith("(") ? location.substring(1) : location;
+            location = location.endsWith(")") ? location.substring(0, location.length() - 1) : location;
+
+            Log.d(null, "locationsplit " + location);
+            return location;
+        }
+    }
+    LatLng locationStringToLatLng(String location) {
+        Log.d(null, "locationStringToLatLng: " + location);
+        Scanner scanner = new Scanner(location);
+        if (scanner.hasNext("lat/lng:")) {
+            scanner.skip(Pattern.compile("lat/lng:"));
+            Log.d(null, "1SKIP");
+        } else if (scanner.hasNext(" lat/lng:")) {
+            scanner.skip(Pattern.compile(" lat/lng: "));
+            Log.d(null, "2SKIP");
+        } else {
+            Log.d(null, "NOSKIP");
+        }
         location = location.startsWith("(") ? location.substring(1) : location;
         location = location.endsWith(")") ? location.substring(0, location.length() - 1) : location;
 
-        //double latitude;
-        //double longitude;
-        //String[] latlng = location.split(",");
+        String[] latlng = location.split(",");
 
-        //latitude = Double.parseDouble(latlng[0]);
-        //longitude = Double.parseDouble(latlng[1]);
-
-        return location;
-    }
-    LatLng locationStringToLatLng(List<String> location) {
-        Log.d(null, "locationStringToLatLng");
-        String locationString = String.valueOf(location);
-        Scanner scanner = new Scanner(locationString);
-        if (scanner.hasNext("lat/lng:")) {
-            scanner.skip(Pattern.compile("lat/lng:"));
-        } else if (scanner.hasNext(" lat/lng")) {
-            scanner.skip(Pattern.compile(" lat/lng: "));
-        }
-
-        locationString = locationString.startsWith("(") ? locationString.substring(1) : locationString;
-        locationString = locationString.endsWith(")") ? locationString.substring(0, locationString.length() - 1) : locationString;
-
-        double latitude;
-        double longitude;
-        String[] latlng = locationString.split(",");
-
-        latitude = Double.parseDouble(latlng[0]);
-        longitude = Double.parseDouble(latlng[1]);
+        final double latitude = Double.parseDouble(latlng[0]);
+        final double longitude = Double.parseDouble(latlng[1]);
 
         Log.d(null, new LatLng(latitude,longitude).toString());
         return new LatLng(latitude,longitude);

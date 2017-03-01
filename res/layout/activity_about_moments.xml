@@ -24,32 +24,59 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Back"
-        android:id="@+id/backButton"
-        android:layout_gravity="right"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_margin="30dp" />
     <TextView
         android:text="Hi there, and welcome to Moments.  This application is all about using geocaching to connect with what is going on in the world around you. \n Simply put, you can 'drop a Moment', and view other Moments around you.  It is a digital way to carve your name into a tree, without damaging the tree.  Or a way to plant your flag on top of a mountain, so that all who follow will see, you were here first. \n This is a tool to be used by the people, in whatever way you see fit, so go and leave your digital footprint on the world around you. "
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
         android:id="@+id/textView8"
         android:textAlignment="center"
-        android:textSize="18sp" />
-    <Button
-        android:text="Tutorial"
+        android:textSize="18sp"
+        android:layout_below="@+id/view"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="36dp" />
+
+    <TextView
+        android:text="Moments is Powered By Technology from CentennialArts"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/backButton"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
+        android:id="@+id/textView5"
+        android:layout_below="@+id/textView8"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp" />
+
+    <Button
+        android:text="Our Privacy Policy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/privacy_policy_button"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/textView5"
+        android:layout_alignStart="@+id/textView5"
+        android:layout_marginBottom="12dp"
+        android:layout_alignRight="@+id/tutorial_button"
+        android:layout_alignEnd="@+id/tutorial_button" />
+
+    <Button
+        android:text="Known Issues"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/issues_button"
+        android:layout_above="@+id/privacy_policy_button"
+        android:layout_alignRight="@+id/tutorial_button"
+        android:layout_alignEnd="@+id/tutorial_button"
+        android:layout_alignLeft="@+id/privacy_policy_button"
+        android:layout_alignStart="@+id/privacy_policy_button" />
+
+    <Button
+        android:text="Tutorial"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:id="@+id/tutorial_button"
-        android:layout_marginEnd="30dp"
-        android:layout_marginRight="30dp" />
+        android:layout_above="@+id/issues_button"
+        android:layout_alignRight="@+id/textView5"
+        android:layout_alignEnd="@+id/textView5"
+        android:layout_alignLeft="@+id/textView5"
+        android:layout_alignStart="@+id/textView5" />
+
 </RelativeLayout>

@@ -15,14 +15,14 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/map_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            android:elevation="4dp"
-            android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/map_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="?attr/colorPrimary"
+                android:elevation="4dp"
+                android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
             <Switch
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -30,7 +30,7 @@
                 android:layout_below="@+id/map_toolbar"
                 android:textOn="Public"
                 android:textOff="Private"
-                android:gravity="right|center_vertical"
+                android:gravity="end|center_vertical"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
                 android:layout_marginEnd="20dp"
@@ -60,35 +60,37 @@
     <android.support.design.widget.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/addMemoryButton"
+        android:id="@+id/add_memory_button"
         android:layout_gravity="bottom|center"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="40dp"
         android:src="@drawable/plussignicon"
-        android:onClick="AddMemoryActivity"
         app:elevation="1dp"
         app:backgroundTint="@color/colorPrimary" />
     <ImageButton
         android:src="@drawable/list_icon"
-        android:id="@+id/list_icon"
+        android:id="@+id/list_icon_button"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_alignBottom="@+id/addMemoryButton"
+        android:layout_alignBottom="@+id/add_memory_button"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_marginRight="30dp"
         android:layout_marginEnd="30dp"
-        android:background="@android:color/transparent" />
+        android:background="@android:color/transparent"
+        android:contentDescription=""
+        android:visibility="invisible" />
     <ImageButton
         android:src="@drawable/profile_icon"
-        android:id="@+id/profile_icon"
+        android:id="@+id/profile_icon_button"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_alignBottom="@+id/addMemoryButton"
+        android:layout_alignBottom="@+id/add_memory_button"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_marginLeft="30dp"
         android:layout_marginStart="30dp"
-        android:background="@android:color/transparent" />
+        android:background="@android:color/transparent"
+        android:contentDescription="" />
 </RelativeLayout>

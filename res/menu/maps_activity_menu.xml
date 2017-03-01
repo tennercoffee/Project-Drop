@@ -8,8 +8,13 @@
         app:showAsAction="ifRoom"/>
     <!--<item-->
         <!--android:id="@+id/action_list"-->
-        <!--android:title="View List"-->
+        <!--android:titleString="View List"-->
         <!--app:showAsAction="never" />-->
+    <item
+        android:id="@+id/action_add_test_marker"
+        android:title="Place Test Marker"
+        android:icon="@drawable/ic_setting_dark"
+        app:showAsAction="never" />
     <item
         android:id="@+id/action_about"
         android:title="About"
@@ -18,6 +23,6 @@
     <!-- Settings, should always be in the overflow -->
     <!--<item android:id="@+id/action_settings"-->
         <!--android:icon="@drawable/ic_setting_light"-->
-        <!--android:title="Settings"-->
+        <!--android:titleString="Settings"-->
         <!--app:showAsAction="never"/>-->
 </menu>

@@ -2,13 +2,14 @@ package rwt.kevin.memories;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
-public class AboutActivity extends MapsActivity{
+public class AboutActivity extends AppCompatActivity implements View.OnClickListener{
+    Button tutorialButton, knownIssuesButton, backButton, privacyPolicyButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,26 +20,32 @@ public class AboutActivity extends MapsActivity{
         Toolbar toolbar = (Toolbar) findViewById(R.id.about_moments_toolbar);
         if(toolbar != null){
             toolbar.setTitle("About Moments");
+            setSupportActionBar(toolbar);
+            android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+            actionBar.setDisplayHomeAsUpEnabled(true);
         }
-        Button backButton = (Button) findViewById(R.id.backButton);
-        if(backButton != null) {
-            backButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    finish();
-                }
-            });
-        }
-        Button tutorialButton = (Button) findViewById(R.id.tutorial_button);
-        if(tutorialButton != null) {
-            tutorialButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Toast.makeText(getApplicationContext(), "Feature Coming Soon!", Toast.LENGTH_LONG).show();
-//                    Intent i = new Intent(getApplicationContext(),TourActivity.class);
-//                    startActivity(i);
-                }
-            });
+        tutorialButton = (Button) findViewById(R.id.tutorial_button);
+        knownIssuesButton = (Button) findViewById(R.id.issues_button);
+        privacyPolicyButton = (Button) findViewById(R.id.privacy_policy_button);
+
+        tutorialButton.setOnClickListener(this);
+        knownIssuesButton.setOnClickListener(this);
+        privacyPolicyButton.setOnClickListener(this);
+    }
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.issues_button:
+                Intent i = new Intent(getApplicationContext(),FAQActivity.class);
+                startActivity(i);
+                break;
+            case R.id.tutorial_button:
+                Intent t = new Intent(getApplicationContext(),TourActivity.class);
+                startActivity(t);
+                break;
+            case R.id.privacy_policy_button:
+                Intent p = new Intent(getApplicationContext(), PrivacyPolicyActivity.class);
+                startActivity(p);
         }
     }
 }

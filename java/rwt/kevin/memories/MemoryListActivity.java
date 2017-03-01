@@ -1,6 +1,5 @@
 package rwt.kevin.memories;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -14,44 +13,73 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MemoryListActivity extends MapsActivity {
-
-    public JSONArray jsonArray;
-    ArrayList<Marker> markerList;
-    List<List<String>> memList= new ArrayList<>();
-    JSONArray listArray;
     List<String> slist;
     JSONArray array;
     Switch memlistPrivacySwitch;
-    ListView listView;
-    ArrayAdapter adapter;
-    JSONArray resultJSON;
-
-
+    LatLng myLocation;
 
     public interface DownloadList {
-        JSONArray downloadList();
+        void downloadList();
     }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //setup activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_memory_list);
         Toolbar toolbar = (Toolbar)findViewById(R.id.memorylist_toolbar);
         if(toolbar != null){
             toolbar.setTitle("View Moments List");
+            setSupportActionBar(toolbar);
+            android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+            actionBar.setDisplayHomeAsUpEnabled(true);
         }
-        Button backButton = (Button) findViewById(R.id.backButton);
+        final ListView listView = (ListView) findViewById(R.id.moment_list);
+        final TextView memlistPrivacyTextView = (TextView) findViewById(R.id.newprivacy_textview);
+        final ArrayAdapter arrayAdapter = new ArrayAdapter<>(
+                MemoryListActivity.this,
+                android.R.layout.simple_list_item_1,
+                arrayList);
+        memlistPrivacySwitch = (Switch) findViewById(R.id.new_switch);
+        if(myLocation != null) {
+            Log.d(null, "string location: " + myLocation.toString());
+        } else {
+            Log.d(null, "null location");
+        }
+        //build privacy switch
+        listView.setAdapter(arrayAdapter);
+        if(memlistPrivacySwitch != null && memlistPrivacyTextView != null) {
+            memlistPrivacySwitch.setChecked(true);
+            memlistPrivacyTextView.setText(getString(R.string.public_string));
+            memlistPrivacySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if (memlistPrivacySwitch.isChecked()) {
+                        scopeString = "public";
+                        memlistPrivacyTextView.setText(getString(R.string.public_string));
+                    } else {
+                        scopeString = "private";
+                        memlistPrivacyTextView.setText(getString(R.string.private_string));
+                    }
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    downloadMemoryList(arrayAdapter,listView,myLocation,scopeString);
+                }
+            });
+        }
+        //set click listeners
+        Button backButton = (Button) findViewById(R.id.back_button);
         if(backButton != null) {
             backButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -60,130 +88,87 @@ public class MemoryListActivity extends MapsActivity {
                 }
             });
         }
-        final TextView memlistPrivacyTextView = (TextView) findViewById(R.id.newprivacy_textview);
-        memlistPrivacySwitch = (Switch) findViewById(R.id.new_switch);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> arg0, View v, int position, long arg3) {
+                String selectedMemory = String.valueOf(listView.getItemAtPosition(position));
+                Toast.makeText(getApplicationContext(), "Opening Moment: " + selectedMemory, Toast.LENGTH_LONG).show();
+                Log.d(null, "selectedmem: " + selectedMemory);
+                ViewMemoryActivity view = new ViewMemoryActivity();
+//                view.setId(listView.getSelectedItem().toString());
+//                Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
+//                i.putExtra(memoryId);
+//                startActivity(i);
+            }
 
-        if(memlistPrivacySwitch != null && memlistPrivacyTextView != null) {
-            memlistPrivacySwitch.setChecked(true);
-            memlistPrivacyTextView.setText("Public");
-            memlistPrivacySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                    if (memlistPrivacySwitch.isChecked()) {
-                        scope = "public";
-                        memlistPrivacyTextView.setText("Public");
-                    } else {
-                        scope = "private";
-                        memlistPrivacyTextView.setText("Private");
-                    }
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    DownloadList loadList = new DownloadList() {
-                        @Override
-                        public JSONArray downloadList() {
-                            String result = "0";
-                            DownloadMemoryList dml = new DownloadMemoryList();
-                            dml.setAdapter(adapter);
-                            dml.setListView(listView);
-                            dml.execute(scope);
-
-//                            array = dml.getListArray();
-                            Log.d(null, "array");
-//                            setMemoryList(array);
-                            return null;
-                        }
-                    };
-                    loadList.downloadList();
-//                    Log.d(null, markersList.toString());
-                }
-            });
-        }
-        listView = (ListView) findViewById(R.id.momentList);
-        adapter = new ArrayAdapter<>(this, R.layout.activity_memory_list, R.id.momentList, slist);
-
+        });
+        //download data
+        downloadMemoryList(arrayAdapter,listView,myLocation,scopeString);
+    }
+    private void downloadMemoryList(final ArrayAdapter arrayAdapter, final ListView listView, final LatLng myLocation, final String scopeString) {
+        final String url = getString(R.string.ca_access_url);
         DownloadList loadList = new DownloadList() {
             @Override
-            public JSONArray downloadList() {
-                String result = "0";
+            public void downloadList() {
                 DownloadMemoryList dml = new DownloadMemoryList();
-                dml.setAdapter(adapter);
+                dml.setAdapter(arrayAdapter);
                 dml.setListView(listView);
-                dml.execute(scope);
-
-//                            array = dml.getListArray();
-                Log.d(null, "array");
-//                            setMemoryList(array);
-                return null;
+                if(myLocation != null) {
+                    dml.setMyLocation(myLocation);
+                } else {
+                    Log.d(null, "null location");
+                }
+                dml.execute(scopeString,getString(R.string.ca_access_key),url);
+                Log.d(null, "loadinglist...");
             }
         };
         loadList.downloadList();
-        Log.d(null, markersList.toString());
-
-//        JSONArray resultJSON = null;
-//        Intent i = getIntent();
-
-
     }
-    JSONArray getList(){
-        Log.d(null, "getlist");
-        return this.resultJSON;
-    }
-
-
-    public void setResultJSON(JSONArray array) {
-        Log.d(null, array.toString());
-        this.resultJSON = array;
-    }
-    public void setupList(JSONArray listArray,ListView listView,ArrayAdapter adapter) {
-        try {
-//            resultJSON = new JSONArray(i.getStringExtra("json"));
-//            Log.d(null, resultJSON.toString());
-            slist = new ArrayList<>();
-            for (int n = 0; n < listArray.length(); n++) {
-                String title, location;
-                JSONObject object = listArray.getJSONObject(n);
-                title = object.getString("title");
-                location = object.getString("location");
-                slist.add(title);
-                slist.add(location);
-                Log.d(null, title + " " + location);
-
-                /***************************************************
-                 * getting info through this point. how to apply to list?
-                 *
-                 *
-                 */
-
-
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
+    public void setList(List<String> titleList, LatLng myLocation) {
+        this.titleStringList = titleList;
+        Log.d(null, "this titlelist" + titleList);
+        if(myLocation != null) {
+            Log.d(null, "mylocation: " + myLocation.toString());
+            this.myLocation = myLocation;
         }
-
-        if(array != null) {
-            if (listView != null && adapter != null) {
-                Log.d(null, "listview is not null");
-//                listView.setAdapter(adapter);
-//                Log.d(null, "adapter click listener");
+    }
+    public void buildList(List<String> list, ArrayAdapter<String> arrayAdapter, GoogleMap mMap){
+        Log.d(null, "addtolist");
+        List<String> memList = new ArrayList<>();
+        if(arrayAdapter != null) {
+            Log.d(null, "jsonarraytostring: " + list.toString());
+            for (int i = 0; i < list.size(); i++) {
+                String title = list.get(i);
+                memList.add(title);
+            }
+//            for (int n = 0; n < jsonArray.size(); n++) {
+//                JSONArray ja = jsonArray.get(n);
+//                Log.d(null, "ja: " + ja.toString());
+//                try {
+//                    for (int i = 0; i < jsonArray.size(); i++) {
+//                        JSONObject j = jsonArray.get(i);
+//                        String titleString = j.getString("titleString");
+//                        String markerLocation = j.getString("location");
+//                        Log.d(null, titleString + " " + markerLocation);
+//                        TextScanner t = new TextScanner();
+//                        LatLng markerLatLng = t.locationStringToLatLng(markerLocation);
 //
-//                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//                    public void onItemClick(AdapterView<?> arg0, View v, int position, long arg3) {
-//                        Log.d(null, "yay");
-////                            String selectedMemory = listView.get(position);
-////                            Toast.makeText(getApplicationContext(), "Opening Moment", Toast.LENGTH_LONG).show();
-//                        //                    ViewMemoryActivity view = new ViewMemoryActivity();
-//                        //                    view.setId(listView.getSelectedItem().toString());
-//                        Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
-//                        startActivity(i);
+//                        //run ismarkerclose on all markers to see if you can open from memlistact
+//                        MapsActivity m = new MapsActivity();
+//                        if (m.isMarkerClose(markerLatLng, 100, myLocationLatLng, googleMap)) {
+//                            //add marker to arrayList
+//                            arrayList.add(titleString);
+//                            Log.d(null, titleString + " added");
+//                        }
 //                    }
-//                });
-            } else {
-                Log.d(null, "null json");
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
             }
-        }
-
+            arrayAdapter.addAll(memList);
+            arrayAdapter.notifyDataSetChanged();
+//        }
     }
+//    public void setMyLocation(LatLng mylocation) {
+//        this.myLocation = mylocation;
+//    }
 }
