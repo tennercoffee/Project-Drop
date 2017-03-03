@@ -50,6 +50,7 @@ import static com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import static com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
 
 public class MapsActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, OnMyLocationButtonClickListener, com.google.android.gms.location.LocationListener{
+    //declare variables
     private static final int MY_LOCATION_REQUEST_CODE = 1;
     public GoogleMap googleMap;
     public GoogleApiClient googleApiClient;

@@ -15,6 +15,7 @@ import android.widget.TextView;
 import com.google.android.gms.maps.model.LatLng;
 
 public class ViewMemoryActivity extends MapsActivity implements View.OnClickListener{
+	//declare variables
 	public String timestampString, titleString, username, id, atlasAppToken, ownerId, locationString, time;
 	public TextView usernameTextView, memoryTextView, locationTextView, timestampTextView;
 	public LatLng location;
@@ -22,6 +23,7 @@ public class ViewMemoryActivity extends MapsActivity implements View.OnClickList
 	ImageView memoryImageView;
 
 	protected void onCreate(Bundle savedInstanceState) {
+		//set environment
         super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_view_memory);
 		Toolbar toolbar = (Toolbar) findViewById(R.id.view_memory_toolbar);
@@ -65,7 +67,8 @@ public class ViewMemoryActivity extends MapsActivity implements View.OnClickList
 	void setId(String id){
 		this.id = id;
 	}
-    public void loadMemory(String id) { //download marker information
+    public void loadMemory(String id) {
+		//download marker information
 		DownloadMemory dm = new DownloadMemory();
 		dm.setViews(locationTextView, memoryTextView, timestampTextView, usernameTextView, memoryImageView);
 //		dm.setUsername(ownerId, usernameTextView);
@@ -97,6 +100,7 @@ public class ViewMemoryActivity extends MapsActivity implements View.OnClickList
 			timestampTextView.setText(timestampString);
 		}
 		if(usernameTextView != null) {
+			//download user
 			Log.d(null, "usernametextview not null");
 			DownloadUser u = new DownloadUser();
 			u.setTextView(usernameTextView, null);
@@ -105,7 +109,8 @@ public class ViewMemoryActivity extends MapsActivity implements View.OnClickList
 		}
 //		loadImage(memoryImageView,memoryImageURI);
     }
-	public void setUser(TextView usernameTextView, String username) { //set user who posted memory
+	public void setUser(TextView usernameTextView, String username) {
+		//set user who posted memory
 		this.usernameTextView = usernameTextView;
 		this.ownerId = username;
 		if(username!= null && usernameTextView != null) {
@@ -115,12 +120,14 @@ public class ViewMemoryActivity extends MapsActivity implements View.OnClickList
 	}
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		//setup menu bar
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.view_memory_menu, menu);
 		return true;
 	}
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		//menu onclick functions
 		switch (item.getItemId()) {
 			case R.id.report_memory:
 				//report moment
