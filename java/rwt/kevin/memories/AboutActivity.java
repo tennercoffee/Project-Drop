@@ -9,14 +9,14 @@ import android.view.View;
 import android.widget.Button;
 
 public class AboutActivity extends AppCompatActivity implements View.OnClickListener{
+    //declare variables
     Button tutorialButton, knownIssuesButton, backButton, privacyPolicyButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //setup environment
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about_moments);
-        Log.d(null, "setview about");
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.about_moments_toolbar);
         if(toolbar != null){
             toolbar.setTitle("About Moments");
@@ -32,6 +32,7 @@ public class AboutActivity extends AppCompatActivity implements View.OnClickList
         knownIssuesButton.setOnClickListener(this);
         privacyPolicyButton.setOnClickListener(this);
     }
+    //button functions
     @Override
     public void onClick(View view) {
         switch (view.getId()) {

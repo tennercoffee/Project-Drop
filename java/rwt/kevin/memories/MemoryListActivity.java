@@ -21,7 +21,15 @@ import org.json.JSONArray;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/****************************************************
+ *
+ * this will remain unused until my server is ready
+ * for the increased workload
+ *
+ */
 public class MemoryListActivity extends MapsActivity {
+    //declare variables
     List<String> slist;
     JSONArray array;
     Switch memlistPrivacySwitch;
@@ -42,6 +50,7 @@ public class MemoryListActivity extends MapsActivity {
             android.support.v7.app.ActionBar actionBar = getSupportActionBar();
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+        //setup list and listview/adapter
         final ListView listView = (ListView) findViewById(R.id.moment_list);
         final TextView memlistPrivacyTextView = (TextView) findViewById(R.id.newprivacy_textview);
         final ArrayAdapter arrayAdapter = new ArrayAdapter<>(
@@ -62,18 +71,20 @@ public class MemoryListActivity extends MapsActivity {
             memlistPrivacySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    //this changes the privacy(public/private) in the api calls
+                    //changing it here will automatically download markers again
                     if (memlistPrivacySwitch.isChecked()) {
                         scopeString = "public";
-                        memlistPrivacyTextView.setText(getString(R.string.public_string));
                     } else {
                         scopeString = "private";
-                        memlistPrivacyTextView.setText(getString(R.string.private_string));
                     }
+                    memlistPrivacyTextView.setText(scopeString);
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    //download data
                     downloadMemoryList(arrayAdapter,listView,myLocation,scopeString);
                 }
             });
@@ -105,6 +116,7 @@ public class MemoryListActivity extends MapsActivity {
         downloadMemoryList(arrayAdapter,listView,myLocation,scopeString);
     }
     private void downloadMemoryList(final ArrayAdapter arrayAdapter, final ListView listView, final LatLng myLocation, final String scopeString) {
+        //set up to download memory list
         final String url = getString(R.string.ca_access_url);
         DownloadList loadList = new DownloadList() {
             @Override
@@ -121,6 +133,7 @@ public class MemoryListActivity extends MapsActivity {
                 Log.d(null, "loadinglist...");
             }
         };
+        //send download call
         loadList.downloadList();
     }
     public void setList(List<String> titleList, LatLng myLocation) {

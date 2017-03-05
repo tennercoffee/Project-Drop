@@ -37,7 +37,9 @@
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
-            android:layout_margin="15dp" />
+            android:layout_marginBottom="15dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginRight="15dp" />
 
         <EditText
             android:layout_width="match_parent"
@@ -146,15 +148,25 @@
             android:layout_alignEnd="@+id/scope_list" />
 
         <Button
-            android:text="Rotate Right"
+            android:text="Remove Image"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/rotate_right_button"
+            android:id="@+id/remove_image_button"
+            android:visibility="invisible"
             android:layout_alignBaseline="@+id/submit_button"
             android:layout_alignBottom="@+id/submit_button"
-            android:layout_alignLeft="@+id/color_text_view"
-            android:layout_alignStart="@+id/color_text_view"
-            android:visibility="invisible" />
+            android:layout_alignLeft="@+id/rotate_left_button"
+            android:layout_alignStart="@+id/rotate_left_button" />
+
+        <Button
+            android:text="Add Image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/uploadimage_button"
+            android:layout_alignBaseline="@+id/remove_image_button"
+            android:layout_alignBottom="@+id/remove_image_button"
+            android:layout_alignLeft="@+id/remove_image_button"
+            android:layout_alignStart="@+id/remove_image_button" />
 
         <Button
             android:text="Rotate Left"
@@ -162,35 +174,26 @@
             android:layout_height="wrap_content"
             android:id="@+id/rotate_left_button"
             android:visibility="invisible"
-            android:layout_above="@+id/rotate_right_button"
-            android:layout_alignLeft="@+id/rotate_right_button"
-            android:layout_alignStart="@+id/rotate_right_button" />
+            android:layout_above="@+id/remove_image_button"
+            android:layout_alignLeft="@+id/editInp"
+            android:layout_alignStart="@+id/editInp" />
+
+        <Button
+            android:text="Rotate Right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/rotate_right_button"
+            android:visibility="invisible"
+            android:layout_above="@+id/remove_image_button"
+            android:layout_alignRight="@+id/submit_button"
+            android:layout_alignEnd="@+id/submit_button" />
 
         <ImageView
             android:layout_height="125dp"
             android:id="@+id/image_preview"
             android:layout_width="125dp"
-            android:layout_below="@+id/color_text_view"
+            android:layout_below="@+id/color_spinner"
             android:layout_centerHorizontal="true" />
-
-        <Button
-            android:text="Add Image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/uploadimage_button"
-            android:layout_above="@+id/rotate_right_button"
-            android:layout_alignRight="@+id/submit_button"
-            android:layout_alignEnd="@+id/submit_button" />
-
-        <Button
-            android:text="Remove Image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/uploadimage_button"
-            android:layout_alignRight="@+id/submit_button"
-            android:layout_alignEnd="@+id/submit_button"
-            android:id="@+id/remove_image_button"
-            android:visibility="invisible" />
 
     </RelativeLayout>
 </android.support.design.widget.CoordinatorLayout>

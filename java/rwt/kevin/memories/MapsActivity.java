@@ -50,6 +50,7 @@ import static com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import static com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
 
 public class MapsActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, OnMyLocationButtonClickListener, com.google.android.gms.location.LocationListener{
+    //declare variables
     private static final int MY_LOCATION_REQUEST_CODE = 1;
     public GoogleMap googleMap;
     public GoogleApiClient googleApiClient;
@@ -72,6 +73,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         loadMap(savedInstanceState);
         toolbar = (Toolbar) findViewById(R.id.map_toolbar);
         if (toolbar != null) {
@@ -80,11 +82,15 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             android.support.v7.app.ActionBar actionBar = getSupportActionBar();
             actionBar.setDisplayHomeAsUpEnabled(false);
         }
-
+//        MainActivity m = new MainActivity();
+//        if(!m.checkPermissions(getApplicationContext())){
+//            Intent i = new Intent(getApplicationContext(), MainActivity.class);
+//            startActivity(i);
+//        }
+        //start map client and get my location
         googleApiClient = buildClient();
         enableMyLocation();
         myLocationLatLng = getLocation(getApplicationContext());
-        //TODO:check for permissions(callback?)
 
         //setup views && buttons
         privacyTextView = (TextView) findViewById(R.id.privacy_textview);
@@ -435,30 +441,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             gps.showSettingsAlert(context);
         }
         return null;
-    }
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        //check permissions to see if fine location is enabled
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            Log.d(null, "orpr- permission granted");
-            googleMap.setMyLocationEnabled(true);
-        } else {
-            Log.d(null, "orpr-no permission for location");
-//            ActivityCompat.requestPermissions(MapsActivity.this,
-//                    new String[]{Manifest.permission.INTERNET}, 1);
-        }
-        // handles the result of the permission request by implementing the ActivityCompat.OnRequestPermissionsResultCallback
-        if (requestCode == MY_LOCATION_REQUEST_CODE) {
-            if (permissions.length == 1 &&
-                    permissions[0] == Manifest.permission.ACCESS_FINE_LOCATION &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d(null, "orpr-everything is right");
-                googleMap.setMyLocationEnabled(true);
-            } else {
-                Log.d(null, "no permission");
-            }
-        }
     }
     @Override
     public boolean onMyLocationButtonClick() {

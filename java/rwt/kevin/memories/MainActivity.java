@@ -26,39 +26,41 @@ import java.net.URL;
 import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends FragmentActivity implements View.OnClickListener{
+    //declare variables
     private static final int MY_LOCATION_REQUEST_CODE = 0;
+    private static final int REQUEST_PERMISSIONS = 20;
     Toolbar toolbar;
     URL atlasAuthUrl = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //setup environment
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
 
-        int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
-                Manifest.permission.ACCESS_FINE_LOCATION);
-//        if (permissionCheck == 0) {
-            LoginActivity l = new LoginActivity();
-            if (!l.isLoggedIn(getApplicationContext())) {
-                toolbar = (Toolbar) findViewById(R.id.login_toolbar);
-                if (toolbar != null) {
-                    toolbar.setTitle("Welcome to Moments!");
-                }
-
-                Button aboutButton = (Button) findViewById(R.id.about_button);
-                Button signinButton = (Button) findViewById(R.id.login_button);
-                Button noLoginButton = (Button) findViewById(R.id.no_login_button);
-
-                aboutButton.setOnClickListener(this);
-                signinButton.setOnClickListener(this);
-                noLoginButton.setOnClickListener(this);
-            } else {
-                Intent i = new Intent(getApplicationContext(), MapsActivity.class);
-                startActivity(i);
+        LoginActivity l = new LoginActivity();
+        if (!l.isLoggedIn(getApplicationContext())) {
+            //if not logged in, setup mainactivity, else open maps activity
+            toolbar = (Toolbar) findViewById(R.id.login_toolbar);
+            if (toolbar != null) {
+                toolbar.setTitle("Welcome to Moments!");
             }
-//        }
+
+            //setup buttons and listeners
+            Button aboutButton = (Button) findViewById(R.id.about_button);
+            Button signinButton = (Button) findViewById(R.id.login_button);
+            Button noLoginButton = (Button) findViewById(R.id.no_login_button);
+
+            aboutButton.setOnClickListener(this);
+            signinButton.setOnClickListener(this);
+            noLoginButton.setOnClickListener(this);
+        } else {
+            Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+            startActivity(i);
+        }
     }
+    //button functions
     @Override
     public void onClick(View view) {
         Intent i = null;
@@ -86,33 +88,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         super.attachBaseContext(newBase);
         MultiDex.install(this);
     }
-    public boolean checkPermissions() {
-        if (ContextCompat.checkSelfPermission(MainActivity.this,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-                Toast.makeText(getApplicationContext(),"Moments is a GPS based application", Toast.LENGTH_LONG);
-                Toast.makeText(getApplicationContext(),"Please allow the correct permissions", Toast.LENGTH_LONG);
-            } else {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(MainActivity.this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_LOCATION_REQUEST_CODE);
-
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
-            }
-        }
-        return false;
-    }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         //check permissions to see if fine location is enabled
@@ -132,8 +107,5 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 Log.d(null, "no permission");
             }
         }
-    }
-    private boolean isNetworkAvailable() {
-        return false;
     }
 }

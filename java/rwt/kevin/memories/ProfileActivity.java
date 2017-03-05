@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class ProfileActivity extends AppCompatActivity implements View.OnClickListener {
+    //declare variables
     String usernameString, accessKeyString;
     TextView usernameTextView;
     ImageView profileImageView;
@@ -24,6 +25,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //setup environment
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_profile);
         toolbar = (Toolbar) findViewById(R.id.my_profile_toolbar);
@@ -52,11 +54,12 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             logoutButton.setOnClickListener(this);
             editProfileButton.setOnClickListener(this);
         }
-
+        //download user information
         DownloadUser user = new DownloadUser();
         user.setTextView(usernameTextView, profileImageView);
         user.execute(usernameString, atlasAccessKeyString, urlString);
     }
+    //button click functions
     @Override
     public void onClick(View view) {
         switch(view.getId()) {
@@ -98,6 +101,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         this.profileImageView = profileImageView;
         this.usernameString = username;
 
+        //set user information
         usernameTextView.setText(username);
         DownloadImage di = new DownloadImage();
         di.setImageView(profileImageView);
