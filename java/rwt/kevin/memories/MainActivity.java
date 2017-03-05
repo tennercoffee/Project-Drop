@@ -26,39 +26,39 @@ import java.net.URL;
 import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends FragmentActivity implements View.OnClickListener{
+    //declare variables
     private static final int MY_LOCATION_REQUEST_CODE = 0;
     Toolbar toolbar;
     URL atlasAuthUrl = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //setup environment
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
 
-        int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
-                Manifest.permission.ACCESS_FINE_LOCATION);
-//        if (permissionCheck == 0) {
-            LoginActivity l = new LoginActivity();
-            if (!l.isLoggedIn(getApplicationContext())) {
-                toolbar = (Toolbar) findViewById(R.id.login_toolbar);
-                if (toolbar != null) {
-                    toolbar.setTitle("Welcome to Moments!");
-                }
-
-                Button aboutButton = (Button) findViewById(R.id.about_button);
-                Button signinButton = (Button) findViewById(R.id.login_button);
-                Button noLoginButton = (Button) findViewById(R.id.no_login_button);
-
-                aboutButton.setOnClickListener(this);
-                signinButton.setOnClickListener(this);
-                noLoginButton.setOnClickListener(this);
-            } else {
-                Intent i = new Intent(getApplicationContext(), MapsActivity.class);
-                startActivity(i);
+        LoginActivity l = new LoginActivity();
+        if (!l.isLoggedIn(getApplicationContext())) {
+            //if not logged in, setup mainactivity, else open maps activity
+            toolbar = (Toolbar) findViewById(R.id.login_toolbar);
+            if (toolbar != null) {
+                toolbar.setTitle("Welcome to Moments!");
             }
-//        }
+
+            Button aboutButton = (Button) findViewById(R.id.about_button);
+            Button signinButton = (Button) findViewById(R.id.login_button);
+            Button noLoginButton = (Button) findViewById(R.id.no_login_button);
+
+            aboutButton.setOnClickListener(this);
+            signinButton.setOnClickListener(this);
+            noLoginButton.setOnClickListener(this);
+        } else {
+            Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+            startActivity(i);
+        }
     }
+    //button functions
     @Override
     public void onClick(View view) {
         Intent i = null;

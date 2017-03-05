@@ -23,6 +23,7 @@ import java.util.Map;
 import io.fabric.sdk.android.Fabric;
 
 public class LoginActivity extends MainActivity {
+    //declare variables
     String usernameString, atlasIdString, accessKeyString;
     WebView webView;
     Toolbar toolbar;
@@ -30,6 +31,7 @@ public class LoginActivity extends MainActivity {
     @SuppressLint("JavascriptInterface")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //setup environment
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         Fabric.with(this, new Crashlytics());
@@ -43,7 +45,7 @@ public class LoginActivity extends MainActivity {
         usernameString = sharedPreferences.getString("usernameString", null);
         String atlasIdString = sharedPreferences.getString("atlasIdNumberString", null);
         if (usernameString != null && atlasAccessKey != null) {
-            //if there is good data stored in sharedprefs, open maps
+            //if there is good data stored in sharedprefs, open MapsActivity
             Log.d(null, "valid accessToken and usernameString for:" + atlasAccessKey + " " + usernameString + "/" + atlasIdString);
             Intent i = new Intent(getApplicationContext(), MapsActivity.class);
             Toast.makeText(getApplicationContext(), "signed in as: " + usernameString, Toast.LENGTH_LONG).show();
@@ -56,6 +58,7 @@ public class LoginActivity extends MainActivity {
     }
     private void setWebView() {
         try {
+            //open in-app browser(webview) for logging in //TODO clean up the webview settings
             webView = (WebView) findViewById(R.id.webview);
             String appId = getString(R.string.atlas_app_id);
             String atlasAccessKey = getString(R.string.atlas_app_token);

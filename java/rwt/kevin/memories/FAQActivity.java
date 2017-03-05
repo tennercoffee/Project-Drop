@@ -10,8 +10,10 @@ import android.widget.Button;
  * Created by Kevin on 12/7/2016.
  */
 public class FAQActivity extends AppCompatActivity {
+    //declare variables
 
     protected void onCreate(Bundle savedInstanceState) {
+        //setup environment
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_faq);
 

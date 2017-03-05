@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -16,14 +15,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class ReportMemoryActivity extends ViewMemoryActivity implements View.OnClickListener{
+    //declare variables
     TextView charCountTextView, memoryIdTextView;
     Button cancelButton, submitButton;
     Toolbar toolbar;
-    EditText memoryInput;
+    EditText reportIntput;
     String atlasUserIdNumber,id,username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //setup environment
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_report_memory);
         toolbar = (Toolbar) findViewById(R.id.report_memory_toolbar);
@@ -36,16 +37,15 @@ public class ReportMemoryActivity extends ViewMemoryActivity implements View.OnC
         //get information from viewmem
         Intent i = getIntent();
         id = i.getStringExtra("idString");
-        username = i.getStringExtra("usernameString");
 
-        //this checks to see if there is a userIdNumber stored in shared prefs
+        //this checks to see if there is a userIdNumber/username stored in shared prefs
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         atlasUserIdNumber = sharedPreferences.getString("atlasIdNumberString", null);
-
+        usernameString = sharedPreferences.getString("usernameString", null);
 
         //setup buttons and views
         submitButton = (Button) findViewById(R.id.submit_memory_report_button);
-        memoryInput = (EditText) findViewById(R.id.editInp);
+        reportIntput = (EditText) findViewById(R.id.editInp);
         charCountTextView = (TextView) findViewById(R.id.charCountTextView);
         cancelButton = (Button) findViewById(R.id.cancel_button);
         memoryIdTextView = (TextView) findViewById(R.id.memory_id_text_view);
@@ -53,9 +53,9 @@ public class ReportMemoryActivity extends ViewMemoryActivity implements View.OnC
         submitButton.setOnClickListener(this);
         cancelButton.setOnClickListener(this);
 
-        if(memoryInput != null){
-            //add text counter
-            memoryInput.addTextChangedListener(mTextEditorWatcher);
+        if(reportIntput != null){
+            //add text counter to edittext box
+            reportIntput.addTextChangedListener(mTextEditorWatcher);
         }
         if(id != null && username != null) {
             String s = "Moment ID: " + id;
@@ -70,15 +70,11 @@ public class ReportMemoryActivity extends ViewMemoryActivity implements View.OnC
         switch (view.getId()) {
             case R.id.submit_memory_report_button:
                 //submit report
-
-                AddMemoryActivity a = new AddMemoryActivity();
+                AddMemoryActivity a = new AddMemoryActivity(); //TODO: move elsewhere
                 String timestamp = a.getTimeStamp();
-
-
-//                Toast.makeText(getApplicationContext(),"Feature Coming Soon", Toast.LENGTH_LONG).show();
                 if (atlasUserIdNumber != null) {
                     AddReport addReport = new AddReport();
-                    addReport.execute(id, atlasUserIdNumber, timestamp, getString(R.string.ca_access_key), getString(R.string.ca_access_url), memoryInput.getText().toString());
+                    addReport.execute(id, atlasUserIdNumber, timestamp, getString(R.string.ca_access_key), getString(R.string.ca_access_url), reportIntput.getText().toString());
                     Toast.makeText(getApplicationContext(), "Report added", Toast.LENGTH_LONG).show();
                     finish();
                 }
@@ -90,6 +86,7 @@ public class ReportMemoryActivity extends ViewMemoryActivity implements View.OnC
         }
     }
     private final TextWatcher mTextEditorWatcher = new TextWatcher() {
+        //textbox counter
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
         }
         public void onTextChanged(CharSequence s, int start, int before, int count) {

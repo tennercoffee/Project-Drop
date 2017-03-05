@@ -31,6 +31,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
@@ -40,12 +41,16 @@ import com.google.android.gms.maps.model.LatLng;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class AddMemoryActivity extends AppCompatActivity implements View.OnClickListener {
+    //declare variables
     TextView charCountTextView, locationTextView;
     Button submitButton, uploadButton, rotateRightButton, removeImageButton, rotateLeftButton;
     ImageView previewView;
@@ -65,6 +70,7 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //setup environment
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_memory);
         toolbar = (Toolbar) findViewById(R.id.add_memory_toolbar);
@@ -76,6 +82,7 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                 actionBar.setDisplayHomeAsUpEnabled(true);
             }
         }
+        //setup views and buttons
         memoryInput = (EditText) findViewById(R.id.editInp);
         visibilityCheckbox = (CheckBox) findViewById(R.id.checkBox);
         charCountTextView = (TextView) findViewById(R.id.charCountTextView);
@@ -93,16 +100,19 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
         uploadButton.setOnClickListener(this);
         submitButton.setOnClickListener(this);
 
+        //create image matrix for rotating images
         matrix = new Matrix();
         previewView.setScaleType(ImageView.ScaleType.MATRIX);
         previewView.setImageMatrix(matrix);
 
+        //collect information for uploading
         latlngString = getIntent().getParcelableExtra("location");
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         atlasIdString = sharedPreferences.getString("atlasIdNumberString", null);
         key = getString(R.string.ca_access_key);
         url = getString(R.string.ca_access_url);
 
+        //populate views with data
         if(memoryInput != null){
             memoryInput.addTextChangedListener(mTextEditorWatcher);
         }
@@ -159,16 +169,34 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                             }
                         };
                         getId.getResultId();
+                        //if image is not null, upload
                         if (uploadedImage != null || cameraImage != null) {
+                            BitmapFactory.Options bmOptions;
                             try {
-                                uploadImage(/*14483,"/storage/emulated/0/DCIM/Camera/20170218_081107_001.jpg"*/);
+                                //decode file to string format
+                                bmOptions = new BitmapFactory.Options();
+                                Bitmap bitmapImage = BitmapFactory.decodeFile(imagePath,bmOptions);
+                                String encodedImage = getStringImage(bitmapImage);
+
+                                Thread.sleep(500);
+                                //upload image
+                                uploadImage(encodedImage/*14483,"/storage/emulated/0/DCIM/Camera/20170218_081107_001.jpg"*/);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
+                            } catch (OutOfMemoryError e) {
+//                                try {
+//                                    bmOptions = new BitmapFactory.Options();
+//                                    bmOptions.inSampleSize = 2;
+//                                    Bitmap bitmap = BitmapFactory.decodeFile(image, null, bmOptions);
+//                                    return bitmap;
+//                                } catch(Exception e) {
+//                                    Log.e(e);
+//                                }
+                                e.printStackTrace();
                             }
                         }
-
 //                        finish();
                     }
                 } else if(atlasIdString == null) {
@@ -239,7 +267,7 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
         public void afterTextChanged(Editable s) {
         }
     };
-    String getTimeStamp(){
+    String getTimeStamp(){  //TODO: move this elsewhere
         String timestampString;
         Calendar timestamp = Calendar.getInstance();
         String y = String.valueOf(timestamp.get(Calendar.YEAR));
@@ -252,20 +280,10 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
         timestampString =  y + ":" + m + ":" + d + ":" + h + ":" + m1 + ":" + s1 + ":" + m2;
         return timestampString;
     }
-    public void uploadImage(/*int id, final String path*/) throws IOException, InterruptedException {
+    public void uploadImage(final String imageString/*int id, final String path*/) throws IOException, InterruptedException {
 //        final String name = "IMG_20170227_024616_241.jpg";
 //        final String path = "/storage/emulated/0/Pictures/Instagram/";
         final String caUrl = url + "/images.php";
-//        Log.d(null, "image upload for " + path + " by " + atlasIdString + " " + key);
-
-        //get bitmap from file path
-        File image = new File(imagePath);
-        Log.d(null, "new file from " + imagePath);
-
-        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        final Bitmap bitmapImage = BitmapFactory.decodeFile(image.getAbsolutePath(),bmOptions);
-//        bitmapImage = Bitmap.createScaledBitmap(bitmapImage,parent.getWidth(),parent.getHeight(),true);
-        final String encodedImage = getStringImage(bitmapImage);
 
         //volley image upload
         final ProgressDialog loading = ProgressDialog.show(this,"Uploading...","Please wait...",false,false);
@@ -290,22 +308,39 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
         ) {
             @Override
             protected Map<String,String> getParams() {
-                    Map<String,String> params = new Hashtable<>();
+                try {
+                    Map<String,String> params = new HashMap<>();
                     params.put("command", "addImage");
                     params.put("accessKey", key);
                     params.put("atlasId", atlasIdString);
-                    params.put("refAlbumId", "68126");
-                    params.put("ImageFile[]", /*"data:image/jpeg;base64,/" + */encodedImage);  //could be ImageFile[]
+                    params.put("refAlbumId", "68123");
+                    params.put("ImageFile[]", imageString);
                     Log.d(null, params.toString());
                     return params;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Log.d(null, "null params");
+                return null;
             }
         };
         Volley.newRequestQueue(AddMemoryActivity.this).add(postRequest);
     }
     //get encoded image string
     public String getStringImage(Bitmap bmp) {
+        //compress here
+        Bitmap out = Bitmap.createScaledBitmap(bmp, 150, 150, true);
+
+        //TODO i think this is the issue...
+        /******************************************************
+         *
+         * it creates the bytearrayoutputstream,
+         *  then compresses and uses baos as the outstream
+         *      then baos is broken into bytes
+         *
+         */
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        out.compress(Bitmap.CompressFormat.JPEG, 25, baos);
         byte[] imageBytes = baos.toByteArray();
         return Base64.encodeToString(imageBytes, Base64.DEFAULT);
     }
