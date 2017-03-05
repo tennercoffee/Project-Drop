@@ -88,10 +88,6 @@ public class AddReport extends AsyncTask<String, String, Void> {
                 String successObject = jsonObject.getString("success");
                 if (successObject.equals("true")) {
                     Log.d(null, "success true...id: " + String.valueOf(idObject));
-
-//                    ViewMemoryActivity view = new ViewMemoryActivity();
-//                    AddMemoryActivity view = new AddMemoryActivity();
-//                    view.setId(String.valueOf(idObject));
                 }
             } catch (JSONException j) {
                 j.printStackTrace();

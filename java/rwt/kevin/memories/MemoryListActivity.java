@@ -21,6 +21,13 @@ import org.json.JSONArray;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/****************************************************
+ *
+ * this will remain unused until my server is ready
+ * for the increased workload
+ *
+ */
 public class MemoryListActivity extends MapsActivity {
     //declare variables
     List<String> slist;

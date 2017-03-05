@@ -100,11 +100,6 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
         uploadButton.setOnClickListener(this);
         submitButton.setOnClickListener(this);
 
-        //create image matrix for rotating images
-        matrix = new Matrix();
-        previewView.setScaleType(ImageView.ScaleType.MATRIX);
-        previewView.setImageMatrix(matrix);
-
         //collect information for uploading
         latlngString = getIntent().getParcelableExtra("location");
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -133,12 +128,21 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             colorSpinner.setAdapter(adapter);
         }
+
+        //create image matrix for rotating images
+        matrix = new Matrix();
+        previewView.setScaleType(ImageView.ScaleType.MATRIX);
+        previewView.setImageMatrix(matrix);
     }
+    //button click functions
     @Override
     public void onClick (View view){
         Matrix matrix = new Matrix();
         previewView.setScaleType(ImageView.ScaleType.MATRIX);
         switch (view.getId()) {
+            //if image is not null, first upload the memory, get back the page id, get the album id from that,
+            //then upload image
+            //if image is null, just add memory
             case R.id.submit_button:
                 String visibility = null;
                 if(memoryInput != null && scopeSpinner != null && atlasIdString != null && colorSpinner != null) {
@@ -160,7 +164,7 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                             @Override
                             public String getResultId() {
                                 String timeStamp = getTimeStamp();
-                                AddMemory addmem = new AddMemory();
+//                                AddMemory addmem = new AddMemory();
 //                                    addmem.execute(atlasIdString, String.valueOf(latitude), String.valueOf(longitude),
 //                                            color, scope, finalVisibility, timeStamp, memoryString,
 //                                            key, url/*, imagePath, imageName*/);
@@ -169,31 +173,69 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                             }
                         };
                         getId.getResultId();
+
+
+
+
+
+
                         //if image is not null, upload
                         if (uploadedImage != null || cameraImage != null) {
+                            final String caUrl = url + "/images.php";
+                            final ProgressDialog loading = ProgressDialog.show(this,"Uploading...","Please wait...",true,true);
+
                             BitmapFactory.Options bmOptions;
                             try {
                                 //decode file to string format
                                 bmOptions = new BitmapFactory.Options();
                                 Bitmap bitmapImage = BitmapFactory.decodeFile(imagePath,bmOptions);
-                                String encodedImage = getStringImage(bitmapImage);
+                                Bitmap out = Bitmap.createScaledBitmap(bitmapImage, 150, 150, true);
+                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                out.compress(Bitmap.CompressFormat.PNG, 25, baos);
+                                byte[] imageBytes = baos.toByteArray();
+                                final String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+                                Log.d(null, encodedImage);
+                                Log.d(null, encodedImage);
+                                Log.d(null, encodedImage);Log.d(null, encodedImage);Log.d(null, encodedImage);
 
-                                Thread.sleep(500);
                                 //upload image
-                                uploadImage(encodedImage/*14483,"/storage/emulated/0/DCIM/Camera/20170218_081107_001.jpg"*/);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            } catch (OutOfMemoryError e) {
-//                                try {
-//                                    bmOptions = new BitmapFactory.Options();
-//                                    bmOptions.inSampleSize = 2;
-//                                    Bitmap bitmap = BitmapFactory.decodeFile(image, null, bmOptions);
-//                                    return bitmap;
-//                                } catch(Exception e) {
-//                                    Log.e(e);
-//                                }
+//                                uploadImage(encodedImage);
+                                final StringRequest postRequest = new StringRequest(Request.Method.POST, caUrl, new Response.Listener<String>(){
+                                    @Override
+                                    public void onResponse(String response) {
+                                        try {
+                                            Log.d(null, response);
+                                            loading.dismiss();
+                                        } catch(Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }, new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError error) {
+                                        error.printStackTrace();
+                                        loading.dismiss();
+                                    }
+                                }
+                                ) {
+                                    @Override
+                                    protected Map<String,String> getParams() {
+                                        try {
+                                            Map<String,String> params = new HashMap<>();
+                                            params.put("command", "addImage");
+                                            params.put("accessKey", key);
+                                            params.put("atlasId", atlasIdString);
+                                            params.put("refAlbumId", "68123");
+                                            params.put("ImageFile[]", encodedImage);
+                                            return params;
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                        return null;
+                                    }
+                                };
+                                Volley.newRequestQueue(AddMemoryActivity.this).add(postRequest);
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
                         }
@@ -218,6 +260,7 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                 previewView.setScaleType(ImageView.ScaleType.MATRIX);
                 previewView.setImageMatrix(matrix);
                 break;
+            //open dialogue to upload or capture image
             case R.id.uploadimage_button:
                 CharSequence options[] = new CharSequence[] {"Upload Image", "Take Photo", "Cancel"};
                 final AlertDialog.Builder builder = new AlertDialog.Builder(AddMemoryActivity.this);
@@ -258,6 +301,7 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
     void setId(String id){
         this.id = id;
     }
+    //editTextBox text counter
     private final TextWatcher mTextEditorWatcher = new TextWatcher() {
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
         }
@@ -267,6 +311,7 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
         public void afterTextChanged(Editable s) {
         }
     };
+    //create custom timestamp
     String getTimeStamp(){  //TODO: move this elsewhere
         String timestampString;
         Calendar timestamp = Calendar.getInstance();
@@ -280,67 +325,16 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
         timestampString =  y + ":" + m + ":" + d + ":" + h + ":" + m1 + ":" + s1 + ":" + m2;
         return timestampString;
     }
-    public void uploadImage(final String imageString/*int id, final String path*/) throws IOException, InterruptedException {
-//        final String name = "IMG_20170227_024616_241.jpg";
-//        final String path = "/storage/emulated/0/Pictures/Instagram/";
-        final String caUrl = url + "/images.php";
+    //volley image upload
+    public void uploadImage(final String imageString) throws IOException, InterruptedException {
 
-        //volley image upload
-        final ProgressDialog loading = ProgressDialog.show(this,"Uploading...","Please wait...",false,false);
-        final StringRequest postRequest = new StringRequest(Request.Method.POST, caUrl, new Response.Listener<String>(){
-            @Override
-            public void onResponse(String response) {
-                try {
-                    Log.d(null, response);
-                    loading.dismiss();
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                loading.dismiss();
-                error.printStackTrace();
-                Log.d(null, error.toString());
-            }
-        }
-        ) {
-            @Override
-            protected Map<String,String> getParams() {
-                try {
-                    Map<String,String> params = new HashMap<>();
-                    params.put("command", "addImage");
-                    params.put("accessKey", key);
-                    params.put("atlasId", atlasIdString);
-                    params.put("refAlbumId", "68123");
-                    params.put("ImageFile[]", imageString);
-                    Log.d(null, params.toString());
-                    return params;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                Log.d(null, "null params");
-                return null;
-            }
-        };
-        Volley.newRequestQueue(AddMemoryActivity.this).add(postRequest);
     }
     //get encoded image string
     public String getStringImage(Bitmap bmp) {
         //compress here
-        Bitmap out = Bitmap.createScaledBitmap(bmp, 150, 150, true);
-
-        //TODO i think this is the issue...
-        /******************************************************
-         *
-         * it creates the bytearrayoutputstream,
-         *  then compresses and uses baos as the outstream
-         *      then baos is broken into bytes
-         *
-         */
+        Bitmap out = Bitmap.createScaledBitmap(bmp, 125, 125, true);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        out.compress(Bitmap.CompressFormat.JPEG, 25, baos);
+        out.compress(Bitmap.CompressFormat.PNG, 25, baos);
         byte[] imageBytes = baos.toByteArray();
         return Base64.encodeToString(imageBytes, Base64.DEFAULT);
     }
