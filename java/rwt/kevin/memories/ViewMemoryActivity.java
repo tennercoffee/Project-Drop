@@ -75,7 +75,7 @@ public class ViewMemoryActivity extends MapsActivity implements View.OnClickList
 		dm.execute(id,getString(R.string.ca_access_key), getString(R.string.ca_access_url),getString(R.string.atlas_app_token),getString(R.string.atlas_access_url));
     }
     public void setMemory(String atlasToken, String atlasUrlString, String timestampObject, TextView timestampTextView, LatLng locationObject, TextView locationTextView
-			, String titleObject, TextView memoryTextView , String usernameObject, TextView usernameTextView /*, ImageView memoryImageView, URI memoryImageURI*/) {
+			, String titleObject, TextView memoryTextView , String usernameObject, TextView usernameTextView) {
         //set information from asynctask(downloadmem)
 		this.timestampString = timestampObject;
 		this.location = locationObject;

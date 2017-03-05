@@ -67,7 +67,6 @@ public class LoginActivity extends MainActivity {
             atlasAuthUrl = new URL(urlString + "/authorize.html?"
                     + "appId=" + appId + "&appToken=" + atlasAccessKey + "&authorizationGoto=" + authGoto);
             Log.d(null, atlasAuthUrl.toString());
-            //http://atlas.webapps.centennialarts.com/authorize.html?appId=8&appToken=2b6061ac-c574-11e6-9e6a-e0cb4ea6daff&authorizationGoto=http://moments.app.com/launch
             webView.setWebChromeClient(new WebChromeClient());
             webView.setWebChromeClient(new WebChromeClient());
             webView.getSettings().setJavaScriptEnabled(true);
@@ -143,13 +142,9 @@ public class LoginActivity extends MainActivity {
     }
     public boolean isLoggedIn(Context c) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(c);
-//        String atlasAccessKeyString = sharedPreferences.getString(getString(R.string.atlas_app_token), null);
         String usernameString = sharedPreferences.getString("usernameString", null);
         String atlasIdNumberString = sharedPreferences.getString("atlasIdNumberString", null);
 
-//        editor.putString("usernameString", usernameString);
-//        editor.putString("atlasIdNumberString", atlasIdString);
-
-        return /*atlasAccessKeyString != null&&*/  usernameString != null && atlasIdNumberString != null;
+        return usernameString != null && atlasIdNumberString != null;
     }
 }

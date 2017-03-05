@@ -73,6 +73,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         loadMap(savedInstanceState);
         toolbar = (Toolbar) findViewById(R.id.map_toolbar);
         if (toolbar != null) {
@@ -82,10 +83,10 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             actionBar.setDisplayHomeAsUpEnabled(false);
         }
 
+        //start map client and get my location
         googleApiClient = buildClient();
         enableMyLocation();
         myLocationLatLng = getLocation(getApplicationContext());
-        //TODO:check for permissions(callback?)
 
         //setup views && buttons
         privacyTextView = (TextView) findViewById(R.id.privacy_textview);
@@ -128,23 +129,12 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             googleMap.getUiSettings().setMapToolbarEnabled(false);
             googleMap.setMinZoomPreference(16);
             googleMap.setMaxZoomPreference(20);
-//            mClusterManager = new ClusterManager<>(this, map);
-//            googleMap.setOnMarkerClickListener(mClusterManager);
+
             LatLng currentLocation = getLocation(getApplicationContext());
             if (currentLocation != null) {
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 18));
             }
-//            mClusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<MarkerItems>() {
-//                @Override
-//                public boolean onClusterClick(Cluster<MarkerItems> cluster) {
-//                    Log.d(null, "clusterclick");
-////                    MarkerManager.Collection collection = mClusterManager.getClusterMarkerCollection();
-////                    Log.d(null, collection.toString());
-//                    Intent i = new Intent(getApplicationContext(), MemoryListActivity.class);
-//                    startActivity(i);
-//                    return true;
-//                }
-//            });
+
             //setup marker listener to load marker information
             googleMap.setOnMarkerClickListener(new OnMarkerClickListener() {
                 @Override
@@ -436,30 +426,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             gps.showSettingsAlert(context);
         }
         return null;
-    }
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        //check permissions to see if fine location is enabled
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            Log.d(null, "orpr- permission granted");
-            googleMap.setMyLocationEnabled(true);
-        } else {
-            Log.d(null, "orpr-no permission for location");
-//            ActivityCompat.requestPermissions(MapsActivity.this,
-//                    new String[]{Manifest.permission.INTERNET}, 1);
-        }
-        // handles the result of the permission request by implementing the ActivityCompat.OnRequestPermissionsResultCallback
-        if (requestCode == MY_LOCATION_REQUEST_CODE) {
-            if (permissions.length == 1 &&
-                    permissions[0] == Manifest.permission.ACCESS_FINE_LOCATION &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d(null, "orpr-everything is right");
-                googleMap.setMyLocationEnabled(true);
-            } else {
-                Log.d(null, "no permission");
-            }
-        }
     }
     @Override
     public boolean onMyLocationButtonClick() {

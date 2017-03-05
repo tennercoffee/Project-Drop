@@ -53,6 +53,7 @@ public class ReportMemoryActivity extends ViewMemoryActivity implements View.OnC
         submitButton.setOnClickListener(this);
         cancelButton.setOnClickListener(this);
 
+        //populate views with data
         if(reportIntput != null){
             //add text counter to edittext box
             reportIntput.addTextChangedListener(mTextEditorWatcher);
@@ -65,6 +66,7 @@ public class ReportMemoryActivity extends ViewMemoryActivity implements View.OnC
             memoryIdTextView.setText("Please Log In First");
         }
     }
+    //button functions
     @Override
     public void onClick (View view){
         switch (view.getId()) {

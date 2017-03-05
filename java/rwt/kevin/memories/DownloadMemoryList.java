@@ -52,7 +52,6 @@ class DownloadMemoryList extends AsyncTask<String, String, Void> {
                     + "&" + URLEncoder.encode("offset", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(offset), "UTF-8")
                     + "&" + URLEncoder.encode("filters", "UTF-8") + "=" + URLEncoder.encode(filterObject.toString(),"UTF-8");
                 URL url = new URL(urlString + "/page.php?command=listPages" + data /*+ "&" */);
-//                        + URLEncoder.encode("offset", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(offset), "UTF-8"));
                 Log.d(null, url.toString());
                 Thread.sleep(100);
 

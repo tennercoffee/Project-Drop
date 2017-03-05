@@ -73,6 +73,7 @@ class DownloadUser extends AsyncTask<String, Void, JsonObject>{
             Log.d(null, jsonObject.toString());
             String username = jsonObject.getString("username");
             String photoUrl = jsonObject.getString("photo");
+
             //set usernameString and profile photo url
             ProfileActivity profileActivity = new ProfileActivity();
             profileActivity.setUser(usernameTextView, username, profileImageView, photoUrl);
