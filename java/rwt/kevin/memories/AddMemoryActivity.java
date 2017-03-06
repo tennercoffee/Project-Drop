@@ -65,8 +65,8 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
     Bitmap cameraImage;
     Uri uploadedImage;
 
-    interface GetResultId {
-        String getResultId();
+    interface AddMemoryInterface {
+        String addMemory();
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,6 +146,10 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
             case R.id.submit_button:
                 String visibility = null;
                 if(memoryInput != null && scopeSpinner != null && atlasIdString != null && colorSpinner != null) {
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    String atlasAccessKey = sharedPreferences.getString(getString(R.string.atlas_app_token), null);
+                    final String usernameString = sharedPreferences.getString("usernameString", null);
+                    final String atlasIdString = sharedPreferences.getString("atlasIdNumberString", null);
                     final String scope = scopeSpinner.getSelectedItem().toString();
                     final String color = colorSpinner.getSelectedItem().toString();
                     final String memoryString = memoryInput.getText().toString();
@@ -154,32 +158,24 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                     } else if (visibilityCheckbox != null && !visibilityCheckbox.isChecked()) {
                         visibility = "i";
                     }
-                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                    String atlasAccessKey = sharedPreferences.getString(getString(R.string.atlas_app_token), null);
-                    final String usernameString = sharedPreferences.getString("usernameString", null);
-                    final String atlasIdString = sharedPreferences.getString("atlasIdNumberString", null);
+                    final String finalVisibility = visibility;
+
                     if (usernameString != null && atlasAccessKey != null) {
-                        final String finalVisibility = visibility;
-                        GetResultId getId = new GetResultId() {
+                        AddMemoryInterface addMemoryInterface = new AddMemoryInterface() {
                             @Override
-                            public String getResultId() {
-                                String timeStamp = getTimeStamp();
+                            public String addMemory() {
+//                                String timeStamp = getTimeStamp();
 //                                AddMemory addmem = new AddMemory();
 //                                    addmem.execute(atlasIdString, String.valueOf(latitude), String.valueOf(longitude),
 //                                            color, scope, finalVisibility, timeStamp, memoryString,
-//                                            key, url/*, imagePath, imageName*/);
-                                Toast.makeText(getApplicationContext(), "Adding Moment...", Toast.LENGTH_LONG).show();
+//                                            key, url);
+//                                Toast.makeText(getApplicationContext(), "Adding Moment...", Toast.LENGTH_LONG).show();
                                 return null;
                             }
                         };
-                        getId.getResultId();
+                        addMemoryInterface.addMemory();
 
-
-
-
-
-
-                        //if image is not null, upload
+                        //volley image upload
                         if (uploadedImage != null || cameraImage != null) {
                             final String caUrl = url + "/images.php";
                             final ProgressDialog loading = ProgressDialog.show(this,"Uploading...","Please wait...",true,true);
@@ -199,7 +195,6 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                                 Log.d(null, encodedImage);Log.d(null, encodedImage);Log.d(null, encodedImage);
 
                                 //upload image
-//                                uploadImage(encodedImage);
                                 final StringRequest postRequest = new StringRequest(Request.Method.POST, caUrl, new Response.Listener<String>(){
                                     @Override
                                     public void onResponse(String response) {
@@ -239,6 +234,7 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                                 e.printStackTrace();
                             }
                         }
+                        //finish addmemactivity
 //                        finish();
                     }
                 } else if(atlasIdString == null) {
@@ -289,12 +285,16 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                 uploadButton.setVisibility(View.INVISIBLE);
                 break;
             case R.id.remove_image_button:
+                //clear image variables and preview imageview
                 previewView.setImageURI(null);
                 uploadButton.setVisibility(View.VISIBLE);
                 uploadButton.setOnClickListener(this);
                 rotateLeftButton.setVisibility(View.INVISIBLE);
                 rotateRightButton.setVisibility(View.INVISIBLE);
                 removeImageButton.setVisibility(View.INVISIBLE);
+
+                uploadedImage = null;
+                cameraImage = null;
                 break;
         }
     }
@@ -325,19 +325,6 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
         timestampString =  y + ":" + m + ":" + d + ":" + h + ":" + m1 + ":" + s1 + ":" + m2;
         return timestampString;
     }
-    //volley image upload
-    public void uploadImage(final String imageString) throws IOException, InterruptedException {
-
-    }
-    //get encoded image string
-    public String getStringImage(Bitmap bmp) {
-        //compress here
-        Bitmap out = Bitmap.createScaledBitmap(bmp, 125, 125, true);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        out.compress(Bitmap.CompressFormat.PNG, 25, baos);
-        byte[] imageBytes = baos.toByteArray();
-        return Base64.encodeToString(imageBytes, Base64.DEFAULT);
-    }
     //method to get the file path from uri
     public String getPath(Uri uri) {
         String path = null;
@@ -361,6 +348,7 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
         return path;
     }
     public boolean onOptionsItemSelected(MenuItem item){
+        //back/up button function
         Intent myIntent = new Intent(getApplicationContext(), MapsActivity.class);
         startActivityForResult(myIntent, 0);
         return true;
@@ -372,12 +360,14 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
             ExifInterface exif = null;
             try {
                 if (cameraImage != null) {
+                    //get image from camera(captured image)
                     previewView.setImageBitmap(cameraImage);
                     //get photo orientation and rotate
                     exif = new ExifInterface(cameraImage.toString());
                 }
                 uploadedImage = data.getData();
                 if (uploadedImage != null) {
+                    //get image from gallery(uploadedimage)
                     previewView.setImageURI(uploadedImage);
                     //get photo orientation and rotate
                     exif = new ExifInterface(uploadedImage.toString());
