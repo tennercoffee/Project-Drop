@@ -1,12 +1,16 @@
 package rwt.kevin.memories;
 
+import android.*;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.webkit.WebChromeClient;
@@ -24,6 +28,7 @@ import io.fabric.sdk.android.Fabric;
 
 public class LoginActivity extends MainActivity {
     //declare variables
+    private static final int MY_LOCATION_REQUEST_CODE = 0;
     String usernameString, atlasIdString, accessKeyString;
     WebView webView;
     Toolbar toolbar;
@@ -107,14 +112,42 @@ public class LoginActivity extends MainActivity {
                             editor.putString("atlasIdNumberString", atlasIdString);
                             editor.apply();
 
-                            Intent i = new Intent(getApplicationContext(), MapsActivity.class);
-                            Toast.makeText(getApplicationContext(), "signed in as: " + usernameString, Toast.LENGTH_LONG).show();
-                            i.putExtra("usernameString", usernameString);
-                            i.putExtra("accessKeyString", accessKeyString);
-                            i.putExtra("atlasIdNumberString", atlasIdString);
-                            webView.destroy();
-                            startActivity(i);
-                            return false;
+                            //check if you have permission to use location
+                            int permissionCheck = ContextCompat.checkSelfPermission(LoginActivity.this,
+                                    android.Manifest.permission.ACCESS_FINE_LOCATION);
+                            //if not permitted, ask for permission
+                            if(permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                                Toast.makeText(getApplicationContext(), "NOT GRANTED", Toast.LENGTH_LONG).show();
+                                ActivityCompat.requestPermissions(LoginActivity.this,
+                                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                                        MY_LOCATION_REQUEST_CODE);
+                            } else {
+                                //check if location is turned on, check if data connection is available,
+                                //if not, call intent to go to settings
+                                //once permission is granted, check if location is turned on
+                                GPSTracker gpsTracker = new GPSTracker(getApplicationContext());
+                                if(!gpsTracker.canGetLocation()) {
+                                    //if not turned on, go to settings
+                                    Toast.makeText(getApplicationContext(),"Please Enable Location Services", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getApplicationContext(),"Then tap the 'sync' button up top!", Toast.LENGTH_LONG).show();
+                                    try {
+                                        Thread.sleep(500);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                    Intent intent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                    startActivity(intent);
+                                } else {
+                                    Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+                                    Toast.makeText(getApplicationContext(), "signed in as: " + usernameString, Toast.LENGTH_LONG).show();
+                                    i.putExtra("usernameString", usernameString);
+                                    i.putExtra("accessKeyString", accessKeyString);
+                                    i.putExtra("atlasIdNumberString", atlasIdString);
+                                    webView.destroy();
+                                    startActivity(i);
+                                    return false;
+                                }
+                            }
                         } else {
                             Intent i = new Intent(getApplicationContext(), MainActivity.class);
                             Toast.makeText(getApplicationContext(), "error signing in", Toast.LENGTH_LONG).show();
@@ -141,10 +174,38 @@ public class LoginActivity extends MainActivity {
         return map;
     }
     public boolean isLoggedIn(Context c) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(c);
-        String usernameString = sharedPreferences.getString("usernameString", null);
-        String atlasIdNumberString = sharedPreferences.getString("atlasIdNumberString", null);
+        //check if you have permission to use location
+        int permissionCheck = ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION);
+        //if not permitted, ask for permission
+        if(permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(getApplicationContext(), "NOT GRANTED", Toast.LENGTH_LONG).show();
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_LOCATION_REQUEST_CODE);
+        } else {
+            //check if location is turned on, check if data connection is available,
+            //if not, call intent to go to settings
+            //once permission is granted, check if location is turned on
+            GPSTracker gpsTracker = new GPSTracker(getApplicationContext());
+            if(!gpsTracker.canGetLocation()) {
+                //if not turned on, go to settings
+                Toast.makeText(getApplicationContext(),"Please Enable Location Services", Toast.LENGTH_LONG).show();
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Intent intent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent);
+            } else {
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(c);
+                String usernameString = sharedPreferences.getString("usernameString", null);
+                String atlasIdNumberString = sharedPreferences.getString("atlasIdNumberString", null);
 
-        return usernameString != null && atlasIdNumberString != null;
+                return usernameString != null && atlasIdNumberString != null;
+            }
+        }
+        return false;
     }
 }

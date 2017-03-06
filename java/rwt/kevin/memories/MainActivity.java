@@ -39,8 +39,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
 
-        LoginActivity l = new LoginActivity();
-        if (!l.isLoggedIn(getApplicationContext())) {
+//        LoginActivity l = new LoginActivity();
+//        if (!l.isLoggedIn(getApplicationContext())) {
             //if not logged in, setup mainactivity, else open maps activity
             toolbar = (Toolbar) findViewById(R.id.login_toolbar);
             if (toolbar != null) {
@@ -55,10 +55,10 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             aboutButton.setOnClickListener(this);
             signinButton.setOnClickListener(this);
             noLoginButton.setOnClickListener(this);
-        } else {
-            Intent i = new Intent(getApplicationContext(), MapsActivity.class);
-            startActivity(i);
-        }
+//        } else {
+//            Intent i = new Intent(getApplicationContext(), MapsActivity.class);
+//            startActivity(i);
+//        }
     }
     //button functions
     @Override
@@ -72,10 +72,40 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 i = new Intent(getApplicationContext(), AboutActivity.class);
                 break;
             case R.id.no_login_button:
-                i = new Intent(getApplicationContext(), MapsActivity.class);
+                //check if you have permission to use location
+                int locationPermissionCheck = ContextCompat.checkSelfPermission(this,
+                        Manifest.permission.ACCESS_FINE_LOCATION);
+                //if not permitted, ask for permission
+                if(locationPermissionCheck != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getApplicationContext(), "NOT GRANTED", Toast.LENGTH_LONG).show();
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                            MY_LOCATION_REQUEST_CODE);
+                } else {
+                    //check if location is turned on, check if data connection is available,
+                        //if not, call intent to go to settings
+                            //once permission is granted, check if location is turned on
+                    GPSTracker gpsTracker = new GPSTracker(getApplicationContext());
+                    if(!gpsTracker.canGetLocation()) {
+                        //if not turned on, go to settings
+                        Toast.makeText(getApplicationContext(),"Please Enable Location Services", Toast.LENGTH_LONG).show();
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        Intent intent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        startActivity(intent);
+                    } else {
+                        //if permission is already granted, start mapsActivity
+                        i = new Intent(getApplicationContext(), MapsActivity.class);
+                    }
+                }
                 break;
         }
-        startActivity(i);
+        if(i != null) {
+            startActivity(i);
+        }
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

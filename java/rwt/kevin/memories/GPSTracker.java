@@ -106,22 +106,22 @@ public class GPSTracker extends Service implements LocationListener {
         return this.canGetLocation;
     }
     public void showSettingsAlert(final Context context) {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
-        alertDialog.setTitle("GPS is settings");
-        alertDialog.setMessage("GPS is not enabled. Do you want to enable?");
-        alertDialog.setPositiveButton("Settings",new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(Settings.ACTION_SETTINGS);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(intent);
-            }
-        });
-        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-        alertDialog.show();
+//        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+//        alertDialog.setTitle("GPS is settings");
+//        alertDialog.setMessage("GPS is not enabled. Do you want to enable?");
+//        alertDialog.setPositiveButton("Settings",new DialogInterface.OnClickListener() {
+//            public void onClick(DialogInterface dialog, int which) {
+//                Intent intent = new Intent(Settings.ACTION_SETTINGS);
+//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                context.startActivity(intent);
+//            }
+//        });
+//        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
+//            public void onClick(DialogInterface dialog, int which) {
+//                dialog.cancel();
+//            }
+//        });
+//        alertDialog.show();
     }
     public void stopUsingGPS() {
         if(locationManager != null) {

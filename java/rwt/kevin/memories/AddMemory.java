@@ -43,7 +43,7 @@ class AddMemory extends AsyncTask<String, String, Void> {
             JSONObject timeObject = new JSONObject().put("pageTypeStringAttributesId", "47").put("value", timeStamp);
             JSONObject colorObject = new JSONObject().put("pageTypeStringAttributesId", "50").put("value", color);
             pageValuesObject.put("0", titleObject).put("1", timeObject).put("2", latObject).put("3", lngObject).put("4",colorObject);
-            String dataString = URLEncoder.encode("titleString", "UTF-8") + "=" + URLEncoder.encode(memoryString, "UTF-8")
+            String dataString = URLEncoder.encode("title", "UTF-8") + "=" + URLEncoder.encode(memoryString, "UTF-8")
                     + "&" +URLEncoder.encode("description", "UTF-8") + "=" + URLEncoder.encode(visibility, "UTF-8")
                     + "&" + URLEncoder.encode("scope", "UTF-8") + "=" + URLEncoder.encode(scope, "UTF-8")
                     + "&" + URLEncoder.encode("atlasId", "UTF-8") + "=" + URLEncoder.encode(atlasIdString, "UTF-8")

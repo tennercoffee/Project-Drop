@@ -73,7 +73,6 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         loadMap(savedInstanceState);
         toolbar = (Toolbar) findViewById(R.id.map_toolbar);
         if (toolbar != null) {
