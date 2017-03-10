@@ -1,24 +1,25 @@
 package rwt.kevin.memories;
 
-import android.app.ProgressDialog;
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,24 +31,8 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.RetryPolicy;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.maps.model.LatLng;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class AddMemoryActivity extends AppCompatActivity implements View.OnClickListener {
     //declare variables
@@ -60,7 +45,7 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
     CheckBox visibilityCheckbox;
     LatLng latlngString;
     double latitude = 0, longitude = 0;
-    String id, atlasIdString, key, url, imagePath, imageName;
+    String id, atlasIdString, key, url, imagePath;
     Matrix matrix;
     Bitmap cameraImage;
     Uri uploadedImage;
@@ -164,78 +149,22 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                         AddMemoryInterface addMemoryInterface = new AddMemoryInterface() {
                             @Override
                             public String addMemory() {
-//                                String timeStamp = getTimeStamp();
-//                                AddMemory addmem = new AddMemory();
-//                                    addmem.execute(atlasIdString, String.valueOf(latitude), String.valueOf(longitude),
-//                                            color, scope, finalVisibility, timeStamp, memoryString,
-//                                            key, url);
-//                                Toast.makeText(getApplicationContext(), "Adding Moment...", Toast.LENGTH_LONG).show();
+                                String timeStamp = getTimeStamp();
+                                AddMemory addmem = new AddMemory();
+                                    addmem.execute(atlasIdString, String.valueOf(latitude), String.valueOf(longitude),
+                                            color, scope, finalVisibility, timeStamp, memoryString,
+                                            key, url);
+                                Toast.makeText(getApplicationContext(), "Adding Moment...", Toast.LENGTH_LONG).show();
                                 return null;
                             }
                         };
                         addMemoryInterface.addMemory();
-
-                        //volley image upload
-                        if (uploadedImage != null || cameraImage != null) {
-                            final String caUrl = url + "/images.php";
-                            final ProgressDialog loading = ProgressDialog.show(this,"Uploading...","Please wait...",true,true);
-
-                            BitmapFactory.Options bmOptions;
-                            try {
-                                //decode file to string format
-                                bmOptions = new BitmapFactory.Options();
-                                Bitmap bitmapImage = BitmapFactory.decodeFile(imagePath,bmOptions);
-                                Bitmap out = Bitmap.createScaledBitmap(bitmapImage, 150, 150, true);
-                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                                out.compress(Bitmap.CompressFormat.PNG, 25, baos);
-                                byte[] imageBytes = baos.toByteArray();
-                                final String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-                                Log.d(null, encodedImage);
-                                Log.d(null, encodedImage);
-                                Log.d(null, encodedImage);Log.d(null, encodedImage);Log.d(null, encodedImage);
-
-                                //upload image
-                                final StringRequest postRequest = new StringRequest(Request.Method.POST, caUrl, new Response.Listener<String>(){
-                                    @Override
-                                    public void onResponse(String response) {
-                                        try {
-                                            Log.d(null, response);
-                                            loading.dismiss();
-                                        } catch(Exception e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                }, new Response.ErrorListener() {
-                                    @Override
-                                    public void onErrorResponse(VolleyError error) {
-                                        error.printStackTrace();
-                                        loading.dismiss();
-                                    }
-                                }
-                                ) {
-                                    @Override
-                                    protected Map<String,String> getParams() {
-                                        try {
-                                            Map<String,String> params = new HashMap<>();
-                                            params.put("command", "addImage");
-                                            params.put("accessKey", key);
-                                            params.put("atlasId", atlasIdString);
-                                            params.put("refAlbumId", "68123");
-                                            params.put("ImageFile[]", encodedImage);
-                                            return params;
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                        }
-                                        return null;
-                                    }
-                                };
-                                Volley.newRequestQueue(AddMemoryActivity.this).add(postRequest);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        //finish addmemactivity
-//                        finish();
+                        //volley/async image upload
+//                        if (imagePath != null) {
+//                            UploadFile upload = new UploadFile();
+//                            upload.setContext(getApplicationContext());
+//                            upload.execute(atlasIdString, url, key, imagePath);
+//                        }
                     }
                 } else if(atlasIdString == null) {
                     Toast.makeText(getApplicationContext(), "Please Login to Post Moments.", Toast.LENGTH_LONG).show();
@@ -258,31 +187,44 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                 break;
             //open dialogue to upload or capture image
             case R.id.uploadimage_button:
-                CharSequence options[] = new CharSequence[] {"Upload Image", "Take Photo", "Cancel"};
-                final AlertDialog.Builder builder = new AlertDialog.Builder(AddMemoryActivity.this);
-                builder.setTitle("Choose an Option");
-                builder.setItems(options, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if(which == 0){
-                            //uploadimage
-                            Intent pickPhoto = new Intent(Intent.ACTION_PICK,
-                                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                            startActivityForResult(pickPhoto , 0);//one can be replaced with any action code
-                        } else if (which == 1){
-                            //take photo
-                            Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                //check if you have permission to use storage/select image from gallery
+                int locationPermissionCheck = ContextCompat.checkSelfPermission(this,
+                        Manifest.permission.READ_EXTERNAL_STORAGE);
+                //if not permitted, ask for permission
+                if(locationPermissionCheck != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getApplicationContext(), "NOT GRANTED", Toast.LENGTH_LONG).show();
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE},
+                            0);
+                } else { //if permission is granted, go to upload/capture dialog
+                    //switch buttons
+                    removeImageButton.setVisibility(View.VISIBLE);
+                    removeImageButton.setOnClickListener(this);
+                    uploadButton.setVisibility(View.INVISIBLE);
+
+                    CharSequence options[] = new CharSequence[] {"Upload Image", "Take Photo", "Cancel"};
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(AddMemoryActivity.this);
+                    builder.setTitle("Choose an Option");
+                    builder.setItems(options, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if(which == 0){
+                                //uploadimage
+                                Intent pickPhoto = new Intent(Intent.ACTION_PICK,
+                                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                startActivityForResult(pickPhoto , 0);//one can be replaced with any action code
+                            } else if (which == 1){
+                                //take photo
+                                Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 //                                Intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
-                            startActivityForResult(takePicture, 0);//zero can be replaced with any action code
-                        } else {
-                            builder.setCancelable(true);
+                                startActivityForResult(takePicture, 0);//zero can be replaced with any action code
+                            } else {
+                                builder.setCancelable(true);
+                            }
                         }
-                    }
-                });
-                builder.show();
-                removeImageButton.setVisibility(View.VISIBLE);
-                removeImageButton.setOnClickListener(this);
-                uploadButton.setVisibility(View.INVISIBLE);
+                    });
+                    builder.show();
+                }
                 break;
             case R.id.remove_image_button:
                 //clear image variables and preview imageview
@@ -344,7 +286,6 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
             path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
             cursor.close();
         }
-        Log.d(null, "getpath- " + path);
         return path;
     }
     public boolean onOptionsItemSelected(MenuItem item){
@@ -364,6 +305,7 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                     previewView.setImageBitmap(cameraImage);
                     //get photo orientation and rotate
                     exif = new ExifInterface(cameraImage.toString());
+                    Log.d(null, exif.toString());
                 }
                 uploadedImage = data.getData();
                 if (uploadedImage != null) {

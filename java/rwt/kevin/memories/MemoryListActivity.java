@@ -167,7 +167,7 @@ public class MemoryListActivity extends MapsActivity {
 //
 //                        //run ismarkerclose on all markers to see if you can open from memlistact
 //                        MapsActivity m = new MapsActivity();
-//                        if (m.isMarkerClose(markerLatLng, 100, myLocationLatLng, googleMap)) {
+//                        if (m.isMarkerCloseOnMap(markerLatLng, 100, myLocationLatLng, googleMap)) {
 //                            //add marker to arrayList
 //                            arrayList.add(titleString);
 //                            Log.d(null, titleString + " added");

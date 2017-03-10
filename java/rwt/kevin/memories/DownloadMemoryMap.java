@@ -158,8 +158,8 @@ class DownloadMemoryMap extends AsyncTask<String, String, Void> {
             e.printStackTrace();
         }
         MapsActivity map = new MapsActivity();
-        ArrayList<ArrayList> list = map.addMarkersToMap(markerList, mMap);
-        map.revealMarkers(mMap, cluster, list);
+        ArrayList<ArrayList> list = map.addMarkersToMapArray(markerList, mMap);
+        map.showMarkersArrayOnMap(mMap, cluster, list);
     }
     void setMap(GoogleMap map, ClusterManager clusterManager, ArrayList<Marker> list, LatLng myLocation){
         this.mMap = map;

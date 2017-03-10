@@ -19,7 +19,6 @@ public class ViewMemoryActivity extends MapsActivity implements View.OnClickList
 	public String timestampString, titleString, username, id, atlasAppToken, ownerId, locationString, time;
 	public TextView usernameTextView, memoryTextView, locationTextView, timestampTextView;
 	public LatLng location;
-	Button backButton;
 	ImageView memoryImageView;
 
 	protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +69,7 @@ public class ViewMemoryActivity extends MapsActivity implements View.OnClickList
     public void loadMemory(String id) {
 		//download marker information
 		DownloadMemory dm = new DownloadMemory();
-		dm.setViews(locationTextView, memoryTextView, timestampTextView, usernameTextView, memoryImageView);
+		dm.setViews(locationTextView, memoryTextView, timestampTextView, usernameTextView);
 //		dm.setUsername(ownerId, usernameTextView);
 		dm.execute(id,getString(R.string.ca_access_key), getString(R.string.ca_access_url),getString(R.string.atlas_app_token),getString(R.string.atlas_access_url));
     }

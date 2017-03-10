@@ -14,7 +14,6 @@ import java.net.URLEncoder;
 
 class AddMemory extends AsyncTask<String, String, Void> {
     private JSONObject jsonObject;
-    private String id, imagePath, imageName;
 
     protected void onPreExecute() {
         Log.d(null, "adding memory");
@@ -31,8 +30,7 @@ class AddMemory extends AsyncTask<String, String, Void> {
         String memoryString = params[7];
         String key = params[8];
         String urlString = params[9];
-//        imagePath = params[10];
-//        imageName = params[11];
+
         String inputString;
 
         try {
@@ -42,17 +40,16 @@ class AddMemory extends AsyncTask<String, String, Void> {
             JSONObject lngObject = new JSONObject().put("pageTypeStringAttributesId", "44").put("value", longitude);
             JSONObject timeObject = new JSONObject().put("pageTypeStringAttributesId", "47").put("value", timeStamp);
             JSONObject colorObject = new JSONObject().put("pageTypeStringAttributesId", "50").put("value", color);
-            pageValuesObject.put("0", titleObject).put("1", timeObject).put("2", latObject).put("3", lngObject).put("4",colorObject);
+//            JSONObject visibilityObject = new JSONObject().put("pageTypeStringAttributesId", --).put("value", visibility);
+            pageValuesObject.put("0", titleObject).put("1", timeObject).put("2", latObject).put("3", lngObject).put("4",colorObject)/*.put("5",visibilityObject)*/;
             String dataString = URLEncoder.encode("title", "UTF-8") + "=" + URLEncoder.encode(memoryString, "UTF-8")
-                    + "&" +URLEncoder.encode("description", "UTF-8") + "=" + URLEncoder.encode(visibility, "UTF-8")
+                    + "&" +URLEncoder.encode("description", "UTF-8") + "=" + URLEncoder.encode("", "UTF-8")
                     + "&" + URLEncoder.encode("scope", "UTF-8") + "=" + URLEncoder.encode(scope, "UTF-8")
                     + "&" + URLEncoder.encode("atlasId", "UTF-8") + "=" + URLEncoder.encode(atlasIdString, "UTF-8")
                     + "&" + URLEncoder.encode("pageTypeId", "UTF-8") + "=" + URLEncoder.encode("20", "UTF-8")
                     + "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(key, "UTF-8")
                     + "&" + URLEncoder.encode("pageValues", "UTF-8") + "=" + URLEncoder.encode(pageValuesObject.toString(),"UTF-8");
-            Log.d(null, pageValuesObject.toString());
             URL url = new URL(urlString + "/page.php?command=addPage&" + dataString);
-            Log.d(null, url.toString());
 
             final URLConnection conn= url.openConnection();
             Thread.sleep(500);
@@ -88,22 +85,18 @@ class AddMemory extends AsyncTask<String, String, Void> {
     }
     protected void onPostExecute(Void v) {
         if (jsonObject != null) {
-            Log.d(null, jsonObject.toString());
             try {
                 int idObject = jsonObject.getInt("id");
                 String successObject = jsonObject.getString("success");
                 if (successObject.equals("true")) {
                     AddMemoryActivity ama = new AddMemoryActivity();
+
+                    //TODO: set id for image upload
                     ama.setId(String.valueOf(idObject));
-//                    ama.uploadImage(idObject, imagePath);
                 }
             } catch (JSONException j) {
                 j.printStackTrace();
-            } /*catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }*/
+            }
         } else {
             Log.d(null, "null jsonobject");
         }

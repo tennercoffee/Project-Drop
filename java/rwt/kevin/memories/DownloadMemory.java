@@ -18,14 +18,9 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 
 class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
-    private String titleObject;
 	private JSONArray jsonArray;
-	private TextView locationTextView;
-	private TextView memoryTextView;
-	private TextView timestampTextView;
-	private TextView usernameTextView;
-	private ImageView memoryImageView;
-	String memoryId, caAccessKey, atlasAccessKey, atlasId, username, webUrlString, atlasUrlString;
+	private TextView locationTextView,memoryTextView,timestampTextView,usernameTextView;
+	String titleObject,memoryId,caAccessKey,atlasAccessKey,atlasId,username,webUrlString,atlasUrlString;
 
 	protected void onPreExecute() {
         Log.d(null, "loading moment");
@@ -45,7 +40,6 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 			String data = URLEncoder.encode("id", "UTF-8") + "=" + URLEncoder.encode(memoryId, "UTF-8")
 				+ "&" + URLEncoder.encode("accessKey", "UTF-8") + "=" + URLEncoder.encode(caAccessKey, "UTF-8");
 			nUrl = new URL(url + data);
-			Log.d(null, nUrl.toString());
 			conn = nUrl.openConnection();
 			final BufferedReader[] in = new BufferedReader[1];
 			DownloadMemoryList.InputReader reader = new DownloadMemoryList.InputReader() {
@@ -63,7 +57,6 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 			String s;
 			while ((s = in[0].readLine()) != null) {
 				jsonArray = new JSONArray(s);
-				Log.d(null, s);
 			}
 		} catch (UnsupportedEncodingException e1) {
 			Log.d(null, e1.toString());
@@ -94,7 +87,6 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 					visibility = jsonObject.getString("description");
 					atlasId = jsonObject.getString("atlasId");
 					JSONArray attrArray = jsonObject.getJSONArray("pageTypeValues");
-					Log.d(null, attrArray.toString());
 					for (int i = 0; i < attrArray.length(); i++) {
 						JSONObject attrObject = (JSONObject) attrArray.get(i);
 						String title = attrObject.getString("title");
@@ -112,7 +104,7 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 						}
 					}
 				} else {
-					Log.d(null, "error");
+					Log.d(null, "error downloading memory");
 				}
 				username = null;
 				if (visibility != null && visibility.equals("v")){
@@ -121,18 +113,18 @@ class DownloadMemory extends AsyncTask<String, Void, JsonObject> {
 					username = "anonymous";
 				}
 				ViewMemoryActivity view = new ViewMemoryActivity();
-				view.setMemory(atlasAccessKey, atlasUrlString, timestamp, timestampTextView, latlngFinal, locationTextView, titleObject, memoryTextView, username, usernameTextView  /*,memoryImageView, memoryImageURI*/ );
+				view.setMemory(atlasAccessKey, atlasUrlString, timestamp, timestampTextView, latlngFinal, locationTextView,
+						titleObject, memoryTextView, username, usernameTextView);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 		Log.d(null, "downloaded");
 	}
-	void setViews(TextView locationTextView, TextView memoryTextView, TextView timestampTextView, TextView usernameTextView, ImageView memoryImageView){
+	void setViews(TextView locationTextView, TextView memoryTextView, TextView timestampTextView, TextView usernameTextView){
 		this.locationTextView = locationTextView;
 		this.memoryTextView = memoryTextView;
 		this.timestampTextView = timestampTextView;
 		this.usernameTextView = usernameTextView;
-		this.memoryImageView = memoryImageView;
 	}
 }
