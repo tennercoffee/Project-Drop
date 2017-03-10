@@ -60,7 +60,6 @@ public class ReportMemoryActivity extends ViewMemoryActivity implements View.OnC
         }
         if(id != null && username != null) {
             String s = "Moment ID: " + id;
-            Log.d(null, s + " by " + username);
             memoryIdTextView.setText(s);
         } else {
             memoryIdTextView.setText("Please Log In First");

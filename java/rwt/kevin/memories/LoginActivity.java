@@ -162,8 +162,8 @@ public class LoginActivity extends MainActivity {
             e.printStackTrace();
         }
     }
-    public static Map<String, String> getURLMap(String query) {
-        String[] params = query.split("&");
+    public static Map<String, String> getURLMap(String s) {
+        String[] params = s.split("&");
         Map<String, String> map = new HashMap<>();
         for (String param : params) {
             String name = param.split("=")[0];

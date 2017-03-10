@@ -13,7 +13,6 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.SharedPreferencesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -140,7 +139,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 public boolean onMarkerClick(Marker marker) {
                     Log.d(null, "marker click");
                     Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
-                    if(isMarkerClose(marker.getPosition(), 100, getLocation(getApplicationContext()), googleMap)) {
+                    if(isMarkerCloseOnMap(marker.getPosition(), 100, getLocation(getApplicationContext()), googleMap)) {
                         if (marker.getTitle() != null) {
                             String id = marker.getTitle();
                             String location = getLocation(getApplicationContext()).toString();
@@ -258,7 +257,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         };
         loadMap.downloadMap();
     }
-    public boolean isMarkerClose(LatLng markerLocation, int rDistance, LatLng myLocation, GoogleMap mMap){ //check to see if marker is close enough to view information
+    public boolean isMarkerCloseOnMap(LatLng markerLocation, int rDistance, LatLng myLocation, GoogleMap mMap){ //check to see if marker is close enough to view information
         float[] distance = new float[2];
         Circle circle = mMap.addCircle(new CircleOptions()
                 .center(myLocation)
@@ -274,7 +273,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             return true;
         }
     }
-    public ArrayList<ArrayList> addMarkersToMap(ArrayList<JSONArray> downloadList, GoogleMap mMap) { //read markers from json list, and add to markerslist
+    public ArrayList<ArrayList> addMarkersToMapArray(ArrayList<JSONArray> downloadList, GoogleMap mMap) { //read markers from json list, and add to markerslist
         Log.d(null, "addmarkerstomap");
         for(int n = 0; n < downloadList.size(); n++) {
             JSONArray downloadArray = downloadList.get(n);
@@ -325,7 +324,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         }
         return arrayList;
     }
-    public void revealMarkers(GoogleMap map, ClusterManager<MarkerItems> clusterManager, ArrayList<ArrayList> list) { //display markers on map
+    public void showMarkersArrayOnMap(GoogleMap map, ClusterManager<MarkerItems> clusterManager, ArrayList<ArrayList> list) { //display markers on map
         this.mClusterManager = clusterManager;
         this.arrayList = list;
         this.googleMap = map;
