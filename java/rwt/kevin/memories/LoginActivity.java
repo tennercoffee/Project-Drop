@@ -1,6 +1,5 @@
 package rwt.kevin.memories;
 
-import android.*;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -17,9 +16,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
-
 import com.crashlytics.android.Crashlytics;
-
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;

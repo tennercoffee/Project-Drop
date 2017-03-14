@@ -5,10 +5,12 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.multidex.MultiDex;
@@ -39,26 +41,20 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
 
-//        LoginActivity l = new LoginActivity();
-//        if (!l.isLoggedIn(getApplicationContext())) {
-            //if not logged in, setup mainactivity, else open maps activity
-            toolbar = (Toolbar) findViewById(R.id.login_toolbar);
-            if (toolbar != null) {
-                toolbar.setTitle("Welcome to Moments!");
-            }
+        //setup toolbar
+        toolbar = (Toolbar) findViewById(R.id.login_toolbar);
+        if (toolbar != null) {
+            toolbar.setTitle("Welcome to Moments!");
+        }
 
-            //setup buttons and listeners
-            Button aboutButton = (Button) findViewById(R.id.about_button);
-            Button signinButton = (Button) findViewById(R.id.login_button);
-            Button noLoginButton = (Button) findViewById(R.id.no_login_button);
+        //setup buttons and listeners
+        Button aboutButton = (Button) findViewById(R.id.about_button);
+        Button signinButton = (Button) findViewById(R.id.login_button);
+        Button noLoginButton = (Button) findViewById(R.id.no_login_button);
 
-            aboutButton.setOnClickListener(this);
-            signinButton.setOnClickListener(this);
-            noLoginButton.setOnClickListener(this);
-//        } else {
-//            Intent i = new Intent(getApplicationContext(), MapsActivity.class);
-//            startActivity(i);
-//        }
+        aboutButton.setOnClickListener(this);
+        signinButton.setOnClickListener(this);
+        noLoginButton.setOnClickListener(this);
     }
     //button functions
     @Override

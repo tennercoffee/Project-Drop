@@ -3,14 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true" >
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
-        tools:context="rwt.kevin.memories.ViewMemoryActivity">
+        tools:context="rwt.kevin.memories.ViewMemoryActivity"
+        android:screenOrientation="portrait" >
 
         <android.support.design.widget.AppBarLayout
             android:layout_width="match_parent"
@@ -28,6 +29,7 @@
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
             </android.support.design.widget.AppBarLayout>
         <include layout="@layout/content_add_memory_layout" />
+
         <android.support.v7.widget.AppCompatButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -83,8 +85,8 @@
             android:text="Choose Privacy:"
             android:id="@+id/privacyTextView"
             android:layout_below="@+id/location_textview"
-            android:layout_alignLeft="@+id/location_textview"
-            android:layout_alignStart="@+id/location_textview" />
+            android:layout_alignLeft="@+id/scope_list"
+            android:layout_alignStart="@+id/scope_list" />
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -97,7 +99,6 @@
             android:layout_width="wrap_content"
             android:gravity="center"
             android:layout_below="@+id/snapshotImageView" />
-
         <TextView
             android:id="@+id/visibilityTextView"
             android:text="Display Username:"
@@ -115,37 +116,36 @@
             android:layout_alignBottom="@+id/visibilityTextView"
             android:layout_toRightOf="@+id/visibilityTextView"
             android:layout_toEndOf="@+id/visibilityTextView" />
-
         <TextView
             android:text="Choose Color:"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/statusText"
-            android:layout_alignLeft="@+id/privacyTextView"
-            android:layout_alignStart="@+id/privacyTextView"
             android:id="@+id/color_text_view"
-            android:textSize="18sp" />
-
+            android:textSize="18sp"
+            android:layout_below="@+id/location_textview"
+            android:layout_alignRight="@+id/color_spinner"
+            android:layout_alignEnd="@+id/color_spinner" />
         <Spinner
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
             android:id="@+id/scope_list"
-            android:spinnerMode="dropdown"
-            android:background="#AEA79F"
-            android:padding="10dp"
-            android:layout_alignBottom="@+id/snapshotImageView"
-            android:layout_alignRight="@+id/location_textview"
-            android:layout_alignEnd="@+id/location_textview" />
-
-        <Spinner
             android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:id="@+id/color_spinner"
             android:background="#AEA79F"
             android:padding="10dp"
-            android:layout_alignTop="@+id/color_text_view"
-            android:layout_alignRight="@+id/scope_list"
-            android:layout_alignEnd="@+id/scope_list" />
+            android:spinnerMode="dropdown"
+            android:layout_below="@+id/snapshotImageView"
+            android:layout_alignLeft="@+id/editInp"
+            android:layout_alignStart="@+id/editInp" />
+        <Spinner
+            android:id="@+id/color_spinner"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/location_textview"
+            android:layout_alignRight="@+id/location_textview"
+            android:layout_below="@+id/snapshotImageView"
+            android:background="#AEA79F"
+            android:padding="10dp"
+            android:textAlignment="textEnd"
+            android:layout_gravity="end" />
 
         <Button
             android:text="Remove Image"
@@ -154,39 +154,18 @@
             android:id="@+id/remove_image_button"
             android:visibility="invisible"
             android:layout_alignBaseline="@+id/submit_button"
-            android:layout_alignBottom="@+id/submit_button"
-            android:layout_alignLeft="@+id/rotate_left_button"
-            android:layout_alignStart="@+id/rotate_left_button" />
-
+            android:layout_alignBottom="@+id/submit_button" />
         <Button
-            android:text="Add Image"
+            android:id="@+id/uploadimage_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/uploadimage_button"
             android:layout_alignBaseline="@+id/remove_image_button"
             android:layout_alignBottom="@+id/remove_image_button"
             android:layout_alignLeft="@+id/remove_image_button"
-            android:layout_alignStart="@+id/remove_image_button" />
-
-        <Button
-            android:text="Rotate Left"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/rotate_left_button"
-            android:visibility="invisible"
-            android:layout_above="@+id/remove_image_button"
-            android:layout_alignLeft="@+id/editInp"
-            android:layout_alignStart="@+id/editInp" />
-
-        <Button
-            android:text="Rotate Right"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/rotate_right_button"
-            android:visibility="invisible"
-            android:layout_above="@+id/remove_image_button"
-            android:layout_alignRight="@+id/submit_button"
-            android:layout_alignEnd="@+id/submit_button" />
+            android:layout_alignStart="@+id/remove_image_button"
+            android:layout_marginLeft="15dp"
+            android:layout_marginStart="15dp"
+            android:text="Add Image" />
 
         <ImageView
             android:layout_height="125dp"
@@ -195,5 +174,27 @@
             android:layout_below="@+id/color_spinner"
             android:layout_centerHorizontal="true" />
 
+        <ImageButton
+            android:id="@+id/rotate_right_image_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/submit_button"
+            android:layout_alignLeft="@+id/submit_button"
+            android:layout_alignStart="@+id/submit_button"
+            android:visibility="invisible"
+            app:srcCompat="@android:drawable/ic_menu_rotate"
+            android:contentDescription="rotate right" />
+
+        <ImageButton
+            android:id="@+id/rotate_left_image_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/remove_image_button"
+            android:layout_alignEnd="@+id/uploadimage_button"
+            android:layout_alignRight="@+id/uploadimage_button"
+            android:scaleX="-1"
+            android:visibility="invisible"
+            app:srcCompat="@android:drawable/ic_menu_rotate"
+            android:contentDescription="rotate left" />
     </RelativeLayout>
 </android.support.design.widget.CoordinatorLayout>

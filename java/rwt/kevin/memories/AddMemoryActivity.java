@@ -27,6 +27,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -37,7 +38,8 @@ import java.util.Calendar;
 public class AddMemoryActivity extends AppCompatActivity implements View.OnClickListener {
     //declare variables
     TextView charCountTextView, locationTextView;
-    Button submitButton, uploadButton, rotateRightButton, removeImageButton, rotateLeftButton;
+    Button submitButton, uploadButton, removeImageButton;
+    ImageButton rotateLeftImageButton, rotateRightImageButton;
     ImageView previewView;
     Toolbar toolbar;
     Spinner scopeSpinner, colorSpinner;
@@ -45,7 +47,7 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
     CheckBox visibilityCheckbox;
     LatLng latlngString;
     double latitude = 0, longitude = 0;
-    String id, atlasIdString, key, url, imagePath;
+    String id, atlasIdString, key, url, imagePath, albumId;
     Matrix matrix;
     Bitmap cameraImage;
     Uri uploadedImage;
@@ -78,8 +80,8 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
         scopeSpinner = (Spinner) findViewById(R.id.scope_list);
         colorSpinner = (Spinner) findViewById(R.id.color_spinner);
         previewView = (ImageView) findViewById(R.id.image_preview);
-        rotateRightButton = (Button) findViewById(R.id.rotate_right_button);
-        rotateLeftButton = (Button) findViewById(R.id.rotate_left_button);
+        rotateRightImageButton = (ImageButton) findViewById(R.id.rotate_right_image_button);
+        rotateLeftImageButton = (ImageButton) findViewById(R.id.rotate_left_image_button);
         removeImageButton = (Button) findViewById(R.id.remove_image_button);
 
         uploadButton.setOnClickListener(this);
@@ -149,22 +151,35 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                         AddMemoryInterface addMemoryInterface = new AddMemoryInterface() {
                             @Override
                             public String addMemory() {
-                                String timeStamp = getTimeStamp();
+                                Memory memory = new Memory();
+                                String timeStamp = memory.getTimeStamp();
                                 AddMemory addmem = new AddMemory();
-                                    addmem.execute(atlasIdString, String.valueOf(latitude), String.valueOf(longitude),
-                                            color, scope, finalVisibility, timeStamp, memoryString,
-                                            key, url);
+                                addmem.execute(atlasIdString, String.valueOf(latitude), String.valueOf(longitude),
+                                        color, scope, finalVisibility, timeStamp, memoryString,
+                                        key, url);
+
+                                //add image if available
+//                                if (imagePath != null && id != null) {
+//                                    Log.d(null, imagePath);
+//                                    ListAlbums listAlbums = new ListAlbums();
+//                                    listAlbums.setContext(getApplicationContext());
+//                                    listAlbums.execute(url, id,"Public",key,imagePath, atlasIdString);
+
+//                                    UploadFile upload = new UploadFile();
+//                                    upload.setContext(getApplicationContext());
+//                                    upload.setAlbumId("14543");
+//                                    upload.execute(atlasIdString, url, key, imagePath);
+//                                } else if(imagePath == null) {
+//                                    Log.d(null, "null path");
+//                                } else if (id == null) {
+//                                    Log.d(null, "null id");
+//                                }
+
                                 Toast.makeText(getApplicationContext(), "Adding Moment...", Toast.LENGTH_LONG).show();
                                 return null;
                             }
                         };
                         addMemoryInterface.addMemory();
-                        //volley/async image upload
-//                        if (imagePath != null) {
-//                            UploadFile upload = new UploadFile();
-//                            upload.setContext(getApplicationContext());
-//                            upload.execute(atlasIdString, url, key, imagePath);
-//                        }
                     }
                 } else if(atlasIdString == null) {
                     Toast.makeText(getApplicationContext(), "Please Login to Post Moments.", Toast.LENGTH_LONG).show();
@@ -173,17 +188,13 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                     Toast.makeText(getApplicationContext(), "error! oh no!", Toast.LENGTH_LONG).show();
                 }
                 break;
-            case R.id.rotate_left_button:
+            case R.id.rotate_left_image_button:
                 //rotate image left
-                matrix.postRotate(-90f,previewView.getDrawable().getBounds().width()/2,previewView.getDrawable().getBounds().height()/2);
-                previewView.setScaleType(ImageView.ScaleType.MATRIX);
-                previewView.setImageMatrix(matrix);
+                previewView.setRotation(previewView.getRotation() + -90);
                 break;
-            case R.id.rotate_right_button:
+            case R.id.rotate_right_image_button:
                 //rotate image right
-                matrix.postRotate(90f,previewView.getDrawable().getBounds().width()/2,previewView.getDrawable().getBounds().height()/2);
-                previewView.setScaleType(ImageView.ScaleType.MATRIX);
-                previewView.setImageMatrix(matrix);
+                previewView.setRotation(previewView.getRotation() + 90);
                 break;
             //open dialogue to upload or capture image
             case R.id.uploadimage_button:
@@ -196,11 +207,13 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                     ActivityCompat.requestPermissions(this,
                             new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE},
                             0);
-                } else { //if permission is granted, go to upload/capture dialog
+                } else {
+                    //if permission is granted, go to upload/capture dialog
                     //switch buttons
                     removeImageButton.setVisibility(View.VISIBLE);
                     removeImageButton.setOnClickListener(this);
                     uploadButton.setVisibility(View.INVISIBLE);
+                    uploadButton.setOnClickListener(null);
 
                     CharSequence options[] = new CharSequence[] {"Upload Image", "Take Photo", "Cancel"};
                     final AlertDialog.Builder builder = new AlertDialog.Builder(AddMemoryActivity.this);
@@ -216,7 +229,6 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                             } else if (which == 1){
                                 //take photo
                                 Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//                                Intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
                                 startActivityForResult(takePicture, 0);//zero can be replaced with any action code
                             } else {
                                 builder.setCancelable(true);
@@ -227,14 +239,15 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                 }
                 break;
             case R.id.remove_image_button:
-                //clear image variables and preview imageview
-                previewView.setImageURI(null);
+                //switch buttons
                 uploadButton.setVisibility(View.VISIBLE);
                 uploadButton.setOnClickListener(this);
-                rotateLeftButton.setVisibility(View.INVISIBLE);
-                rotateRightButton.setVisibility(View.INVISIBLE);
+                rotateLeftImageButton.setVisibility(View.INVISIBLE);
+                rotateRightImageButton.setVisibility(View.INVISIBLE);
                 removeImageButton.setVisibility(View.INVISIBLE);
 
+                //clear image variables and preview imageview
+                previewView.setImageURI(null);
                 uploadedImage = null;
                 cameraImage = null;
                 break;
@@ -242,6 +255,9 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
     }
     void setId(String id){
         this.id = id;
+    }
+    void setAlbumId(String albumId) {
+        this.albumId = albumId;
     }
     //editTextBox text counter
     private final TextWatcher mTextEditorWatcher = new TextWatcher() {
@@ -253,41 +269,6 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
         public void afterTextChanged(Editable s) {
         }
     };
-    //create custom timestamp
-    String getTimeStamp(){  //TODO: move this elsewhere
-        String timestampString;
-        Calendar timestamp = Calendar.getInstance();
-        String y = String.valueOf(timestamp.get(Calendar.YEAR));
-        String m = String.valueOf(timestamp.get(Calendar.MONTH));
-        String d = String.valueOf(timestamp.get(Calendar.DAY_OF_MONTH));
-        String h = String.valueOf(timestamp.get(Calendar.HOUR_OF_DAY));
-        String m1 = String.valueOf(timestamp.get(Calendar.MINUTE));
-        String s1 = String.valueOf(timestamp.get(Calendar.SECOND));
-        String m2 = String.valueOf(timestamp.get(Calendar.MILLISECOND));
-        timestampString =  y + ":" + m + ":" + d + ":" + h + ":" + m1 + ":" + s1 + ":" + m2;
-        return timestampString;
-    }
-    //method to get the file path from uri
-    public String getPath(Uri uri) {
-        String path = null;
-        String document_id = null;
-        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-        if(cursor != null) {
-            cursor.moveToFirst();
-            document_id = cursor.getString(0);
-            document_id = document_id.substring(document_id.lastIndexOf(":") + 1);
-            cursor.close();
-        }
-        cursor = getContentResolver().query(
-                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                null, MediaStore.Images.Media._ID + " = ? ", new String[]{document_id}, null);
-        if(cursor != null) {
-            cursor.moveToFirst();
-            path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
-            cursor.close();
-        }
-        return path;
-    }
     public boolean onOptionsItemSelected(MenuItem item){
         //back/up button function
         Intent myIntent = new Intent(getApplicationContext(), MapsActivity.class);
@@ -313,14 +294,15 @@ public class AddMemoryActivity extends AppCompatActivity implements View.OnClick
                     previewView.setImageURI(uploadedImage);
                     //get photo orientation and rotate
                     exif = new ExifInterface(uploadedImage.toString());
-                    imagePath = getPath(uploadedImage);
+                    Image image = new Image();
+                    imagePath = image.getPath(uploadedImage,getContentResolver());
                     Log.d(null, imagePath);
                 }
-                rotateLeftButton.setOnClickListener(this);
-                rotateRightButton.setOnClickListener(this);
+                rotateLeftImageButton.setVisibility(View.VISIBLE);
+                rotateRightImageButton.setVisibility(View.VISIBLE);
+                rotateLeftImageButton.setOnClickListener(this);
+                rotateRightImageButton.setOnClickListener(this);
 
-                rotateLeftButton.setVisibility(View.VISIBLE);
-                rotateRightButton.setVisibility(View.VISIBLE);
                 if(exif != null) {
                     int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
                     Log.d(null, "orientation value: " + String.valueOf(orientation));

@@ -107,7 +107,7 @@ public class MemoryListActivity extends MapsActivity {
                 ViewMemoryActivity view = new ViewMemoryActivity();
 //                view.setId(listView.getSelectedItem().toString());
 //                Intent i = new Intent(getApplicationContext(), ViewMemoryActivity.class);
-//                i.putExtra(memoryId);
+//                i.putExtra(id);
 //                startActivity(i);
             }
 
