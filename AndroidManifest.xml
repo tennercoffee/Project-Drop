@@ -31,7 +31,8 @@
             android:name="io.fabric.ApiKey"
             android:value="76128b89cf9e76ae15fd5b2f5c1d2e6599fd41ad" />
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -55,36 +56,43 @@
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".AddMemoryActivity"
             android:label="@string/title_activity_add_memory_layout"
             android:parentActivityName=".MapsActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ViewMemoryActivity"
             android:label="@string/title_activity_view_memory"
             android:parentActivityName=".MapsActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".AboutActivity"
             android:label="About Moments"
             android:parentActivityName=".MapsActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".FAQActivity"
             android:label="Known Issues"
             android:parentActivityName=".AboutActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".TourActivity"
             android:label="Tutorial"
             android:parentActivityName=".AboutActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".MapsActivity">
+            android:parentActivityName=".MapsActivity"
+            android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="rwt.kevin.memories.MapsActivity" />
@@ -100,13 +108,17 @@
         <activity
             android:name=".MemoryListActivity"
             android:label="Moment List"
-            android:parentActivityName=".MapsActivity" />
+            android:parentActivityName=".MapsActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ProfileActivity"
             android:label="Profile"
-            android:parentActivityName=".MapsActivity" />
-        <activity android:name=".ReportMemoryActivity" />
-        <activity android:name=".PrivacyPolicyActivity"></activity>
+            android:parentActivityName=".MapsActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ReportMemoryActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".PrivacyPolicyActivity"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

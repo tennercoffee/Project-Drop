@@ -20,5 +20,6 @@
             android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
     </android.support.design.widget.AppBarLayout>
-    <include layout="@layout/content_view_memory" />
+    <include layout="@layout/content_view_memory"
+        android:id="@+id/include" />
 </android.support.design.widget.CoordinatorLayout>

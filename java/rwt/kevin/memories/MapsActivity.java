@@ -155,7 +155,9 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     } else {
                         Log.d(null, "too far");
                     }
-                    return false;
+                    //changed from return false;
+                    // (true should keep it from panning to selected marker)
+                    return true;
                 }
             });
         }

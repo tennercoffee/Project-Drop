@@ -71,11 +71,11 @@ public class ReportMemoryActivity extends ViewMemoryActivity implements View.OnC
         switch (view.getId()) {
             case R.id.submit_memory_report_button:
                 //submit report
-                AddMemoryActivity a = new AddMemoryActivity(); //TODO: move elsewhere
-                String timestamp = a.getTimeStamp();
+                Memory memory = new Memory();
+                String timeStamp = memory.getTimeStamp();
                 if (atlasUserIdNumber != null) {
                     AddReport addReport = new AddReport();
-                    addReport.execute(id, atlasUserIdNumber, timestamp, getString(R.string.ca_access_key), getString(R.string.ca_access_url), reportIntput.getText().toString());
+                    addReport.execute(id, atlasUserIdNumber, timeStamp, getString(R.string.ca_access_key), getString(R.string.ca_access_url), reportIntput.getText().toString());
                     Toast.makeText(getApplicationContext(), "Report added", Toast.LENGTH_LONG).show();
                     finish();
                 }
